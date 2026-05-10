@@ -752,6 +752,8 @@ const App = (() => {
   }
 
   // ===== Tarot Reading =====
+  const SUIT_SYMBOLS = ['🔥', '💧', '⚔️', '🪙'];
+
   function initTarot() {
     let currentSpread = 'three-card';
     let drawnCards = [];
@@ -766,15 +768,11 @@ const App = (() => {
       });
     });
 
-    // Draw button
+    // Direct binding (more reliable than addEventListener for async functions)
     const drawBtn = document.getElementById('tarot-draw-btn');
     const redrawBtn = document.getElementById('tarot-redraw-btn');
-    if (drawBtn) {
-      drawBtn.addEventListener('click', performTarotReading);
-    }
-    if (redrawBtn) {
-      redrawBtn.addEventListener('click', performTarotReading);
-    }
+    if (drawBtn) drawBtn.onclick = performTarotReading;
+    if (redrawBtn) redrawBtn.onclick = performTarotReading;
   }
 
   async function performTarotReading() {
@@ -850,9 +848,6 @@ const App = (() => {
       }
     }
   }
-
-  // ===== SUIT_SYMBOLS for tarot =====
-  const SUIT_SYMBOLS = ['🔥', '💧', '⚔️', '🪙'];
 
   // ===== Check if AI is connected (for UI feedback) =====
   function checkAIConnected() {
