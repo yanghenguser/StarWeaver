@@ -1307,17 +1307,161 @@ footer {
   .tarot-card .card-name { font-size: 0.85rem; }
 }
 
-/* ===== Footer ===== */
-footer {
-  text-align: center;
-  padding: 1.5rem 0 0.8rem;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
-  margin-top: 1.5rem;
+/* ===== IChing / 周易 Styles ===== */
+.iching-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  flex-wrap: wrap;
 }
 
-@media (display-mode: standalone) {
+.iching-hexagram-box {
+  text-align: center;
+  background: rgba(10, 10, 30, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.5rem;
+  min-width: 140px;
+}
+
+.iching-hexagram-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.iching-hexagram-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.iching-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 22px;
+}
+
+.iching-line-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.iching-line .yang-bar {
+  width: 80px;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+}
+
+.iching-line .yin-bar {
+  display: flex;
+  gap: 10px;
+  width: 80px;
+}
+
+.iching-line .yin-left,
+.iching-line .yin-right {
+  display: block;
+  height: 4px;
+  width: 35px;
+  background: var(--gold);
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+}
+
+.iching-line .yin-gap {
+  display: block;
+  width: 10px;
+}
+
+.iching-change-mark {
+  font-size: 0.7rem;
+  color: #ef4444;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.iching-line.changing .iching-change-mark {
+  opacity: 1;
+}
+
+.iching-line.changing .yang-bar,
+.iching-line.changing .yin-left,
+.iching-line.changing .yin-right {
+  background: linear-gradient(90deg, var(--gold), #ef4444, var(--gold));
+  animation: iching-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iching-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.iching-line-num {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  width: 12px;
+  text-align: center;
+}
+
+.iching-hexagram-name {
+  font-size: 0.85rem;
+  color: var(--gold);
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.iching-change-arrow {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  padding: 0 0.5rem;
+}
+
+.iching-moving-lines {
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+}
+
+/* ===== Dream Input ===== */
+textarea.dream-input {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+@media (min-width: 600px) {
+  .iching-display {
+    gap: 2rem;
+  }
+  .iching-hexagram-box {
+    min-width: 180px;
+    padding: 1.5rem 2rem;
+  }
+  .iching-line .yang-bar {
+    width: 100px;
+  }
+  .iching-line .yin-left,
+  .iching-line .yin-right {
+    width: 45px;
+  }
+}
+
+/* ===== Footer ===== */
   body {
     padding-top: env(safe-area-inset-top, 0px);
   }

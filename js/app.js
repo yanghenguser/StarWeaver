@@ -23,6 +23,8 @@ const App = (() => {
     initCompatibility();
     initAIChat();
     initTarot();
+    initIChing();
+    initDreamWeaver();
     initDice();
     initMoonPhase();
     initCosmicWeather();
@@ -852,6 +854,220 @@ const App = (() => {
     }
   }
 
+  // ===== IChing / 周易 =====
+  let _ichingLines = null;
+
+  function initIChing() {
+    const castBtn = document.getElementById('iching-cast-btn');
+    const recastBtn = document.getElementById('iching-recast-btn');
+    const aiBtn = document.getElementById('iching-ai-btn');
+
+    if (castBtn) castBtn.onclick = performIChingCast;
+    if (recastBtn) recastBtn.onclick = performIChingCast;
+    if (aiBtn) aiBtn.onclick = performIChingAIReading;
+  }
+
+  function performIChingCast() {
+    const lines = IChing.castHexagram();
+    _ichingLines = lines;
+
+    const hexagram = IChing.getHexagram(lines);
+    const changingHex = IChing.getChangingHexagram(lines);
+    const hasChanges = changingHex !== null;
+
+    // Show result card
+    const resultCard = document.getElementById('iching-result');
+    if (resultCard) resultCard.style.display = 'block';
+
+    // Primary hexagram
+    const primaryLabel = document.getElementById('iching-primary-label');
+    const primaryLines = document.getElementById('iching-primary-lines');
+    const primaryName = document.getElementById('iching-primary-name');
+
+    if (primaryLabel) primaryLabel.textContent = t('Primary Hexagram', '本卦');
+    if (primaryName && hexagram) {
+      primaryName.textContent = `☯ ${hexagram.num}. ${hexagram.name} · ${hexagram.nameEn}`;
+    }
+    if (primaryLines) {
+      primaryLines.innerHTML = renderHexagramLines(lines);
+    }
+
+    // Changing hexagram
+    const changeArrow = document.getElementById('iching-change-arrow');
+    const changingBox = document.getElementById('iching-changing-box');
+    const changingLabel = document.getElementById('iching-changing-label');
+    const changingLines = document.getElementById('iching-changing-lines');
+    const changingName = document.getElementById('iching-changing-name');
+
+    if (hasChanges) {
+      if (changeArrow) changeArrow.style.display = 'block';
+      if (changingBox) changingBox.style.display = 'block';
+      if (changingLabel) changingLabel.textContent = t('Changing Hexagram', '变卦');
+      if (changingName && changingHex) {
+        changingName.textContent = `☯ ${changingHex.num}. ${changingHex.name} · ${changingHex.nameEn}`;
+      }
+      if (changingLines) {
+        changingLines.innerHTML = renderHexagramLinesFromBinary(changingHex.binary);
+      }
+
+      // Show moving lines info
+      const movingEl = document.getElementById('iching-moving-lines');
+      if (movingEl) {
+        movingEl.style.display = 'block';
+        const movingNums = [];
+        lines.forEach((l, i) => {
+          if (l.type === 'old_yin' || l.type === 'old_yang') {
+            movingNums.push(t(`Line ${i + 1} (from bottom)`, `第${i + 1}爻 (从下往上)`));
+          }
+        });
+        movingEl.innerHTML = `<span style="color:var(--gold);font-size:0.85rem;">
+          ⚡ ${t('Moving lines', '动爻')}: ${movingNums.join(', ')}
+        </span>`;
+      }
+    } else {
+      if (changeArrow) changeArrow.style.display = 'none';
+      if (changingBox) changingBox.style.display = 'none';
+      const movingEl = document.getElementById('iching-moving-lines');
+      if (movingEl) movingEl.style.display = 'none';
+    }
+
+    // Show brief meaning
+    const readingOutput = document.getElementById('iching-reading-output');
+    if (readingOutput && hexagram) {
+      readingOutput.innerHTML = `<div style="margin-bottom:0.5rem;font-weight:600;color:var(--gold);">
+        ${hexagram.name} — ${hexagram.nameEn}
+      </div>
+      <div style="margin-bottom:0.3rem;color:var(--text-secondary);font-size:0.9rem;">
+        ${hexagram.meaning}
+      </div>
+      <div style="color:var(--text-muted);font-size:0.85rem;">
+        ${hexagram.meaningEn}
+      </div>`;
+      if (hasChanges && changingHex) {
+        readingOutput.innerHTML += `<hr style="border-color:var(--border-subtle);margin:0.8rem 0;">
+        <div style="font-weight:600;color:var(--gold);font-size:0.9rem;">
+          → ${t('Changing to', '变为')}: ${changingHex.name} — ${changingHex.nameEn}
+        </div>
+        <div style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.3rem;">
+          ${changingHex.meaning}
+        </div>`;
+      }
+    }
+  }
+
+  // Render hexagram lines from a lines array
+  function renderHexagramLines(lines) {
+    // Display from top (line 6) to bottom (line 1) for visual
+    const reversed = [...lines].reverse();
+    return reversed.map((l, i) => {
+      const isChanging = l.type === 'old_yin' || l.type === 'old_yang';
+      const lineNum = 6 - i; // top to bottom
+      if (l.value === 1) {
+        // Yang line (solid)
+        return `<div class="iching-line yang ${isChanging ? 'changing' : ''}">
+          <span class="iching-line-bar yang-bar"></span>
+          ${isChanging ? '<span class="iching-change-mark">×</span>' : ''}
+          <span class="iching-line-num">${lineNum}</span>
+        </div>`;
+      } else {
+        // Yin line (broken)
+        return `<div class="iching-line yin ${isChanging ? 'changing' : ''}">
+          <span class="iching-line-bar yin-bar">
+            <span class="yin-left"></span><span class="yin-gap"></span><span class="yin-right"></span>
+          </span>
+          ${isChanging ? '<span class="iching-change-mark">×</span>' : ''}
+          <span class="iching-line-num">${lineNum}</span>
+        </div>`;
+      }
+    }).join('');
+  }
+
+  // Render hexagram lines from a binary string
+  function renderHexagramLinesFromBinary(binary) {
+    const lines = binary.split('').map(v => ({
+      value: parseInt(v),
+      type: 'young_yang',
+    }));
+    // Invert yin/yang types for display only — all non-changing
+    const displayLines = lines.map(l => ({
+      ...l,
+      type: l.value === 1 ? 'young_yang' : 'young_yin',
+    }));
+    return renderHexagramLines(displayLines);
+  }
+
+  async function performIChingAIReading() {
+    if (!AstroAI.hasApiKey()) {
+      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      return;
+    }
+    if (!_ichingLines) return;
+
+    const hexagram = IChing.getHexagram(_ichingLines);
+    const changingHex = IChing.getChangingHexagram(_ichingLines);
+    const question = document.getElementById('iching-question')?.value?.trim() || '';
+
+    const output = document.getElementById('iching-reading-output');
+    const btn = document.getElementById('iching-ai-btn');
+    if (btn) btn.disabled = true;
+    if (output) {
+      output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">
+        ${t('Consulting the I Ching wisdom...', '正在解读卦象...')}
+      </div>`;
+    }
+
+    try {
+      const hexDesc = `Primary: ${hexagram.name} (${hexagram.nameEn}) — ${hexagram.meaning}`;
+      const changeDesc = changingHex
+        ? `\nChanging to: ${changingHex.name} (${changingHex.nameEn}) — ${changingHex.meaning}`
+        : '\nNo moving lines — stable hexagram';
+
+      const prompt = lang === 'zh'
+        ? `你是一位精通《周易》的智慧占卜师。请为我解读以下卦象：
+
+卦象信息：
+${hexDesc}${changeDesc}
+
+我的问题：${question || '请给我一些人生指引'}
+
+请解读：
+1. 本卦的含义和象征
+2. 各爻位对当前处境的启示
+${changingHex ? '3. 变卦的含义和转变方向' : '3. 如何运用这个卦象的智慧'}
+4. 针对求问者的具体建议
+
+用中文回答，语言优美深刻，200-400字。`
+        : `You are a wise I Ching oracle. Please interpret this hexagram for me:
+
+Hexagram:
+${hexDesc}${changeDesc}
+
+My question: ${question || 'Please give me general guidance'}
+
+Please include:
+1. The meaning and symbolism of the hexagram
+2. What the lines reveal about the current situation
+${changingHex ? '3. The meaning of the changing hexagram and transformation' : '3. How to apply this wisdom'}
+4. Practical advice for the seeker
+
+Write poetically and wisely, 200-400 words.`;
+
+      const reading = await AstroAI.askQuestion(prompt, lang);
+      if (output) {
+        output.innerHTML = '';
+        AstroAI.typewriteText(output, reading, 25);
+      }
+    } catch (err) {
+      if (output) {
+        output.innerHTML = `<div style="color:#ef4444;">
+          ${t('Error', '错误')}: ${err.message}
+        </div>`;
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   // ===== Check if AI is connected (for UI feedback) =====
   function checkAIConnected() {
     return AstroAI.hasApiKey();
@@ -966,11 +1182,95 @@ const App = (() => {
     }
   }
 
+  // ===== Dream Weaver / 梦境解梦 =====
+  function initDreamWeaver() {
+    const dreamBtn = document.getElementById('dream-btn');
+    if (!dreamBtn) return;
+
+    dreamBtn.addEventListener('click', performDreamReading);
+
+    // Allow Enter to submit (but Shift+Enter for newline in textarea)
+    const dreamInput = document.getElementById('dream-input');
+    if (dreamInput) {
+      dreamInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          performDreamReading();
+        }
+      });
+    }
+  }
+
+  async function performDreamReading() {
+    const input = document.getElementById('dream-input');
+    const output = document.getElementById('dream-output');
+    const dream = input?.value?.trim();
+
+    if (!dream) {
+      alert(t('Please describe your dream first', '请先描述你的梦境'));
+      return;
+    }
+
+    if (!AstroAI.hasApiKey()) {
+      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      return;
+    }
+
+    const btn = document.getElementById('dream-btn');
+    if (btn) btn.disabled = true;
+    if (output) {
+      output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">
+        ${t('Weaving the threads of your dream...', '正在编织你的梦境线索...')}
+      </div>`;
+    }
+
+    try {
+      const prompt = lang === 'zh'
+        ? `你是一位精通符号学与心理学的梦境解梦师。请为以下梦境提供深刻、有洞察力的解读。
+
+梦境描述：${dream}
+
+请从以下角度解读：
+1. 梦境中的核心象征符号及其含义
+2. 梦境可能反映的心理状态或情感
+3. 梦境对现实生活的启示
+4. 给做梦者的建议
+
+请用温暖、富有诗意的语言回应，200-400字。`
+        : `You are a wise dream interpreter with deep knowledge of symbolism, psychology, and mystical traditions. Please interpret the following dream with insight and depth.
+
+Dream description: ${dream}
+
+Please include in your interpretation:
+1. Key symbols in the dream and their meanings
+2. What the dream may reveal about the dreamer's inner state
+3. Guidance and messages the dream carries
+4. Practical advice for the dreamer
+
+Speak warmly and poetically, 200-400 words.`;
+
+      const reading = await AstroAI.askQuestion(prompt, lang);
+      if (output) {
+        output.innerHTML = '';
+        AstroAI.typewriteText(output, reading, 25);
+      }
+    } catch (err) {
+      if (output) {
+        output.innerHTML = `<div style="color:#ef4444;">
+          ${t('Error', '错误')}: ${err.message}
+        </div>`;
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   // ===== Public API =====
   return {
     generateAIReading,
     getAIHoroscope,
     showZodiacDetail,
     switchSection,
+    performDreamReading,
   };
 })();

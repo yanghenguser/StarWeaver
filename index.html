@@ -302,6 +302,59 @@
         </div>
       </div>
 
+      <!-- ===== IChing / 周易 ===== -->
+      <div class="card">
+        <div class="card-title"><span class="icon">☯</span> I Ching · 周易占卜</div>
+
+        <!-- Question Input -->
+        <div class="form-group">
+          <label class="form-label" for="iching-question"><span data-key="iching-question-label">Your Question / 你的问题</span></label>
+          <input class="form-input" id="iching-question" type="text"
+            placeholder="e.g. What guidance does the universe have for me? / 宇宙对我有何指引？">
+        </div>
+
+        <!-- Cast Button -->
+        <button class="btn btn-primary" id="iching-cast-btn">☯ Cast Hexagram · 摇卦</button>
+      </div>
+
+      <!-- IChing Result -->
+      <div class="card" id="iching-result" style="display:none;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span><span class="icon">☯</span> I Ching · 周易</span>
+          <button class="btn btn-danger" id="iching-recast-btn" style="padding:6px 14px;font-size:0.8rem;">
+            🔄 Recast · 重摇
+          </button>
+        </div>
+
+        <!-- Hexagram Display -->
+        <div class="iching-display" id="iching-display">
+          <div class="iching-hexagram-box" id="iching-primary-box">
+            <div class="iching-hexagram-label" id="iching-primary-label"></div>
+            <div class="iching-hexagram-lines" id="iching-primary-lines"></div>
+            <div class="iching-hexagram-name" id="iching-primary-name"></div>
+          </div>
+          <div class="iching-change-arrow" id="iching-change-arrow" style="display:none;">→</div>
+          <div class="iching-hexagram-box" id="iching-changing-box" style="display:none;">
+            <div class="iching-hexagram-label" id="iching-changing-label">变卦 · Changed</div>
+            <div class="iching-hexagram-lines" id="iching-changing-lines"></div>
+            <div class="iching-hexagram-name" id="iching-changing-name"></div>
+          </div>
+        </div>
+
+        <!-- Moving Lines Info -->
+        <div class="iching-moving-lines" id="iching-moving-lines" style="display:none;"></div>
+
+        <!-- AI Reading Button -->
+        <button class="btn btn-purple" id="iching-ai-btn" style="margin-top:0.8rem;">🤖 AI Interpretation · AI解卦</button>
+
+        <!-- AI Reading Output -->
+        <div class="reading-output" id="iching-reading-output" style="margin-top:0.8rem;">
+          <div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
+            Cast the hexagram to receive your reading
+          </div>
+        </div>
+      </div>
+
       <!-- Keep existing Astro Dice -->
       <div class="card">
         <div class="card-title"><span class="icon">🎲</span> Astro Dice · 占星骰子</div>
@@ -336,6 +389,22 @@
           </form>
         </div>
       </div>
+
+      <!-- ===== DreamWeaver / 解梦师 ===== -->
+      <div class="card">
+        <div class="card-title"><span class="icon">🌙</span> DreamWeaver · 解梦师</div>
+        <div class="form-group">
+          <label class="form-label" for="dream-input"><span data-key="dream-label">Describe Your Dream / 描述你的梦境</span></label>
+          <textarea class="form-input dream-input" id="dream-input" rows="3"
+            placeholder="描述你的梦境.../Describe your dream..."></textarea>
+        </div>
+        <button class="btn btn-primary" id="dream-btn">🔮 解梦 · Interpret</button>
+        <div class="reading-output" id="dream-output" style="margin-top:0.8rem;">
+          <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;">
+            Share your dream for mystical interpretation
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ===== Footer ===== -->
@@ -348,6 +417,7 @@
 
   <!-- ===== Scripts ===== -->
   <script src="js/tarot.js"></script>
+  <script src="js/iching.js"></script>
   <script src="js/astro.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/app.js"></script>
