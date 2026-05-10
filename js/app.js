@@ -29,6 +29,7 @@ const App = (() => {
     initLanguageToggle();
     showRandomQuote();
     populateZodiacSigns();
+    initZodiacDetailOverlay();
   });
 
   // ===== Language =====
@@ -612,8 +613,11 @@ const App = (() => {
       </div>
     `;
     overlay.classList.add('active');
-    
-    // Close on backdrop click (mobile friendly)
+  }
+
+  function initZodiacDetailOverlay() {
+    const overlay = document.getElementById('zodiac-detail');
+    if (!overlay) return;
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
         overlay.classList.remove('active');
