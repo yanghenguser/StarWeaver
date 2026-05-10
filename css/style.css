@@ -1324,6 +1324,28 @@ footer {
 }
 
 /* ============================================
+   Mobile Styles (≤ 768px) - Touch Target & iOS Fixes
+   ============================================ */
+@media (max-width: 768px) {
+  /* iOS Safari auto-zoom fix: inputs with font-size < 16px
+     cause page zoom on focus. Force 16px on all form inputs. */
+  .form-input,
+  .form-select {
+    font-size: 16px;
+  }
+
+  /* AI chat input area spans full width */
+  .ai-chat-input-area {
+    width: 100%;
+  }
+
+  /* Prevent send button text from wrapping on small screens */
+  .ai-chat-input-area .btn {
+    white-space: nowrap;
+  }
+}
+
+/* ============================================
    Reduced Motion
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
