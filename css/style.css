@@ -1,0 +1,885 @@
+/* ============================================
+   StarWeaver - Astrology Web App
+   Dark Starry Sky Theme
+   ============================================ */
+
+:root {
+  --bg-deep: #0a0a1a;
+  --bg-dark: #10102a;
+  --bg-card: rgba(16, 16, 42, 0.85);
+  --bg-card-hover: rgba(26, 26, 56, 0.9);
+  --gold: #d4af37;
+  --gold-light: #f0d060;
+  --gold-dark: #b8960f;
+  --purple: #9b59b6;
+  --purple-light: #c084fc;
+  --purple-dark: #7c3aed;
+  --blue-glow: #4a90d9;
+  --text-primary: #e8e0f0;
+  --text-secondary: #a89bb5;
+  --text-muted: #6b5f7a;
+  --border-subtle: rgba(212, 175, 55, 0.15);
+  --border-glow: rgba(212, 175, 55, 0.3);
+  --shadow-glow: 0 0 20px rgba(212, 175, 55, 0.1);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* ===== Canvas Star Background ===== */
+#star-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ===== Loading Screen ===== */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-deep);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-star {
+  font-size: 4rem;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.loading-text {
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  color: var(--gold);
+  letter-spacing: 0.3em;
+  animation: fade-in-up 1.5s ease;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); text-shadow: 0 0 20px var(--gold); }
+  50% { transform: scale(1.1); text-shadow: 0 0 40px var(--gold), 0 0 60px var(--purple); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== App Container ===== */
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ===== Header ===== */
+.header {
+  text-align: center;
+  padding: 2rem 1rem 1.5rem;
+  position: relative;
+}
+
+.header-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--purple-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.15em;
+  text-shadow: none;
+  position: relative;
+}
+
+.header-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+  letter-spacing: 0.5em;
+}
+
+.language-toggle {
+  position: absolute;
+  top: 1.5rem;
+  right: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+}
+
+.language-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ===== Cosmic Quote ===== */
+.cosmic-quote {
+  text-align: center;
+  padding: 1rem 2rem;
+  margin: 0.5rem auto 1.5rem;
+  max-width: 700px;
+  min-height: 3rem;
+  position: relative;
+}
+
+.cosmic-quote-text {
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  transition: opacity 0.6s ease;
+}
+
+.cosmic-quote-text::before { content: '\201C'; color: var(--gold); font-size: 1.5rem; }
+.cosmic-quote-text::after { content: '\201D'; color: var(--gold); font-size: 1.5rem; }
+
+.cosmic-quote-author {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+/* ===== Navigation Tabs ===== */
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.nav-tab {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  color: var(--text-primary);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.nav-tab.active {
+  color: var(--gold);
+  background: rgba(212, 175, 55, 0.12);
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+
+.nav-tab .icon { font-size: 1.1rem; }
+
+/* ===== Sections ===== */
+.section {
+  display: none;
+  animation: section-fade-in 0.5s ease;
+}
+
+.section.active {
+  display: block;
+}
+
+@keyframes section-fade-in {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(12px);
+  transition: var(--transition);
+}
+
+.card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow);
+}
+
+.card-title {
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title .icon { font-size: 1.4rem; }
+
+/* ===== Form ===== */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(10, 10, 30, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23d4af37' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ===== Button ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: var(--bg-deep);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(212, 175, 55, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--border-subtle);
+  color: var(--gold);
+}
+
+.btn-secondary:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold);
+}
+
+.btn-purple {
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple));
+  color: white;
+}
+
+.btn-purple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(155, 89, 182, 0.3);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ===== Natal Chart Section ===== */
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.chart-container svg {
+  width: 100%;
+  height: auto;
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* ===== Reading Output ===== */
+.reading-output {
+  background: rgba(10, 10, 30, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+  margin-top: 1rem;
+  min-height: 100px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+}
+
+.reading-output.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.reading-output.loading::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--gold);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Horoscope ===== */
+.horoscope-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.zodiac-card {
+  background: rgba(10, 10, 30, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.zodiac-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+}
+
+.zodiac-card .zodiac-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.zodiac-card .zodiac-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.zodiac-card .zodiac-dates {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.zodiac-card .zodiac-horoscope {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+/* ===== Zodiac Detail ===== */
+.zodiac-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.zodiac-detail-overlay.active {
+  display: flex;
+}
+
+.zodiac-detail-card {
+  background: var(--bg-dark);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+  animation: modal-in 0.3s ease;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.zodiac-detail-card .close-btn {
+  float: right;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.zodiac-detail-card .close-btn:hover { color: var(--gold); }
+
+.zodiac-detail-card h2 {
+  font-size: 1.8rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.zodiac-detail-card .info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.zodiac-detail-card .info-label { color: var(--text-muted); font-size: 0.85rem; }
+.zodiac-detail-card .info-value { color: var(--text-primary); font-size: 0.9rem; }
+
+/* ===== Compatibility ===== */
+.compat-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.compat-result {
+  text-align: center;
+  padding: 2rem;
+}
+
+.compat-score {
+  font-size: 4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), var(--purple-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.compat-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+/* ===== AI Chat ===== */
+.ai-chat-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ai-chat-messages {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(10, 10, 30, 0.3);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ai-message, .user-message {
+  max-width: 85%;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  animation: msg-in 0.3s ease;
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-message {
+  align-self: flex-start;
+  background: rgba(155, 89, 182, 0.12);
+  border: 1px solid rgba(155, 89, 182, 0.2);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+}
+
+.ai-message .msg-sender {
+  font-size: 0.75rem;
+  color: var(--purple-light);
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.user-message {
+  align-self: flex-end;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--gold-light);
+  border-bottom-right-radius: 4px;
+}
+
+.ai-chat-input-area {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ai-chat-input-area .form-input {
+  flex: 1;
+}
+
+.ai-chat-input-area .btn {
+  flex-shrink: 0;
+}
+
+/* Typing effect cursor */
+.typing-cursor::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  color: var(--gold);
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ===== API Key Input ===== */
+.api-key-area {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(155, 89, 182, 0.05));
+  border: 1px dashed var(--border-glow);
+  border-radius: var(--radius-md);
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.api-key-area .form-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.api-key-area .form-input {
+  flex: 1;
+}
+
+.api-key-status {
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.api-key-status.connected { color: #22c55e; }
+.api-key-status.disconnected { color: var(--text-muted); }
+
+/* ===== Wheel of Fortune ===== */
+.fortune-container {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.fortune-btn {
+  font-size: 3rem;
+  background: none;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  transition: var(--transition);
+  animation: float 3s ease-in-out infinite;
+}
+
+.fortune-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.fortune-result {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(10, 10, 30, 0.4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fortune-result .fortune-card-name {
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.fortune-result .fortune-card-meaning {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ===== Moon Phase ===== */
+.moon-phase {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.moon-svg {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+}
+
+.moon-name {
+  font-size: 1.2rem;
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+}
+
+.moon-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ===== Cosmic Weather ===== */
+.cosmic-weather {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.weather-item {
+  text-align: center;
+  padding: 1.2rem;
+  background: rgba(10, 10, 30, 0.4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.weather-item .weather-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.weather-item .weather-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.weather-item .weather-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-top: 0.2rem;
+}
+
+/* ===== Model Selector ===== */
+.model-selector {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.model-selector select {
+  background: rgba(10, 10, 30, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.model-selector select:focus {
+  border-color: var(--gold);
+}
+
+/* ===== Astro Dice ===== */
+.dice-container {
+  text-align: center;
+  padding: 1rem;
+}
+
+.dice-btn {
+  font-size: 2.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-block;
+}
+
+.dice-btn:hover {
+  transform: scale(1.2);
+}
+
+.dice-btn.rolling {
+  animation: dice-roll 0.6s ease;
+}
+
+@keyframes dice-roll {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.2); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.dice-result {
+  margin-top: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  min-height: 2rem;
+}
+
+/* ===== Home / Landing ===== */
+.home-greeting {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.home-greeting h2 {
+  font-size: 1.8rem;
+  color: var(--gold-light);
+  margin-bottom: 0.5rem;
+}
+
+.home-greeting p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .header-title { font-size: 2rem; }
+  .header-subtitle { font-size: 0.8rem; letter-spacing: 0.3em; }
+  .nav-tab { padding: 8px 14px; font-size: 0.8rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .compat-inputs { grid-template-columns: 1fr; }
+  .horoscope-grid { grid-template-columns: repeat(2, 1fr); }
+  .cosmic-weather { grid-template-columns: repeat(2, 1fr); }
+  .card { padding: 1rem; }
+  .language-toggle { position: static; margin-top: 0.8rem; }
+}
+
+@media (max-width: 480px) {
+  .header-title { font-size: 1.5rem; }
+  .horoscope-grid { grid-template-columns: 1fr 1fr; }
+  .nav-tabs { flex-wrap: nowrap; overflow-x: auto; }
+  .nav-tab { flex-shrink: 0; }
+}

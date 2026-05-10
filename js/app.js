@@ -1,0 +1,824 @@
+/* ============================================
+   StarWeaver - app.js
+   Main Application Logic
+   ============================================ */
+
+const App = (() => {
+  'use strict';
+
+  let lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
+  let currentSection = 'home';
+  let birthInfo = null;
+  let chartData = null;
+  let selectedZodiac = null;
+
+  // ===== DOM Ready =====
+  document.addEventListener('DOMContentLoaded', () => {
+    initStarCanvas();
+    initLoading();
+    initNavigation();
+    initForms();
+    initCompatibility();
+    initAIChat();
+    initFortuneWheel();
+    initDice();
+    initMoonPhase();
+    initCosmicWeather();
+    initLanguageToggle();
+    showRandomQuote();
+    populateZodiacSigns();
+  });
+
+  // ===== Language =====
+  function t(en, zh) {
+    return lang === 'zh' ? zh : en;
+  }
+
+  function setLanguage(newLang) {
+    lang = newLang;
+    document.documentElement.lang = lang;
+    document.querySelector('.language-toggle').textContent = lang === 'zh' ? 'EN' : '中文';
+    
+    // Update all localized content
+    updateLocalizedContent();
+    showRandomQuote();
+    if (birthInfo) {
+      renderNatalChart(chartData);
+    }
+    populateZodiacSigns();
+    initMoonPhase();
+    initCosmicWeather();
+  }
+
+  function updateLocalizedContent() {
+    document.querySelectorAll('[data-lang]').forEach(el => {
+      const key = el.dataset.lang;
+      const parts = key.split('.');
+      // Simple data-lang="key" attribute translation
+    });
+    
+    // Update tab labels
+    const tabs = [
+      { id: 'tab-home', en: '🌌 Cosmic', zh: '🌌 宇宙' },
+      { id: 'tab-chart', en: '🔮 My Chart', zh: '🔮 我的星盘' },
+      { id: 'tab-horoscope', en: '⭐ Horoscope', zh: '⭐ 运势' },
+      { id: 'tab-compatibility', en: '💞 Love Match', zh: '💞 合盘' },
+      { id: 'tab-fortune', en: '🎴 Divination', zh: '🎴 占卜' },
+      { id: 'tab-chat', en: '🌙 AI Oracle', zh: '🌙 AI 占星师' },
+    ];
+    tabs.forEach(({ id, en, zh }) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = lang === 'zh' ? zh : en;
+    });
+
+    // Update section titles
+    document.querySelectorAll('.card-title, h2').forEach(el => {
+      const key = el.dataset.key;
+      if (!key) return;
+      // Simple key-based translation
+    });
+  }
+
+  // ===== Loading Screen =====
+  function initLoading() {
+    setTimeout(() => {
+      document.getElementById('loading-screen').classList.add('hidden');
+    }, 1500);
+  }
+
+  // ===== Star Canvas Background =====
+  function initStarCanvas() {
+    const canvas = document.getElementById('star-canvas');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    let meteors = [];
+    let animationId;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    }
+
+    function initStars() {
+      stars = [];
+      const count = Math.floor((canvas.width * canvas.height) / 3000);
+      for (let i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.8 + 0.2,
+          alpha: Math.random() * 0.8 + 0.2,
+          speed: Math.random() * 0.02 + 0.005,
+          twinkleSpeed: Math.random() * 0.02 + 0.005,
+        });
+      }
+    }
+
+    function addMeteor() {
+      if (Math.random() < 0.005 && meteors.length < 3) {
+        meteors.push({
+          x: Math.random() * canvas.width,
+          y: 0,
+          len: Math.random() * 80 + 40,
+          speed: Math.random() * 4 + 3,
+          alpha: 0.8,
+        });
+      }
+    }
+
+    function drawStars(time) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background gradient
+      const hour = new Date().getHours();
+      const isNight = hour >= 18 || hour < 6;
+      const gradient = ctx.createRadialGradient(
+        canvas.width * 0.5, canvas.height * 0.3, 0,
+        canvas.width * 0.5, canvas.height * 0.3, canvas.width * 0.8
+      );
+      if (isNight) {
+        gradient.addColorStop(0, '#0f0a2a');
+        gradient.addColorStop(0.5, '#0a0a1a');
+        gradient.addColorStop(1, '#050510');
+      } else {
+        gradient.addColorStop(0, '#1a1a3a');
+        gradient.addColorStop(0.5, '#0e0e28');
+        gradient.addColorStop(1, '#080818');
+      }
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Stars
+      stars.forEach(star => {
+        const twinkle = Math.sin(time * star.twinkleSpeed) * 0.4 + 0.6;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha * twinkle})`;
+        ctx.fill();
+
+        // Glow for bright stars
+        if (star.r > 1.2) {
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.r * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(200, 180, 255, ${star.alpha * twinkle * 0.1})`;
+          ctx.fill();
+        }
+      });
+
+      // Meteors
+      meteors = meteors.filter(m => {
+        ctx.beginPath();
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - m.len * 0.3, m.y + m.len);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${m.alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        // Meteor glow
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${m.alpha * 0.6})`;
+        ctx.fill();
+
+        m.x -= m.speed * 0.5;
+        m.y += m.speed;
+        m.alpha -= 0.008;
+        return m.alpha > 0 && m.x > -100 && m.y < canvas.height + 100;
+      });
+    }
+
+    function animate(time) {
+      drawStars(time);
+      addMeteor();
+      animationId = requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    animate(0);
+  }
+
+  // ===== Navigation =====
+  function initNavigation() {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.section;
+        switchSection(target);
+      });
+    });
+  }
+
+  function switchSection(sectionId) {
+    currentSection = sectionId;
+    
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    
+    const tab = document.querySelector(`.nav-tab[data-section="${sectionId}"]`);
+    const section = document.getElementById(`section-${sectionId}`);
+    
+    if (tab) tab.classList.add('active');
+    if (section) section.classList.add('active');
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ===== Random Quote =====
+  function showRandomQuote() {
+    const quotes = Astro.QUOTES[lang];
+    const q = quotes[Math.floor(Math.random() * quotes.length)];
+    const el = document.getElementById('cosmic-quote-text');
+    const authorEl = document.getElementById('cosmic-quote-author');
+    if (el) {
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.textContent = q.text;
+        el.style.opacity = '1';
+      }, 300);
+    }
+    if (authorEl) {
+      authorEl.textContent = `— ${q.author}`;
+    }
+  }
+
+  // ===== Forms =====
+  function initForms() {
+    const form = document.getElementById('birth-form');
+    if (!form) return;
+
+    // Populate select options
+    const yearSelect = document.getElementById('birth-year');
+    const now = new Date();
+    for (let i = 0; i < 100; i++) {
+      const y = now.getFullYear() - i;
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+    yearSelect.value = now.getFullYear() - 30;
+
+    const monthSelect = document.getElementById('birth-month');
+    for (let i = 1; i <= 12; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      monthSelect.appendChild(opt);
+    }
+    monthSelect.value = now.getMonth() + 1;
+
+    const daySelect = document.getElementById('birth-day');
+    for (let i = 1; i <= 31; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      daySelect.appendChild(opt);
+    }
+    daySelect.value = now.getDate();
+
+    const hourSelect = document.getElementById('birth-hour');
+    for (let i = 0; i < 24; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${String(i).padStart(2, '0')}:00`;
+      hourSelect.appendChild(opt);
+    }
+    hourSelect.value = now.getHours();
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('birth-name').value || t('Seeker', '求问者');
+      const year = parseInt(document.getElementById('birth-year').value);
+      const month = parseInt(document.getElementById('birth-month').value);
+      const day = parseInt(document.getElementById('birth-day').value);
+      const hour = parseInt(document.getElementById('birth-hour').value) || 12;
+      const minute = parseInt(document.getElementById('birth-minute').value) || 0;
+      const birthplace = document.getElementById('birthplace').value;
+
+      if (!year || !month || !day) {
+        alert(t('Please fill in date of birth', '请填写出生日期'));
+        return;
+      }
+
+      birthInfo = { name, year, month, day, hour, minute, birthplace };
+      chartData = Astro.generateNatalChart(year, month, day, hour, 0, 0);
+
+      renderNatalChart(chartData);
+      showChartReading(chartData);
+      document.querySelector('.chart-controls').style.display = 'flex';
+      
+      // Switch to chart section
+      switchSection('chart');
+    });
+
+    // Set default values — already set above in populate section
+    /* const now = new Date();
+    document.getElementById('birth-year').value = now.getFullYear() - 30;
+    document.getElementById('birth-month').value = now.getMonth() + 1;
+    document.getElementById('birth-day').value = now.getDate();
+    document.getElementById('birth-hour').value = now.getHours(); */
+  }
+
+  // ===== Natal Chart Rendering =====
+  function renderNatalChart(data) {
+    const container = document.getElementById('natal-chart-svg');
+    if (!container) return;
+
+    const size = container.clientWidth || 400;
+    const cx = size / 2;
+    const cy = size / 2;
+    const outerR = size * 0.42;
+    const innerR = size * 0.28;
+    const houseR = (outerR + innerR) / 2;
+
+    let svg = `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+    
+    // Background circle
+    svg += `<circle cx="${cx}" cy="${cy}" r="${outerR + 5}" fill="rgba(10,10,30,0.3)" stroke="#d4af37" stroke-width="1.5"/>`;
+
+    // Houses (12 slices)
+    for (let i = 0; i < 12; i++) {
+      const startAngle = (i * 30 - 90) * Math.PI / 180;
+      const endAngle = ((i + 1) * 30 - 90) * Math.PI / 180;
+      
+      const x1 = cx + outerR * Math.cos(startAngle);
+      const y1 = cy + outerR * Math.sin(startAngle);
+      const x2 = cx + innerR * Math.cos(startAngle);
+      const y2 = cy + innerR * Math.sin(startAngle);
+      
+      // House arc
+      const largeArc = 30 > 180 ? 1 : 0;
+      svg += `<path d="M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${cx + outerR * Math.cos(endAngle)} ${cy + outerR * Math.sin(endAngle)} L ${cx + innerR * Math.cos(endAngle)} ${cy + innerR * Math.sin(endAngle)} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x2} ${y2} Z" 
+        fill="${i % 2 === 0 ? 'rgba(212,175,55,0.03)' : 'rgba(155,89,182,0.03)'}" 
+        stroke="rgba(212,175,55,0.15)" stroke-width="0.5"/>`;
+
+      // House number
+      const midAngle = (startAngle + endAngle) / 2;
+      const lx = cx + houseR * Math.cos(midAngle);
+      const ly = cy + houseR * Math.sin(midAngle);
+      svg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" 
+        fill="rgba(212,175,55,0.4)" font-size="14" font-weight="bold">${data.houses[i].sign.symbol}</text>`;
+      
+      const numR = outerR - 14;
+      const nx = cx + numR * Math.cos(midAngle);
+      const ny = cy + numR * Math.sin(midAngle);
+      svg += `<text x="${nx}" y="${ny}" text-anchor="middle" dominant-baseline="central" 
+        fill="rgba(255,255,255,0.3)" font-size="10">${data.houses[i].number}</text>`;
+    }
+
+    // Inner circles
+    svg += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="none" stroke="rgba(212,175,55,0.15)" stroke-width="1"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="15" fill="rgba(212,175,55,0.1)" stroke="#d4af37" stroke-width="1"/>`;
+    svg += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="#d4af37" font-size="12">${data.sunSign.symbol}</text>`;
+
+    // Planets
+    const planetR = innerR - 5;
+    data.planets.forEach(p => {
+      const angle = (p.position * Math.PI * 2 / 360) - Math.PI / 2;
+      const px = cx + planetR * 0.6 * Math.cos(angle);
+      const py = cy + planetR * 0.6 * Math.sin(angle);
+      
+      // Planet glow
+      svg += `<circle cx="${px}" cy="${py}" r="10" fill="rgba(0,0,0,0.3)" stroke="${p.color}" stroke-width="1"/>`;
+      svg += `<text x="${px}" y="${py}" text-anchor="middle" dominant-baseline="central" fill="${p.color}" font-size="12">${p.symbol}</text>`;
+    });
+
+    // Aspects lines
+    data.aspects.slice(0, 5).forEach(a => {
+      const p1 = data.planets.find(p => p.name === a.p1);
+      const p2 = data.planets.find(p => p.name === a.p2);
+      if (p1 && p2) {
+        const a1 = (p1.position * Math.PI * 2 / 360) - Math.PI / 2;
+        const a2 = (p2.position * Math.PI * 2 / 360) - Math.PI / 2;
+        const r = innerR * 0.6;
+        const x1 = cx + r * Math.cos(a1);
+        const y1 = cy + r * Math.sin(a1);
+        const x2 = cx + r * Math.cos(a2);
+        const y2 = cy + r * Math.sin(a2);
+        
+        const aspectColors = { Conjunction: '#d4af37', Sextile: '#22c55e', Square: '#ef4444', Trine: '#3b82f6', Opposition: '#f97316' };
+        const color = aspectColors[a.name] || 'rgba(255,255,255,0.2)';
+        
+        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5"/>`;
+      }
+    });
+
+    // Degree marks
+    for (let i = 0; i < 360; i += 30) {
+      const angle = (i * Math.PI / 180) - Math.PI / 2;
+      const r1 = outerR - 2;
+      const r2 = outerR - 6;
+      svg += `<line x1="${cx + r1 * Math.cos(angle)}" y1="${cy + r1 * Math.sin(angle)}" 
+        x2="${cx + r2 * Math.cos(angle)}" y2="${cy + r2 * Math.sin(angle)}" 
+        stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
+    }
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+  }
+
+  // ===== Chart Reading =====
+  function showChartReading(data) {
+    const el = document.getElementById('chart-reading');
+    if (!el) return;
+
+    const s = Astro.ZODIAC_SIGNS[lang];
+    const result = document.getElementById('chart-reading-text');
+    
+    result.innerHTML = `
+      <div style="text-align:center;margin-bottom:1rem;font-size:1.2rem;color:var(--gold);">
+        ${t('Your Cosmic Blueprint', '你的宇宙蓝图')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+        <div><strong>${t('Sun Sign', '太阳星座')}:</strong> ${data.sunSign.symbol} ${data.sunSign.name}</div>
+        <div><strong>${t('Ascendant', '上升星座')}:</strong> ${data.ascendantSign.symbol} ${data.ascendantSign.name}</div>
+        <div><strong>${t('Moon Sign', '月亮星座')}:</strong> ${s[data.moonSignIndex].symbol} ${s[data.moonSignIndex].name}</div>
+        <div><strong>${t('Chinese Zodiac', '生肖')}:</strong> ${Astro.getChineseZodiac(birthInfo.year)[lang]}</div>
+      </div>
+      <hr style="border-color:var(--border-subtle);margin:1rem 0;">
+      <div style="font-size:0.9rem;color:var(--text-secondary);">
+        <strong>${t('Planets', '行星位置')}:</strong><br>
+        ${data.planets.map(p => `${p.symbol} ${p.name}: ${p.sign.name} (${t('House', '宫位')} ${p.house})`).join('<br>')}
+      </div>
+      ${data.aspects.length > 0 ? `
+        <hr style="border-color:var(--border-subtle);margin:1rem 0;">
+        <div style="font-size:0.85rem;color:var(--text-secondary);">
+          <strong>${t('Aspects', '相位')}:</strong><br>
+          ${data.aspects.slice(0, 8).map(a => `${a.p1} ${a.symbol} ${a.p2} (${a.name}, ${a.orb}°)`).join('<br>')}
+        </div>
+      ` : ''}
+    `;
+  }
+
+  // ===== AI Chart Reading =====
+  async function generateAIReading() {
+    if (!AstroAI.hasApiKey()) {
+      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      switchSection('chat');
+      return;
+    }
+    if (!chartData || !birthInfo) {
+      alert(t('Please enter your birth information first', '请先填写出生信息'));
+      switchSection('chart');
+      return;
+    }
+
+    const btn = document.getElementById('btn-ai-reading');
+    const output = document.getElementById('ai-reading-output');
+    if (btn) btn.disabled = true;
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Consulting the stars...', '正在咨询星辰...')}</div>`;
+
+    try {
+      const reading = await AstroAI.getNatalReading(birthInfo, chartData, lang);
+      if (output) {
+        output.innerHTML = '';
+        AstroAI.typewriteText(output, reading, 25);
+      }
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // ===== Zodiac Signs Display =====
+  function populateZodiacSigns() {
+    const grid = document.getElementById('zodiac-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const signs = Astro.ZODIAC_SIGNS[lang];
+    
+    // Also populate all sign selects
+    const signNames = signs.map(s => `${s.name} ${s.symbol}`);
+    ['horoscope-sign', 'compat-sign1', 'compat-sign2'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '';
+      signNames.forEach((name, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    });
+
+    // Build zodiac cards
+    signs.forEach((sign, i) => {
+      const card = document.createElement('div');
+      card.className = 'zodiac-card';
+      card.innerHTML = `
+        <div class="zodiac-icon">${sign.symbol}</div>
+        <div class="zodiac-name">${sign.name}</div>
+        <div class="zodiac-dates">${sign.dates}</div>
+        <div class="zodiac-horoscope">${t('Tap to see details', '点击查看详情')}</div>
+      `;
+      card.addEventListener('click', () => showZodiacDetail(i));
+      grid.appendChild(card);
+    });
+  }
+
+  function showZodiacDetail(index) {
+    const overlay = document.getElementById('zodiac-detail');
+    const content = document.getElementById('zodiac-detail-content');
+    const sign = Astro.ZODIAC_SIGNS[lang][index];
+    
+    content.innerHTML = `
+      <button class="close-btn" onclick="document.getElementById('zodiac-detail').classList.remove('active')">&times;</button>
+      <div style="text-align:center;font-size:3rem;margin-bottom:0.5rem;">${sign.symbol}</div>
+      <h2>${sign.name}</h2>
+      <div class="info-row"><span class="info-label">${t('Dates', '日期')}</span><span class="info-value">${sign.dates}</span></div>
+      <div class="info-row"><span class="info-label">${t('Element', '元素')}</span><span class="info-value">${sign.element}</span></div>
+      <div class="info-row"><span class="info-label">${t('Ruling Planet', '守护星')}</span><span class="info-value">${sign.ruler}</span></div>
+      <div class="info-row"><span class="info-label">${t('Quality', '特质')}</span><span class="info-value">${sign.quality}</span></div>
+      <div style="margin-top:1rem;">
+        <strong>${t('Traits', '性格特点')}:</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;">
+          ${sign.traits.map(t => `<span style="background:rgba(212,175,55,0.1);padding:4px 12px;border-radius:20px;font-size:0.85rem;border:1px solid rgba(212,175,55,0.2);">${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    overlay.classList.add('active');
+  }
+
+  // ===== AI Horoscope =====
+  async function getAIHoroscope() {
+    if (!AstroAI.hasApiKey()) {
+      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      switchSection('chat');
+      return;
+    }
+
+    const sign = parseInt(document.getElementById('horoscope-sign').value);
+    const output = document.getElementById('horoscope-ai-output');
+    const btn = document.getElementById('btn-ai-horoscope');
+    
+    if (btn) btn.disabled = true;
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Reading the cosmic tides...', '正在读取宇宙潮汐...')}</div>`;
+
+    try {
+      const horoscope = await AstroAI.getHoroscope(sign, new Date(), lang);
+      if (output) {
+        output.innerHTML = '';
+        AstroAI.typewriteText(output, horoscope, 20);
+      }
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // ===== Compatibility =====
+  function initCompatibility() {
+    const compatForm = document.getElementById('compatibility-form');
+    if (compatForm) {
+      compatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const sign1 = parseInt(document.getElementById('compat-sign1').value);
+        const sign2 = parseInt(document.getElementById('compat-sign2').value);
+        const name1 = document.getElementById('compat-name1').value || t('Person A', 'TA');
+        const name2 = document.getElementById('compat-name2').value || t('Person B', 'TA');
+        
+        const score = Astro.calculateCompatibility(sign1, sign2);
+        const desc = Astro.getCompatibilityDescription(score, lang);
+        
+        document.getElementById('compat-result').style.display = 'block';
+        document.getElementById('compat-score').textContent = score + '%';
+        document.getElementById('compat-label').textContent = desc;
+        
+        const names = `${Astro.ZODIAC_SIGNS[lang][sign1].name} & ${Astro.ZODIAC_SIGNS[lang][sign2].name}`;
+        document.getElementById('compat-names').textContent = names;
+        
+        // AI reading if key available
+        if (AstroAI.hasApiKey()) {
+          try {
+            const aiReading = await AstroAI.getCompatibilityReading(name1, sign1, name2, sign2, score, lang);
+            const el = document.getElementById('compat-ai-reading');
+            if (el) {
+              el.innerHTML = '';
+              AstroAI.typewriteText(el, aiReading, 25);
+            }
+          } catch (err) {
+            // Silent fallback
+          }
+        }
+      });
+    }
+  }
+
+  // ===== AI Chat =====
+  function initAIChat() {
+    const apiKeyForm = document.getElementById('api-key-form');
+    if (apiKeyForm) {
+      apiKeyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const key = document.getElementById('api-key-input').value.trim();
+        const model = document.getElementById('model-select').value;
+        const status = document.getElementById('api-key-status');
+        
+        if (AstroAI.setApiKey(key)) {
+          AstroAI.setModel(model);
+          status.textContent = t('✅ AI Oracle connected', '✅ AI 占星师已连接');
+          status.className = 'api-key-status connected';
+          document.getElementById('api-key-input').value = '';
+        }
+      });
+    }
+
+    const chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+      chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('chat-input');
+        const messages = document.getElementById('chat-messages');
+        const question = input.value.trim();
+        
+        if (!question || !AstroAI.hasApiKey()) return;
+        
+        // Add user message
+        const userMsg = document.createElement('div');
+        userMsg.className = 'user-message';
+        userMsg.innerHTML = `<div>${question}</div>`;
+        messages.appendChild(userMsg);
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+        
+        // AI thinking indicator
+        const aiThinking = document.createElement('div');
+        aiThinking.className = 'ai-message';
+        aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div>${t('Consulting the cosmic wisdom...', '正在查询宇宙智慧...')}</div>`;
+        messages.appendChild(aiThinking);
+        messages.scrollTop = messages.scrollHeight;
+        
+        try {
+          const answer = await AstroAI.askQuestion(question, lang);
+          aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div class="typing-cursor"></div>`;
+          const textDiv = aiThinking.querySelector('div');
+          AstroAI.typewriteText(textDiv, answer, 20, () => {
+            messages.scrollTop = messages.scrollHeight;
+          });
+        } catch (err) {
+          aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div style="color:#ef4444;">${t('The cosmic connection faltered', '宇宙连接中断')}: ${err.message}</div>`;
+        }
+        messages.scrollTop = messages.scrollHeight;
+      });
+    }
+
+    // Clear chat
+    const clearBtn = document.getElementById('btn-clear-chat');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        document.getElementById('chat-messages').innerHTML = `
+          <div class="ai-message">
+            <span class="msg-sender">✦ ${t('Stella', '星织者')}</span>
+            <div>${t('Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?', '你好，求问者。我是星织者斯特拉，星辰的编织者，宇宙智慧的守护者。今夜你带来了什么问题来到这 celestial 的殿堂？')}</div>
+          </div>
+        `;
+        AstroAI.clearConversation();
+      });
+    }
+  }
+
+  // ===== Fortune Wheel =====
+  function initFortuneWheel() {
+    const btn = document.getElementById('fortune-btn');
+    const result = document.getElementById('fortune-result');
+    if (!btn || !result) return;
+
+    btn.addEventListener('click', () => {
+      const cards = Astro.FORTUNE_CARDS[lang];
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      
+      btn.style.transform = 'rotate(720deg) scale(0.8)';
+      btn.style.transition = 'transform 0.6s ease';
+      
+      setTimeout(() => {
+        btn.style.transform = '';
+        result.innerHTML = `
+          <div class="fortune-card-name">🃏 ${card.name}</div>
+          <div class="fortune-card-meaning">${card.meaning}</div>
+        `;
+      }, 600);
+    });
+  }
+
+  // ===== Astro Dice =====
+  function initDice() {
+    const btn = document.getElementById('dice-btn');
+    const result = document.getElementById('dice-result');
+    if (!btn || !result) return;
+
+    btn.addEventListener('click', () => {
+      btn.classList.add('rolling');
+      const meanings = Astro.DICE_MEANINGS[lang];
+      const meaning = meanings[Math.floor(Math.random() * meanings.length)];
+      
+      setTimeout(() => {
+        btn.classList.remove('rolling');
+        result.textContent = `🎲 ${meaning}`;
+      }, 600);
+    });
+  }
+
+  // ===== Moon Phase =====
+  function initMoonPhase() {
+    const container = document.getElementById('moon-phase-display');
+    if (!container) return;
+
+    const moon = Astro.getMoonPhase(new Date());
+    const phase = lang === 'zh' ? moon.phaseZh : moon.phase;
+    const illumin = (moon.illumination * 100).toFixed(0);
+
+    // SVG Moon
+    const svgSize = 120;
+    const r = 50;
+    const cx = svgSize / 2;
+    const cy = svgSize / 2;
+    
+    let moonSvg;
+    if (moon.illumination < 0.05 || moon.illumination > 0.95) {
+      // New or Full Moon
+      const fill = moon.illumination < 0.05 ? '#1a1a2e' : '#f0e6d0';
+      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#d4af37" stroke-width="1"/>`;
+    } else {
+      // Crescent/gibbous
+      const isWaxing = moon.illumination < 0.5;
+      const litSide = isWaxing ? 'right' : 'left';
+      const litColor = '#f0e6d0';
+      const darkColor = '#1a1a2e';
+      
+      moonSvg = `
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${darkColor}" stroke="#d4af37" stroke-width="1"/>
+        <path d="M ${cx} ${cy - r} A ${r * (1 - moon.illumination)} ${r} 0 0 ${litSide === 'right' ? 1 : 0} ${cx} ${cy + r} A ${r * 0.1} ${r} 0 0 ${litSide === 'right' ? 0 : 1} ${cx} ${cy - r} Z" fill="${litColor}" opacity="0.9"/>
+      `;
+    }
+
+    const moonSvgFull = `
+      <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}">
+        <defs>
+          <radialGradient id="moon-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(212,175,55,0.15)"/>
+            <stop offset="100%" stop-color="rgba(212,175,55,0)"/>
+          </radialGradient>
+        </defs>
+        <circle cx="${cx}" cy="${cy}" r="${r + 15}" fill="url(#moon-glow)"/>
+        ${moonSvg}
+      </svg>
+    `;
+
+    container.innerHTML = `
+      <div class="moon-svg">${moonSvgFull}</div>
+      <div class="moon-name">${phase}</div>
+      <div class="moon-date">${t('Illumination', '照明度')}: ${illumin}% | ${t('Age', '月龄')}: ${moon.age}${t('days', '天')}</div>
+    `;
+  }
+
+  // ===== Cosmic Weather =====
+  function initCosmicWeather() {
+    const container = document.getElementById('cosmic-weather');
+    if (!container) return;
+
+    const now = new Date();
+    const zodiac = Astro.getZodiacSign(now.getMonth() + 1, now.getDate());
+    const moon = Astro.getMoonPhase(now);
+    const chineseZodiac = Astro.getChineseZodiac(now.getFullYear());
+
+    const items = [
+      { icon: '☀️', label: t('Sun Sign', '太阳星座'), value: zodiac[lang].symbol + ' ' + zodiac[lang].name },
+      { icon: '🌙', label: t('Moon Phase', '月相'), value: lang === 'zh' ? moon.phaseZh : moon.phase },
+      { icon: '🌏', label: t('Chinese Zodiac', '生肖'), value: chineseZodiac[lang] },
+      { icon: '🔮', label: t('Lucky Element', '幸运元素'), value: zodiac[lang].element },
+      { icon: '⭐', label: t('Ruling Planet', '守护星'), value: zodiac[lang].ruler },
+      { icon: '🌈', label: t('Quality', '特质'), value: zodiac[lang].quality },
+    ];
+
+    container.innerHTML = items.map(item => `
+      <div class="weather-item">
+        <div class="weather-icon">${item.icon}</div>
+        <div class="weather-label">${item.label}</div>
+        <div class="weather-value">${item.value}</div>
+      </div>
+    `).join('');
+  }
+
+  // ===== Language Toggle =====
+  function initLanguageToggle() {
+    const btn = document.querySelector('.language-toggle');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        setLanguage(lang === 'zh' ? 'en' : 'zh');
+      });
+    }
+  }
+
+  // ===== Public API =====
+  return {
+    generateAIReading,
+    getAIHoroscope,
+    showZodiacDetail,
+    switchSection,
+  };
+})();
