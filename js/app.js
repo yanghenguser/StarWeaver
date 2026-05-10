@@ -855,28 +855,20 @@ const App = (() => {
 
   // ===== Astro Dice =====
   function initDice() {
-    // Home page dice
-    const btn1 = document.getElementById('dice-btn');
-    const res1 = document.getElementById('dice-result');
-    // Fortune section dice
-    const btn2 = document.getElementById('dice-btn-fortune');
-    const res2 = document.getElementById('dice-result-fortune');
+    const btn = document.getElementById('dice-btn');
+    const result = document.getElementById('dice-result');
+    if (!btn || !result) return;
 
-    function setupDice(btn, result) {
-      if (!btn || !result) return;
-      btn.addEventListener('click', () => {
-        btn.classList.add('rolling');
-        const meanings = Astro.DICE_MEANINGS[lang];
-        const meaning = meanings[Math.floor(Math.random() * meanings.length)];
-        setTimeout(() => {
-          btn.classList.remove('rolling');
-          result.textContent = `🎲 ${meaning}`;
-        }, 600);
-      });
-    }
-
-    setupDice(btn1, res1);
-    setupDice(btn2, res2);
+    btn.addEventListener('click', () => {
+      btn.classList.add('rolling');
+      const meanings = Astro.DICE_MEANINGS[lang];
+      const meaning = meanings[Math.floor(Math.random() * meanings.length)];
+      
+      setTimeout(() => {
+        btn.classList.remove('rolling');
+        result.textContent = `🎲 ${meaning}`;
+      }, 600);
+    });
   }
 
   // ===== Moon Phase =====
