@@ -323,14 +323,5 @@
   <script src="js/ai.js"></script>
   <script src="js/app.js"></script>
 
-  <script>
-    // Fix: need to show chart card after form submit
-    const origFormInit = App.constructor;
-    document.getElementById('birth-form').addEventListener('submit', function() {
-      document.getElementById('chart-card').style.display = 'block';
-      document.getElementById('chart-reading-card').style.display = 'block';
-    });
-  </script>
-
 </body>
 </html>

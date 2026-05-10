@@ -365,7 +365,7 @@ const App = (() => {
       const month = parseInt(document.getElementById('birth-month').value);
       const day = parseInt(document.getElementById('birth-day').value);
       const hour = parseInt(document.getElementById('birth-hour').value) || 12;
-      const minute = parseInt(document.getElementById('birth-minute').value) || 0;
+      const minute = 0;
       const birthplace = document.getElementById('birthplace').value;
 
       if (!year || !month || !day) {
@@ -378,6 +378,8 @@ const App = (() => {
 
       renderNatalChart(chartData);
       showChartReading(chartData);
+      document.getElementById('chart-card').style.display = 'block';
+      document.getElementById('chart-reading-card').style.display = 'block';
       document.querySelector('.chart-controls').style.display = 'flex';
       
       // Switch to chart section
@@ -492,11 +494,9 @@ const App = (() => {
 
   // ===== Chart Reading =====
   function showChartReading(data) {
-    const el = document.getElementById('chart-reading');
-    if (!el) return;
-
     const s = Astro.ZODIAC_SIGNS[lang];
     const result = document.getElementById('chart-reading-text');
+    if (!result) return;
     
     result.innerHTML = `
       <div style="text-align:center;margin-bottom:1rem;font-size:1.2rem;color:var(--gold);">
