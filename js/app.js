@@ -17,6 +17,8 @@ const App = (() => {
     initStarCanvas();
     initLoading();
     initNavigation();
+    initBottomNav();
+    initSwipeNavigation();
     initForms();
     initCompatibility();
     initAIChat();
@@ -41,6 +43,7 @@ const App = (() => {
     
     // Update all localized content
     updateLocalizedContent();
+    updateBottomNavLabels();
     showRandomQuote();
     if (birthInfo) {
       renderNatalChart(chartData);
@@ -48,6 +51,15 @@ const App = (() => {
     populateZodiacSigns();
     initMoonPhase();
     initCosmicWeather();
+  }
+
+  function updateBottomNavLabels() {
+    const labels = lang === 'zh'
+      ? ['宇宙', '星盘', '运势', '合盘', '占卜', '占星师']
+      : ['Cosmic', 'Chart', 'Scope', 'Match', 'Fortune', 'Oracle'];
+    document.querySelectorAll('.bottom-nav-item .nav-label').forEach((el, i) => {
+      if (labels[i]) el.textContent = labels[i];
+    });
   }
 
   function updateLocalizedContent() {
@@ -221,8 +233,67 @@ const App = (() => {
     if (tab) tab.classList.add('active');
     if (section) section.classList.add('active');
 
+    // Update bottom nav
+    updateBottomNav(sectionId);
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ===== Bottom Navigation =====
+  function initBottomNav() {
+    document.querySelectorAll('.bottom-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const target = item.dataset.section;
+        switchSection(target);
+        updateBottomNav(target);
+      });
+    });
+  }
+
+  function updateBottomNav(sectionId) {
+    document.querySelectorAll('.bottom-nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === sectionId);
+    });
+  }
+
+  // ===== Touch Swipe Navigation =====
+  function initSwipeNavigation() {
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const sections = ['home', 'chart', 'horoscope', 'compatibility', 'fortune', 'chat'];
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const threshold = 80;
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) < threshold) return;
+
+      const currentIdx = sections.indexOf(currentSection);
+      if (currentIdx === -1) return;
+
+      let nextIdx;
+      if (diff > 0) {
+        // Swipe left → next section
+        nextIdx = Math.min(currentIdx + 1, sections.length - 1);
+      } else {
+        // Swipe right → previous section
+        nextIdx = Math.max(currentIdx - 1, 0);
+      }
+
+      if (nextIdx !== currentIdx) {
+        switchSection(sections[nextIdx]);
+      }
+    }
   }
 
   // ===== Random Quote =====
@@ -541,6 +612,13 @@ const App = (() => {
       </div>
     `;
     overlay.classList.add('active');
+    
+    // Close on backdrop click (mobile friendly)
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('active');
+      }
+    });
   }
 
   // ===== AI Horoscope =====
