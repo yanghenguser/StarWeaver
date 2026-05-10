@@ -22,7 +22,6 @@ const App = (() => {
     initForms();
     initCompatibility();
     initAIChat();
-    initFortuneWheel();
     initTarot();
     initDice();
     initMoonPhase();
@@ -753,10 +752,10 @@ const App = (() => {
 
   // ===== Tarot Reading =====
   const SUIT_SYMBOLS = ['🔥', '💧', '⚔️', '🪙'];
+  let _tarotDrawnCards = [];
 
   function initTarot() {
     let currentSpread = 'three-card';
-    let drawnCards = [];
 
     // Spread selector
     document.querySelectorAll('.spread-btn').forEach(btn => {
@@ -820,7 +819,7 @@ const App = (() => {
     });
 
     // Store for AI
-    drawnCards = drawn;
+    _tarotDrawnCards = drawn;
 
     // Get AI reading
     try {
@@ -856,20 +855,28 @@ const App = (() => {
 
   // ===== Astro Dice =====
   function initDice() {
-    const btn = document.getElementById('dice-btn');
-    const result = document.getElementById('dice-result');
-    if (!btn || !result) return;
+    // Home page dice
+    const btn1 = document.getElementById('dice-btn');
+    const res1 = document.getElementById('dice-result');
+    // Fortune section dice
+    const btn2 = document.getElementById('dice-btn-fortune');
+    const res2 = document.getElementById('dice-result-fortune');
 
-    btn.addEventListener('click', () => {
-      btn.classList.add('rolling');
-      const meanings = Astro.DICE_MEANINGS[lang];
-      const meaning = meanings[Math.floor(Math.random() * meanings.length)];
-      
-      setTimeout(() => {
-        btn.classList.remove('rolling');
-        result.textContent = `🎲 ${meaning}`;
-      }, 600);
-    });
+    function setupDice(btn, result) {
+      if (!btn || !result) return;
+      btn.addEventListener('click', () => {
+        btn.classList.add('rolling');
+        const meanings = Astro.DICE_MEANINGS[lang];
+        const meaning = meanings[Math.floor(Math.random() * meanings.length)];
+        setTimeout(() => {
+          btn.classList.remove('rolling');
+          result.textContent = `🎲 ${meaning}`;
+        }, 600);
+      });
+    }
+
+    setupDice(btn1, res1);
+    setupDice(btn2, res2);
   }
 
   // ===== Moon Phase =====
