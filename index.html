@@ -233,20 +233,76 @@
       </div>
     </section>
 
-    <!-- ===== Section: Fortune / Divination ===== -->
+    <!-- ===== Section: Fortune / Tarot ===== -->
     <section id="section-fortune" class="section">
+      <!-- Tarot -->
       <div class="card">
-        <div class="card-title"><span class="icon">🃏</span> Wheel of Fortune · 命运之轮</div>
-        <div class="fortune-container">
-          <button class="fortune-btn" id="fortune-btn">🃏</button>
-          <div class="fortune-result" id="fortune-result">
-            <div style="color:var(--text-muted);font-size:0.9rem;">
-              Tap the card to draw your fortune
-            </div>
+        <div class="card-title"><span class="icon">🃏</span> <span data-key="tarot-title">Tarot · 塔罗占卜</span></div>
+        
+        <!-- Question Input -->
+        <div class="form-group">
+          <label class="form-label" for="tarot-question"><span data-key="tarot-question-label">Your Question / 你的问题</span></label>
+          <input class="form-input" id="tarot-question" type="text" 
+            placeholder="e.g. What does my career path look like? / 我的事业发展如何？">
+        </div>
+
+        <!-- Spread Selector -->
+        <div class="form-group">
+          <label class="form-label"><span data-key="tarot-spread-label">Choose a Spread / 选择牌阵</span></label>
+          <div class="spread-selector" id="spread-selector">
+            <button class="spread-btn active" data-spread="three-card">
+              <span class="spread-icon">3️⃣</span>
+              <span class="spread-name">Three-Card</span>
+              <span class="spread-desc">Past · Present · Future</span>
+            </button>
+            <button class="spread-btn" data-spread="celtic-cross">
+              <span class="spread-icon">✝️</span>
+              <span class="spread-name">Celtic Cross</span>
+              <span class="spread-desc">Deep insight</span>
+            </button>
+            <button class="spread-btn" data-spread="love">
+              <span class="spread-icon">💕</span>
+              <span class="spread-name">Love</span>
+              <span class="spread-desc">Relationship insight</span>
+            </button>
+            <button class="spread-btn" data-spread="career">
+              <span class="spread-icon">💼</span>
+              <span class="spread-name">Career</span>
+              <span class="spread-desc">Work & purpose</span>
+            </button>
+            <button class="spread-btn" data-spread="daily">
+              <span class="spread-icon">☀️</span>
+              <span class="spread-name">Daily</span>
+              <span class="spread-desc">One-card guidance</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Draw Button -->
+        <button class="btn btn-primary" id="tarot-draw-btn">🃏 Draw Cards · 抽牌</button>
+      </div>
+
+      <!-- Tarot Result -->
+      <div class="card" id="tarot-result" style="display:none;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span><span class="icon">🃏</span> <span id="tarot-spread-name">Your Reading</span></span>
+          <button class="btn btn-danger" id="tarot-redraw-btn" style="padding:6px 14px;font-size:0.8rem;">
+            🔄 Redraw · 重抽
+          </button>
+        </div>
+        
+        <!-- Cards Display -->
+        <div class="tarot-cards" id="tarot-cards-display"></div>
+        
+        <!-- AI Reading -->
+        <div class="reading-output" id="tarot-reading-output">
+          <div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
+            Draw cards to receive your reading
           </div>
         </div>
       </div>
 
+      <!-- Keep existing Astro Dice -->
       <div class="card">
         <div class="card-title"><span class="icon">🎲</span> Astro Dice · 占星骰子</div>
         <div class="dice-container">
@@ -258,34 +314,6 @@
 
     <!-- ===== Section: AI Oracle Chat ===== -->
     <section id="section-chat" class="section">
-      <!-- API Key Setup -->
-      <div class="api-key-area">
-        <div class="card-title" style="font-size:1rem;margin-bottom:0.8rem;">
-          <span class="icon">🔑</span> DeepSeek API Setup · 配置 AI 占星师
-        </div>
-        <form id="api-key-form">
-          <div class="form-row">
-            <div class="form-group" style="flex:1;">
-              <input class="form-input" id="api-key-input" type="password" 
-                placeholder="sk-... Enter your DeepSeek API Key">
-            </div>
-            <div class="form-group model-selector">
-              <label class="form-label" style="margin-bottom:0;">Model</label>
-              <select id="model-select">
-                <option value="deepseek-chat">DeepSeek Chat</option>
-                <option value="deepseek-reasoner">DeepSeek Reasoner</option>
-              </select>
-            </div>
-            <div class="form-group" style="display:flex;align-items:flex-end;">
-              <button type="submit" class="btn btn-secondary">Connect · 连接</button>
-            </div>
-          </div>
-          <div class="api-key-status disconnected" id="api-key-status">
-            ⚡ AI Oracle disconnected — enter your API key to begin
-          </div>
-        </form>
-      </div>
-
       <!-- Chat -->
       <div class="card">
         <div class="card-title" style="justify-content:space-between;">
@@ -319,6 +347,7 @@
   </div>
 
   <!-- ===== Scripts ===== -->
+  <script src="js/tarot.js"></script>
   <script src="js/astro.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/app.js"></script>

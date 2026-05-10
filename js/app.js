@@ -23,6 +23,7 @@ const App = (() => {
     initCompatibility();
     initAIChat();
     initFortuneWheel();
+    initTarot();
     initDice();
     initMoonPhase();
     initCosmicWeather();
@@ -689,21 +690,11 @@ const App = (() => {
 
   // ===== AI Chat =====
   function initAIChat() {
-    const apiKeyForm = document.getElementById('api-key-form');
-    if (apiKeyForm) {
-      apiKeyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const key = document.getElementById('api-key-input').value.trim();
-        const model = document.getElementById('model-select').value;
-        const status = document.getElementById('api-key-status');
-        
-        if (AstroAI.setApiKey(key)) {
-          AstroAI.setModel(model);
-          status.textContent = t('✅ AI Oracle connected', '✅ AI 占星师已连接');
-          status.className = 'api-key-status connected';
-          document.getElementById('api-key-input').value = '';
-        }
-      });
+    // AI is auto-connected via embedded key
+    const statusEl = document.getElementById('api-key-status');
+    if (statusEl) {
+      statusEl.textContent = '✦ AI Oracle ready';
+      statusEl.className = 'api-key-status connected';
     }
 
     const chatForm = document.getElementById('chat-form');
@@ -760,27 +751,112 @@ const App = (() => {
     }
   }
 
-  // ===== Fortune Wheel =====
-  function initFortuneWheel() {
-    const btn = document.getElementById('fortune-btn');
-    const result = document.getElementById('fortune-result');
-    if (!btn || !result) return;
+  // ===== Tarot Reading =====
+  function initTarot() {
+    let currentSpread = 'three-card';
+    let drawnCards = [];
 
-    btn.addEventListener('click', () => {
-      const cards = Astro.FORTUNE_CARDS[lang];
-      const card = cards[Math.floor(Math.random() * cards.length)];
-      
-      btn.style.transform = 'rotate(720deg) scale(0.8)';
-      btn.style.transition = 'transform 0.6s ease';
-      
-      setTimeout(() => {
-        btn.style.transform = '';
-        result.innerHTML = `
-          <div class="fortune-card-name">🃏 ${card.name}</div>
-          <div class="fortune-card-meaning">${card.meaning}</div>
-        `;
-      }, 600);
+    // Spread selector
+    document.querySelectorAll('.spread-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.spread-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSpread = btn.dataset.spread;
+        document.getElementById('tarot-result').style.display = 'none';
+      });
     });
+
+    // Draw button
+    const drawBtn = document.getElementById('tarot-draw-btn');
+    const redrawBtn = document.getElementById('tarot-redraw-btn');
+    if (drawBtn) {
+      drawBtn.addEventListener('click', performTarotReading);
+    }
+    if (redrawBtn) {
+      redrawBtn.addEventListener('click', performTarotReading);
+    }
+  }
+
+  async function performTarotReading() {
+    const resultCard = document.getElementById('tarot-result');
+    const cardsDisplay = document.getElementById('tarot-cards-display');
+    const readingOutput = document.getElementById('tarot-reading-output');
+    const spreadName = document.getElementById('tarot-spread-name');
+    const question = document.getElementById('tarot-question').value.trim();
+
+    if (!resultCard || !cardsDisplay) return;
+
+    resultCard.style.display = 'block';
+    const spreadKey = document.querySelector('.spread-btn.active')?.dataset.spread || 'three-card';
+    const spreadInfo = Tarot.getSpreadInfo(spreadKey, lang);
+
+    if (spreadName) {
+      spreadName.textContent = `${spreadInfo.name} · 塔罗占卜`;
+    }
+
+    // Draw cards
+    const drawn = Tarot.drawCards(spreadKey);
+    const positions = Tarot.getSpreadPositions(spreadKey, lang);
+
+    // Animate deal
+    cardsDisplay.innerHTML = '';
+    readingOutput.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
+      ${t('Consulting the cards...', '正在解读卡牌...')}
+    </div>`;
+
+    drawn.forEach((card, i) => {
+      const pos = positions[i] || { label: t('Position', '位置') + ' ' + (i + 1) };
+      // Use suit symbol for minor, card symbol for major
+      const symbol = card.type === 'major' ? card.suitSymbol : (SUIT_SYMBOLS && SUIT_SYMBOLS[['Wands','Cups','Swords','Pentacles'].indexOf(card.suit)] || card.suitSymbol);
+      
+      const cardEl = document.createElement('div');
+      cardEl.className = 'tarot-card' + (card.reversed ? ' reversed' : '');
+      cardEl.innerHTML = `
+        <div class="card-position">${pos.label}</div>
+        <div class="card-symbol">${symbol}</div>
+        <div class="card-name">${lang === 'zh' ? card.nameZh : card.name}${card.reversed ? ' ↕' : ''}</div>
+        <div class="card-meaning">${card.meaning[lang]}</div>
+        ${card.reversed ? '<div class="card-rev-badge">REVERSED</div>' : ''}
+      `;
+      cardsDisplay.appendChild(cardEl);
+    });
+
+    // Store for AI
+    drawnCards = drawn;
+
+    // Get AI reading
+    try {
+      const reading = await AstroAI.getTarotReading(spreadInfo, drawn.map((c, i) => ({
+        position: positions[i]?.label || (i + 1).toString(),
+        name: lang === 'zh' ? c.nameZh : c.name,
+        reversed: c.reversed,
+        meaning: c.meaning[lang]
+      })), question, lang);
+
+      if (readingOutput) {
+        readingOutput.innerHTML = '';
+        AstroAI.typewriteText(readingOutput, reading, 25);
+      }
+    } catch (err) {
+      if (readingOutput) {
+        readingOutput.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
+          ${t('The cards are drawn... Here is your reading:', '卡牌已抽... 以下是你的解读:')}
+        </div><div style="margin-top:0.8rem;padding:1rem;background:rgba(10,10,30,0.3);border-radius:8px;line-height:1.8;">
+          ${drawn.map((c, i) => {
+            const pos = positions[i] || { label: '' };
+            return `<strong>${pos.label}:</strong> ${lang === 'zh' ? c.nameZh : c.name}${c.reversed ? t(' (Reversed)', ' (逆位)') : ''} — ${c.meaning[lang]}`;
+          }).join('<br>')}
+        </div>`;
+      }
+    }
+  }
+
+  // ===== SUIT_SYMBOLS for tarot =====
+  const SUIT_SYMBOLS = ['🔥', '💧', '⚔️', '🪙'];
+
+  // ===== Check if AI is connected (for UI feedback) =====
+  function checkAIConnected() {
+    return AstroAI.hasApiKey();
   }
 
   // ===== Astro Dice =====
