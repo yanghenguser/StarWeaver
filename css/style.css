@@ -1172,6 +1172,142 @@ footer {
   }
 }
 
+/* ===== Numerology / 生命灵数 ===== */
+.numerology-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.numerology-item {
+  background: rgba(10, 10, 30, 0.5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1rem;
+  text-align: center;
+  animation: numerology-fade-in 0.5s ease backwards;
+  transition: all 0.3s ease;
+}
+
+.numerology-item:nth-child(1) { animation-delay: 0.1s; }
+.numerology-item:nth-child(2) { animation-delay: 0.2s; }
+.numerology-item:nth-child(3) { animation-delay: 0.3s; }
+.numerology-item:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes numerology-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.numerology-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+}
+
+.numerology-number {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.numerology-digit {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--num-color, var(--gold));
+  text-shadow:
+    0 0 20px color-mix(in srgb, var(--num-color, var(--gold)) 50%, transparent),
+    0 0 40px color-mix(in srgb, var(--num-color, var(--gold)) 30%, transparent),
+    0 0 80px color-mix(in srgb, var(--num-color, var(--gold)) 15%, transparent);
+  line-height: 1;
+  transition: text-shadow 0.3s ease;
+}
+
+.numerology-number.master .numerology-digit {
+  font-size: 4rem;
+  background: linear-gradient(135deg, var(--num-color, var(--gold)), #fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.numerology-master-badge {
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--bg-deep);
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  animation: numerology-badge-glow 2s ease-in-out infinite;
+}
+
+@keyframes numerology-badge-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(212, 175, 55, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
+}
+
+.numerology-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.numerology-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.3rem;
+}
+
+.numerology-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+@media (min-width: 600px) {
+  .numerology-results {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+
+  .numerology-item {
+    padding: 1.5rem;
+  }
+
+  .numerology-item:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .numerology-digit {
+    font-size: 4.5rem;
+  }
+
+  .numerology-number.master .numerology-digit {
+    font-size: 5rem;
+  }
+
+  .numerology-icon {
+    font-size: 2.2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .numerology-results {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 /* ===== Tarot Styles ===== */
 .spread-selector {
   display: grid;
@@ -1500,5 +1636,76 @@ textarea.dream-input {
 
   #loading-screen {
     display: none;
+  }
+}
+
+
+/* ===== Lucky Guide / 每日幸运指南 ===== */
+#lucky-guide-card {
+  margin-top: 0;
+}
+
+.lucky-guide-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.lucky-guide-item {
+  background: rgba(10, 10, 30, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  text-align: center;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.lucky-guide-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lucky-guide-value {
+  font-size: 0.95rem;
+  color: var(--gold);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+@media (min-width: 600px) {
+  .lucky-guide-results {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .lucky-guide-item {
+    padding: 1rem;
+    min-height: 80px;
+  }
+
+  .lucky-guide-item:hover {
+    border-color: var(--border-glow);
+  }
+
+  .lucky-guide-value {
+    font-size: 1rem;
   }
 }

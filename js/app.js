@@ -25,9 +25,11 @@ const App = (() => {
     initTarot();
     initIChing();
     initDreamWeaver();
+    initNumerology();
     initDice();
     initMoonPhase();
     initCosmicWeather();
+    initLuckyGuide();
     initLanguageToggle();
     showRandomQuote();
     populateZodiacSigns();
@@ -54,12 +56,13 @@ const App = (() => {
     populateZodiacSigns();
     initMoonPhase();
     initCosmicWeather();
+    updateLuckyGuide();
   }
 
   function updateBottomNavLabels() {
     const labels = lang === 'zh'
-      ? ['宇宙', '星盘', '运势', '合盘', '占卜', '占星师']
-      : ['Cosmic', 'Chart', 'Scope', 'Match', 'Fortune', 'Oracle'];
+      ? ['宇宙', '星盘', '运势', '合盘', '数', '占卜', '占星师']
+      : ['Cosmic', 'Chart', 'Scope', 'Match', 'Num.', 'Fortune', 'Oracle'];
     document.querySelectorAll('.bottom-nav-item .nav-label').forEach((el, i) => {
       if (labels[i]) el.textContent = labels[i];
     });
@@ -78,6 +81,7 @@ const App = (() => {
       { id: 'tab-chart', en: '🔮 My Chart', zh: '🔮 我的星盘' },
       { id: 'tab-horoscope', en: '⭐ Horoscope', zh: '⭐ 运势' },
       { id: 'tab-compatibility', en: '💞 Love Match', zh: '💞 合盘' },
+      { id: 'tab-numerology', en: '🔢 Numerology', zh: '🔢 生命灵数' },
       { id: 'tab-fortune', en: '🎴 Divination', zh: '🎴 占卜' },
       { id: 'tab-chat', en: '🌙 AI Oracle', zh: '🌙 AI 占星师' },
     ];
@@ -264,7 +268,7 @@ const App = (() => {
   function initSwipeNavigation() {
     let touchStartX = 0;
     let touchEndX = 0;
-    const sections = ['home', 'chart', 'horoscope', 'compatibility', 'fortune', 'chat'];
+    const sections = ['home', 'chart', 'horoscope', 'compatibility', 'numerology', 'fortune', 'chat'];
 
     document.addEventListener('touchstart', (e) => {
       touchStartX = e.changedTouches[0].screenX;
@@ -567,7 +571,7 @@ const App = (() => {
     
     // Also populate all sign selects
     const signNames = signs.map(s => `${s.name} ${s.symbol}`);
-    ['horoscope-sign', 'compat-sign1', 'compat-sign2'].forEach(id => {
+    ['horoscope-sign', 'compat-sign1', 'compat-sign2', 'lucky-sign'].forEach(id => {
       const sel = document.getElementById(id);
       if (!sel) return;
       sel.innerHTML = '';
@@ -1017,42 +1021,7 @@ const App = (() => {
     }
 
     try {
-      const hexDesc = `Primary: ${hexagram.name} (${hexagram.nameEn}) — ${hexagram.meaning}`;
-      const changeDesc = changingHex
-        ? `\nChanging to: ${changingHex.name} (${changingHex.nameEn}) — ${changingHex.meaning}`
-        : '\nNo moving lines — stable hexagram';
-
-      const prompt = lang === 'zh'
-        ? `你是一位精通《周易》的智慧占卜师。请为我解读以下卦象：
-
-卦象信息：
-${hexDesc}${changeDesc}
-
-我的问题：${question || '请给我一些人生指引'}
-
-请解读：
-1. 本卦的含义和象征
-2. 各爻位对当前处境的启示
-${changingHex ? '3. 变卦的含义和转变方向' : '3. 如何运用这个卦象的智慧'}
-4. 针对求问者的具体建议
-
-用中文回答，语言优美深刻，200-400字。`
-        : `You are a wise I Ching oracle. Please interpret this hexagram for me:
-
-Hexagram:
-${hexDesc}${changeDesc}
-
-My question: ${question || 'Please give me general guidance'}
-
-Please include:
-1. The meaning and symbolism of the hexagram
-2. What the lines reveal about the current situation
-${changingHex ? '3. The meaning of the changing hexagram and transformation' : '3. How to apply this wisdom'}
-4. Practical advice for the seeker
-
-Write poetically and wisely, 200-400 words.`;
-
-      const reading = await AstroAI.askQuestion(prompt, lang);
+      const reading = await AstroAI.getIChingReading(hexagram, changingHex, question, lang);
       if (output) {
         output.innerHTML = '';
         AstroAI.typewriteText(output, reading, 25);
@@ -1172,6 +1141,63 @@ Write poetically and wisely, 200-400 words.`;
     `).join('');
   }
 
+  // ===== Lucky Guide =====
+  function initLuckyGuide() {
+    const select = document.getElementById('lucky-sign');
+    if (!select) return;
+
+    // Populate from already-created options (populateZodiacSigns handles it)
+    // Bind change event to update display
+    select.addEventListener('change', updateLuckyGuide);
+
+    // Also update when language changes: re-trigger display
+    updateLuckyGuide();
+  }
+
+  function updateLuckyGuide() {
+    const select = document.getElementById('lucky-sign');
+    const results = document.getElementById('lucky-guide-results');
+    if (!select || !results) return;
+
+    const signIndex = parseInt(select.value);
+    if (isNaN(signIndex)) return;
+
+    results.style.display = 'grid';
+
+    // Number
+    const numEl = document.getElementById('lucky-number');
+    if (numEl) numEl.textContent = LuckyGuide.getLuckyNumber(signIndex);
+
+    // Color
+    const color = LuckyGuide.getLuckyColor(signIndex, lang);
+    const swatch = document.getElementById('lucky-color-swatch');
+    const colorName = document.getElementById('lucky-color-name');
+    if (swatch) swatch.style.background = color.hex;
+    if (colorName) colorName.textContent = color.name;
+
+    // Direction
+    const dir = LuckyGuide.getLuckyDirection(signIndex);
+    const dirEl = document.getElementById('lucky-direction');
+    if (dirEl) dirEl.textContent = dir.emoji + ' ' + dir[lang] || dir.en;
+
+    // Crystal
+    const crystal = LuckyGuide.getLuckyCrystal(signIndex);
+    const crystalEl = document.getElementById('lucky-crystal');
+    if (crystalEl) crystalEl.textContent = crystal[lang] || crystal.en;
+
+    // Update labels
+    const labels = results.querySelectorAll('.lucky-guide-label');
+    const labelTexts = [
+      t('Lucky Number', '幸运数字'),
+      t('Lucky Color', '幸运颜色'),
+      t('Lucky Direction', '幸运方向'),
+      t('Lucky Crystal', '幸运水晶'),
+    ];
+    labels.forEach((el, i) => {
+      if (labelTexts[i]) el.textContent = labelTexts[i];
+    });
+  }
+
   // ===== Language Toggle =====
   function initLanguageToggle() {
     const btn = document.querySelector('.language-toggle');
@@ -1225,31 +1251,152 @@ Write poetically and wisely, 200-400 words.`;
     }
 
     try {
-      const prompt = lang === 'zh'
-        ? `你是一位精通符号学与心理学的梦境解梦师。请为以下梦境提供深刻、有洞察力的解读。
+      const reading = await AstroAI.getDreamReading(dream, lang);
+      if (output) {
+        output.innerHTML = '';
+        AstroAI.typewriteText(output, reading, 25);
+      }
+    } catch (err) {
+      if (output) {
+        output.innerHTML = `<div style="color:#ef4444;">
+          ${t('Error', '错误')}: ${err.message}
+        </div>`;
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
 
-梦境描述：${dream}
+  // ===== Numerology / 生命灵数 =====
+  function initNumerology() {
+    const form = document.getElementById('numerology-form');
+    if (!form) return;
 
-请从以下角度解读：
-1. 梦境中的核心象征符号及其含义
-2. 梦境可能反映的心理状态或情感
-3. 梦境对现实生活的启示
-4. 给做梦者的建议
+    // Populate year
+    const yearSelect = document.getElementById('numerology-year');
+    const now = new Date();
+    for (let i = 0; i < 100; i++) {
+      const y = now.getFullYear() - i;
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+    yearSelect.value = now.getFullYear() - 30;
 
-请用温暖、富有诗意的语言回应，200-400字。`
-        : `You are a wise dream interpreter with deep knowledge of symbolism, psychology, and mystical traditions. Please interpret the following dream with insight and depth.
+    // Populate month
+    const monthSelect = document.getElementById('numerology-month');
+    for (let i = 1; i <= 12; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      monthSelect.appendChild(opt);
+    }
+    monthSelect.value = now.getMonth() + 1;
 
-Dream description: ${dream}
+    // Populate day
+    const daySelect = document.getElementById('numerology-day');
+    for (let i = 1; i <= 31; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      daySelect.appendChild(opt);
+    }
+    daySelect.value = now.getDate();
 
-Please include in your interpretation:
-1. Key symbols in the dream and their meanings
-2. What the dream may reveal about the dreamer's inner state
-3. Guidance and messages the dream carries
-4. Practical advice for the dreamer
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performNumerologyCalculation();
+    });
 
-Speak warmly and poetically, 200-400 words.`;
+    const aiBtn = document.getElementById('numerology-ai-btn');
+    if (aiBtn) {
+      aiBtn.addEventListener('click', performNumerologyAI);
+    }
+  }
 
-      const reading = await AstroAI.askQuestion(prompt, lang);
+  function performNumerologyCalculation() {
+    const name = document.getElementById('numerology-name').value.trim() || t('Seeker', '求问者');
+    const year = parseInt(document.getElementById('numerology-year').value);
+    const month = parseInt(document.getElementById('numerology-month').value);
+    const day = parseInt(document.getElementById('numerology-day').value);
+
+    if (!year || !month || !day) {
+      alert(t('Please fill in your birth date', '请填写出生日期'));
+      return;
+    }
+
+    const summary = Numerology.getSummary(year, month, day, name, lang);
+    const resultCard = document.getElementById('numerology-result-card');
+    const resultsEl = document.getElementById('numerology-results');
+
+    if (!resultCard || !resultsEl) return;
+
+    const orderedKeys = ['lifePath', 'expression', 'soulUrge', 'personality'];
+    const labels = {
+      lifePath:  { en: 'Life Path',     zh: '生命道路' },
+      expression: { en: 'Expression',    zh: '表现' },
+      soulUrge:  { en: 'Soul Urge',     zh: '灵魂渴望' },
+      personality: { en: 'Personality',  zh: '个性' },
+    };
+
+    resultsEl.innerHTML = orderedKeys.map((key) => {
+      const data = summary[key];
+      const label = labels[key][lang] || labels[key].en;
+      const isMaster = data.isMaster;
+      const numClass = isMaster ? 'numerology-number master' : 'numerology-number';
+      return `
+        <div class="numerology-item">
+          <div class="numerology-label">${label}</div>
+          <div class="${numClass}" style="--num-color:${data.color};">
+            <span class="numerology-digit">${data.number}</span>
+            ${isMaster ? '<span class="numerology-master-badge">★ Master</span>' : ''}
+          </div>
+          <div class="numerology-icon">${data.icon}</div>
+          <div class="numerology-title">${data.title}</div>
+          <div class="numerology-desc">${data.desc}</div>
+        </div>
+      `;
+    }).join('');
+
+    resultCard.style.display = 'block';
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function performNumerologyAI() {
+    if (!AstroAI.hasApiKey()) {
+      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      return;
+    }
+
+    const name = document.getElementById('numerology-name').value.trim() || t('Seeker', '求问者');
+    const year = parseInt(document.getElementById('numerology-year').value);
+    const month = parseInt(document.getElementById('numerology-month').value);
+    const day = parseInt(document.getElementById('numerology-day').value);
+
+    if (!year || !month || !day) {
+      alert(t('Please fill in your birth date', '请填写出生日期'));
+      return;
+    }
+
+    // Ensure results are shown first
+    const resultCard = document.getElementById('numerology-result-card');
+    if (resultCard) resultCard.style.display = 'block';
+
+    const summary = Numerology.getSummary(year, month, day, name, lang);
+    const birthDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const output = document.getElementById('numerology-ai-output');
+    const btn = document.getElementById('numerology-ai-btn');
+    if (btn) btn.disabled = true;
+    if (output) {
+      output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">
+        ${t('Reading the cosmic code...', '正在解读生命灵数...')}
+      </div>`;
+    }
+
+    try {
+      const reading = await AstroAI.getNumerologyReading(summary, name, birthDateStr, lang);
       if (output) {
         output.innerHTML = '';
         AstroAI.typewriteText(output, reading, 25);
@@ -1272,5 +1419,6 @@ Speak warmly and poetically, 200-400 words.`;
     showZodiacDetail,
     switchSection,
     performDreamReading,
+    performNumerologyAI,
   };
 })();
