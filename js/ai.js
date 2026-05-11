@@ -529,7 +529,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
   }
 
   // ===== Public API =====
-  return {
+  const api = {
     hasApiKey,
     getModel,
     getNatalReading,
@@ -543,4 +543,6 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
     clearConversation,
     typewriteText,
   };
+  window.AstroAI = api;
+  return api;
 })();

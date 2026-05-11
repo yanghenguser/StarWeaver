@@ -532,7 +532,7 @@ const App = (() => {
 
   // ===== AI Chart Reading =====
   async function generateAIReading() {
-    if (!AstroAI.hasApiKey()) {
+    if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
       alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
       switchSection('chat');
       return;
@@ -633,7 +633,7 @@ const App = (() => {
 
   // ===== AI Horoscope =====
   async function getAIHoroscope() {
-    if (!AstroAI.hasApiKey()) {
+    if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
       alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
       switchSection('chat');
       return;
@@ -681,7 +681,7 @@ const App = (() => {
         document.getElementById('compat-names').textContent = names;
         
         // AI reading if key available
-        if (AstroAI.hasApiKey()) {
+        if (typeof AstroAI !== "undefined" && AstroAI.hasApiKey()) {
           try {
             const aiReading = await AstroAI.getCompatibilityReading(name1, sign1, name2, sign2, score, lang);
             const el = document.getElementById('compat-ai-reading');
@@ -714,7 +714,7 @@ const App = (() => {
         const messages = document.getElementById('chat-messages');
         const question = input.value.trim();
         
-        if (!question || !AstroAI.hasApiKey()) return;
+        if (!question || typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) return;
         
         // Add user message
         const userMsg = document.createElement('div');
@@ -755,7 +755,7 @@ const App = (() => {
             <div>${t('Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?', '你好，求问者。我是星织者斯特拉，星辰的编织者，宇宙智慧的守护者。今夜你带来了什么问题来到这星辰的殿堂？')}</div>
           </div>
         `;
-        AstroAI.clearConversation();
+        if (typeof AstroAI !== "undefined") AstroAI.clearConversation();
       });
     }
   }
@@ -1001,7 +1001,7 @@ const App = (() => {
   }
 
   async function performIChingAIReading() {
-    if (!AstroAI.hasApiKey()) {
+    if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
       alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
       return;
     }
@@ -1039,7 +1039,7 @@ const App = (() => {
 
   // ===== Check if AI is connected (for UI feedback) =====
   function checkAIConnected() {
-    return AstroAI.hasApiKey();
+    return typeof AstroAI !== "undefined" && AstroAI.hasApiKey();
   }
 
   // ===== Astro Dice =====
@@ -1237,7 +1237,7 @@ const App = (() => {
       return;
     }
 
-    if (!AstroAI.hasApiKey()) {
+    if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
       alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
       return;
     }
@@ -1364,7 +1364,7 @@ const App = (() => {
   }
 
   async function performNumerologyAI() {
-    if (!AstroAI.hasApiKey()) {
+    if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
       alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
       return;
     }
