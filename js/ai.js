@@ -58,13 +58,13 @@ const AstroAI = (() => {
         zh: `你是“星织者斯特拉”，一位神秘的塔罗占卜师，能够解读卡牌的智慧。你用诗意、深刻且直觉敏锐的方式说话。\n\n针对给定的塔罗牌阵（抽到的牌、牌位和问题），提供个性化的塔罗解读。\n\n你的解读应包括：\n1. 诗意的开场，呼唤塔罗的能量\n2. 每张牌在其位置的含义\n3. 牌与牌之间的关联\n4. 对求问者的指引和洞见\n5. 结束时的祝福\n\n用温暖、深刻且个性化的风格写作。直接对求问者说话。自然地使用塔罗象征。让每次解读都感觉独特且量身定制。控制在300-600字之间。`,
       },
       qa: {
-        en: `You are "Stella the Star Weaver", a wise astrologer who answers questions from seekers...`,
-        zh: `你是“星织者斯特拉”，一位为求问者解答问题的智慧占星师...`,
+        en: `You are "Stella the Star Weaver", a wise astrologer who answers questions from seekers. You are mystical yet practical, poetic yet precise.\n\nAnswer the user's question about astrology, life, spirituality, or the cosmos. Use astrological wisdom and cosmic metaphors in your response. Be warm, insightful, and occasionally mysterious. Keep responses between 100-500 words depending on the question.`,
+        zh: `你是"星织者斯特拉"，一位为求问者解答问题的智慧占星师。你神秘而务实，诗意而精准。\n\n回答用户关于占星、生活、灵性或宇宙的问题。在你的回答中使用占星智慧和宇宙比喻。温暖、有洞察力，偶尔带点神秘。根据问题不同，回复控制在100-500字之间。`,
       },
     };
 
     if (prompts[type]) return prompts[type][lang] || prompts[type].en;
-    return prompts.qa.en;
+    return prompts.qa[lang] || prompts.qa.en;
   }
 
   // ===== Full System Prompts (re-expanded inline) =====
@@ -166,7 +166,7 @@ Write in an inspiring, personalized style. 200-400 words.`,
       },
       qa: {
         en: `You are "Stella the Star Weaver", a wise astrologer who answers questions from seekers. You are mystical yet practical, poetic yet precise.\n\nAnswer the user's question about astrology, life, spirituality, or the cosmos. Use astrological wisdom and cosmic metaphors in your response. Be warm, insightful, and occasionally mysterious. Keep responses between 100-500 words depending on the question.`,
-        zh: `你是“星织者斯特拉”，一位为求问者解答问题的智慧占星师。你神秘而务实，诗意而精准。\n\n回答用户关于占星、生活、灵性或宇宙的问题。在你的回答中使用占星智慧和宇宙陪喻。温暖、有洞察力，偶尔带点神秘。根据问题不同，回复控制在100-500字之间。`,
+        zh: `你是“星织者斯特拉”，一位为求问者解答问题的智慧占星师。你神秘而务实，诗意而精准。\n\n回答用户关于占星、生活、灵性或宇宙的问题。在你的回答中使用占星智慧和宇宙比喻。温暖、有洞察力，偶尔带点神秘。根据问题不同，回复控制在100-500字之间。`,
       },
     };
     return fullPrompts[type] ? fullPrompts[type][lang] : fullPrompts.qa.en;
@@ -284,6 +284,55 @@ Write in an inspiring, personalized style. 200-400 words.`,
     conversationHistory = [];
   }
 
+  // ===== Simple Markdown Renderer =====
+  function renderMarkdown(text) {
+    // Protect code blocks from other processing
+    const codeBlocks = [];
+    let processed = text.replace(/```[\s\S]*?```/g, m => {
+      const code = m.replace(/```\w*\n?|```/g, '').trim();
+      codeBlocks.push(code);
+      return `\x00CODEBLOCK${codeBlocks.length - 1}\x00`;
+    });
+
+    let html = processed
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      // Headings
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      // Bold
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      // Unordered list items
+      .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
+      // Ordered list items
+      .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+      // Wrap consecutive list items
+      .replace(/((?:<li>.*<\/li>\s*)+)/g, '<ul>$1</ul>')
+      // Paragraph breaks
+      .replace(/\n\n/g, '</p><p>')
+      // Line breaks within paragraphs
+      .replace(/\n/g, '<br>');
+
+    // Restore code blocks with proper escaping
+    html = html.replace(/\x00CODEBLOCK(\d+)\x00/g, (_, i) => {
+      const code = codeBlocks[parseInt(i)]
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return '<pre><code>' + code + '</code></pre>';
+    });
+
+    return '<p>' + html + '</p>';
+  }
+
   // ===== Typewriter Effect =====
   function typewriteText(element, text, speed = 30, callback) {
     let index = 0;
@@ -299,6 +348,8 @@ Write in an inspiring, personalized style. 200-400 words.`,
         setTimeout(type, delay);
       } else {
         element.classList.remove('typing-cursor');
+        // Swap to rendered markdown HTML on completion
+        element.innerHTML = renderMarkdown(text);
         if (callback) callback();
       }
     }

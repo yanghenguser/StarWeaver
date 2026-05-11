@@ -702,7 +702,7 @@ const App = (() => {
     // AI is auto-connected via embedded key
     const statusEl = document.getElementById('api-key-status');
     if (statusEl) {
-      statusEl.textContent = '✦ AI Oracle ready';
+      statusEl.textContent = t('✦ AI Oracle ready', '✦ AI 神谕已就绪');
       statusEl.className = 'api-key-status connected';
     }
 
@@ -752,7 +752,7 @@ const App = (() => {
         document.getElementById('chat-messages').innerHTML = `
           <div class="ai-message">
             <span class="msg-sender">✦ ${t('Stella', '星织者')}</span>
-            <div>${t('Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?', '你好，求问者。我是星织者斯特拉，星辰的编织者，宇宙智慧的守护者。今夜你带来了什么问题来到这 celestial 的殿堂？')}</div>
+            <div>${t('Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?', '你好，求问者。我是星织者斯特拉，星辰的编织者，宇宙智慧的守护者。今夜你带来了什么问题来到这星辰的殿堂？')}</div>
           </div>
         `;
         AstroAI.clearConversation();
