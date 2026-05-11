@@ -7,61 +7,21 @@
 const AstroAI = (() => {
   'use strict';
 
-  const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
-  const XOR_KEY = 'StarWeaver2024';
-  const ENCRYPTED_KEY = 'IB9MQGNUBRBWFwAJCgVgQFIUZgcDRQRHBwEKUGMXVUA1AQc=';
-
-  let apiKey = '';
-  let currentModel = 'deepseek-chat';
+  // API 请求通过 Vercel 代理转发，API Key 存在服务端环境变量中
+  const API_PROXY = '/api/proxy';
   let conversationHistory = [];
 
-  // ===== XOR Decrypt =====
-  function xorDecrypt(encoded, xorKey) {
-    try {
-      const decoded = atob(encoded);
-      let result = '';
-      for (let i = 0; i < decoded.length; i++) {
-        result += String.fromCharCode(decoded.charCodeAt(i) ^ xorKey.charCodeAt(i % xorKey.length));
-      }
-      return result;
-    } catch (e) {
-      console.warn('Decrypt failed, using fallback');
-      return '';
-    }
-  }
-
-  // ===== Auto-init =====
-  (function init() {
-    apiKey = xorDecrypt(ENCRYPTED_KEY, XOR_KEY);
-    if (apiKey) {
-      console.log('✦ StarWeaver AI: DeepSeek connected');
-    } else {
-      console.warn('✦ StarWeaver AI: No API key available');
-    }
-  })();
-
   function hasApiKey() {
-    return apiKey.length > 0;
-  }
-
-  function getModel() {
-    return currentModel;
+    return true; // Key 在服务端，前端无需关心
   }
 
   // ===== Core API Call =====
   async function callDeepSeek(messages, { temperature = 0.8, max_tokens = 2000 } = {}) {
-    if (!apiKey) {
-      throw new Error('AI not configured');
-    }
-
-    const response = await fetch(DEEPSEEK_ENDPOINT, {
+    const response = await fetch(API_PROXY, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: currentModel,
+        model: 'deepseek-chat',
         messages,
         temperature,
         max_tokens,
@@ -75,7 +35,7 @@ const AstroAI = (() => {
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    return data.content;
   }
 
   // ===== System Prompts =====
