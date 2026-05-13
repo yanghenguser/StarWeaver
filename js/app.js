@@ -32,6 +32,7 @@ const App = (() => {
     initLuckyGuide();
     initLanguageToggle();
     initUserSystem();
+    initShareButtons();
     showRandomQuote();
     populateZodiacSigns();
     initZodiacDetailOverlay();
@@ -660,7 +661,9 @@ const App = (() => {
       const horoscope = await AstroAI.getHoroscope(sign, new Date(), lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, horoscope, 20);
+        AstroAI.typewriteText(output, horoscope, 20, () => {
+          showShareButton('share-horoscope-btn', 'horoscope', horoscope);
+        });
       }
       if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
       updateUsageUI();
@@ -863,7 +866,9 @@ const App = (() => {
 
       if (readingOutput) {
         readingOutput.innerHTML = '';
-        AstroAI.typewriteText(readingOutput, reading, 25);
+        AstroAI.typewriteText(readingOutput, reading, 25, () => {
+          showShareButton('share-tarot-btn', 'tarot', reading);
+        });
       }
       if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
       updateUsageUI();
@@ -1047,7 +1052,9 @@ const App = (() => {
       const reading = await AstroAI.getIChingReading(hexagram, changingHex, question, lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, reading, 25);
+        AstroAI.typewriteText(output, reading, 25, () => {
+          showShareButton('share-iching-btn', 'iching', reading);
+        });
       }
     } catch (err) {
       if (output) {
@@ -1422,7 +1429,9 @@ const App = (() => {
       const reading = await AstroAI.getNumerologyReading(summary, name, birthDateStr, lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, reading, 25);
+        AstroAI.typewriteText(output, reading, 25, () => {
+          showShareButton('share-numerology-btn', 'numerology', reading);
+        });
       }
     } catch (err) {
       if (output) {
@@ -1739,6 +1748,73 @@ const App = (() => {
     counter.innerHTML = '';
     counter.appendChild(dot);
     counter.appendChild(document.createTextNode(' ' + User.t('Free: ' + remaining + ' left today', '剩余 ' + remaining + ' 次')));
+  }
+
+  // ===== Share Card Integration =====
+  function initShareButtons() {
+    if (typeof ShareCard === 'undefined') return;
+
+    // Wire up share button clicks
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        if (typeof ShareCard === 'undefined') return;
+        const type = this.dataset.shareType;
+        const text = this.dataset.shareText;
+        if (!type || !text) return;
+        showSharePreview(type, text);
+      });
+    });
+
+    // Preview modal close
+    const modal = document.getElementById('share-preview-modal');
+    const closeBtn = document.getElementById('share-preview-close');
+    if (closeBtn) closeBtn.addEventListener('click', () => { if (modal) modal.style.display = 'none'; });
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+    }
+
+    // Download button
+    const dlBtn = document.getElementById('share-preview-download');
+    if (dlBtn) {
+      dlBtn.addEventListener('click', () => {
+        const img = document.getElementById('share-preview-image');
+        if (!img || !img.dataset.shareType || !img.dataset.shareText) return;
+        ShareCard.downloadCard(img.dataset.shareType, { text: img.dataset.shareText });
+      });
+    }
+
+    // Moments button
+    const momentsBtn = document.getElementById('share-preview-moments');
+    if (momentsBtn) {
+      momentsBtn.addEventListener('click', () => {
+        const img = document.getElementById('share-preview-image');
+        if (!img || !img.dataset.shareType || !img.dataset.shareText) return;
+        ShareCard.shareToWeChat(img.dataset.shareType, { text: img.dataset.shareText });
+      });
+    }
+  }
+
+  function showShareButton(btnId, type, text) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    if (typeof ShareCard === 'undefined') { btn.style.display = 'none'; return; }
+    if (typeof User === 'undefined' || !User.isLoggedIn()) { btn.style.display = 'none'; return; }
+    btn.dataset.shareType = type;
+    btn.dataset.shareText = text;
+    btn.style.display = 'inline-flex';
+  }
+
+  function showSharePreview(type, text) {
+    const modal = document.getElementById('share-preview-modal');
+    const preview = document.getElementById('share-preview-image');
+    if (!modal || !preview) return;
+    const dataUrl = ShareCard.getCardDataURL(type, { text });
+    preview.src = dataUrl;
+    preview.dataset.shareType = type;
+    preview.dataset.shareText = text;
+    modal.style.display = 'flex';
   }
 
   // ===== Public API =====

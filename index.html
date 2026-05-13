@@ -188,6 +188,7 @@
         <div class="card-title"><span class="icon">📖</span> Chart Overview · 星盘概览</div>
         <div class="reading-output" id="chart-reading-text"></div>
         <div class="reading-output" id="ai-reading-output"></div>
+        <button class="share-btn" id="share-chart-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
     </section>
 
@@ -211,6 +212,7 @@
             Select your sign and click AI Horoscope for a personalized reading
           </div>
         </div>
+        <button class="share-btn" id="share-horoscope-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
 
       <div class="card">
@@ -302,6 +304,7 @@
         <div class="numerology-results" id="numerology-results"></div>
         <button id="numerology-ai-btn" class="btn btn-purple" style="margin-top:1rem;">🤖 AI Reading · AI解读</button>
         <div class="reading-output" id="numerology-ai-output"></div>
+        <button class="share-btn" id="share-numerology-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
     </section>
 
@@ -372,9 +375,8 @@
             Draw cards to receive your reading
           </div>
         </div>
+        <button class="share-btn" id="share-tarot-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
-
-      <!-- ===== IChing / 周易 ===== -->
       <div class="card">
         <div class="card-title"><span class="icon">☯</span> I Ching · 周易占卜</div>
 
@@ -425,6 +427,7 @@
             Cast the hexagram to receive your reading
           </div>
         </div>
+        <button class="share-btn" id="share-iching-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
 
       <!-- Keep existing Astro Dice -->
@@ -564,6 +567,21 @@
       </div>
     </div>
 
+    <!-- ===== Share Preview Modal ===== -->
+    <div id="share-preview-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card share-preview-card">
+        <button class="modal-close" id="share-preview-close">&times;</button>
+        <h2 class="modal-title">📤 <span data-lang="share-title">Share · 分享</span></h2>
+        <div class="share-preview-container">
+          <img id="share-preview-image" src="" alt="Fortune Card">
+        </div>
+        <div class="share-preview-actions">
+          <button class="btn btn-primary" id="share-preview-download">💾 Download · 下载</button>
+          <button class="btn btn-purple" id="share-preview-moments">📤 朋友圈 · Moments</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== Footer ===== -->
     <footer style="text-align:center;padding:2rem 0 1rem;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border-subtle);margin-top:2rem;">
       <p>✦ StarWeaver · 星织者 ✦</p>
@@ -580,6 +598,7 @@
   <script src="js/numerology.js"></script>
   <script src="js/luckyguide.js"></script>
   <script src="js/user.js"></script>
+  <script src="js/share.js"></script>
   <script src="js/app.js?v=4"></script>
 
 </body>

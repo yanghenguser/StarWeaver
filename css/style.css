@@ -2087,3 +2087,67 @@ textarea.dream-input {
     padding: 2rem;
   }
 }
+
+/* ===== Share Button ===== */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold, #D4AF37);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+  margin-top: 12px;
+}
+.share-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold, #D4AF37);
+  transform: translateY(-1px);
+}
+.share-btn .share-icon {
+  font-size: 18px;
+}
+
+/* ===== Share Preview Modal ===== */
+#share-preview-modal .modal-card {
+  max-width: 360px;
+  text-align: center;
+}
+#share-preview-image {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 12px;
+  margin: 12px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.share-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.share-actions button {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+.btn-download {
+  background: linear-gradient(135deg, #D4AF37, #B8860B);
+  color: #fff;
+}
+.btn-moments {
+  background: rgba(7, 193, 96, 0.15);
+  color: #07C160;
+  border: 1px solid rgba(7, 193, 96, 0.3) !important;
+}
+.btn-moments:hover {
+  background: rgba(7, 193, 96, 0.25);
+}
