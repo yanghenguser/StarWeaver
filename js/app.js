@@ -642,6 +642,23 @@ const App = (() => {
 
   // ===== AI Horoscope =====
   async function getAIHoroscope() {
+    const sign = parseInt(document.getElementById('horoscope-sign').value);
+    const output = document.getElementById('horoscope-ai-output');
+    const btn = document.getElementById('btn-ai-horoscope');
+
+    // Try pre-generated daily horoscope first
+    if (typeof DailyHoro !== 'undefined') {
+      const dailyText = await DailyHoro.getDaily(sign, lang);
+      if (dailyText) {
+        if (output) {
+          output.innerHTML = '<div class="daily-badge">' + t('✦ Daily horoscope', '✦ 今日运势已生成') + '</div>' + dailyText;
+          showShareButton('share-horoscope-btn', 'horoscope', dailyText);
+        }
+        updateUsageUI();
+        return;
+      }
+    }
+
     if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
       alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
       switchSection('chat');
@@ -649,10 +666,6 @@ const App = (() => {
     }
 
     if (!checkAIAccess()) return;
-
-    const sign = parseInt(document.getElementById('horoscope-sign').value);
-    const output = document.getElementById('horoscope-ai-output');
-    const btn = document.getElementById('btn-ai-horoscope');
 
     if (btn) btn.disabled = true;
     if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Reading the cosmic tides...', '正在读取宇宙潮汐...')}</div>`;
