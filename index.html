@@ -24,6 +24,7 @@
 
     <!-- ===== Header ===== -->
     <header class="header">
+      <button id="user-btn" class="user-btn" style="display:none;" aria-label="User menu">👤</button>
       <button class="language-toggle" aria-label="Toggle language">EN</button>
       <h1 class="header-title">✦ StarWeaver ✦</h1>
       <p class="header-subtitle" data-lang="subtitle">星 织 者 · 宇 宙 之 镜</p>
@@ -478,6 +479,91 @@
       </div>
     </section>
 
+    <!-- ===== Auth Modal ===== -->
+    <div id="auth-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <button class="modal-close" id="auth-close">&times;</button>
+        <div id="auth-register-view">
+          <h2 class="modal-title">✨ Join StarWeaver · 加入星织者</h2>
+          <p class="modal-subtitle">Register to unlock AI readings · 注册以使用 AI 解读</p>
+          <form id="auth-form">
+            <div class="form-group">
+              <label class="form-label">Name / 昵称 <span style="color:var(--gold);">*</span></label>
+              <input class="form-input" id="auth-name" type="text" placeholder="Your name / 你的名字" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email / 邮箱</label>
+              <input class="form-input" id="auth-email" type="email" placeholder="email@example.com">
+            </div>
+            <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="form-group">
+                <label class="form-label">Year / 年</label>
+                <select class="form-select" id="auth-year"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Month / 月</label>
+                <select class="form-select" id="auth-month"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Day / 日</label>
+                <select class="form-select" id="auth-day"></select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="auth-submit-btn">✨ Start Journey · 开始旅程</button>
+          </form>
+          <p class="auth-toggle-text">
+            <a href="#" id="auth-toggle-link">Already registered? Log in · 已有账号？登录</a>
+          </p>
+        </div>
+        <div id="auth-login-view" style="display:none;">
+          <h2 class="modal-title">✦ Welcome Back · 欢迎回来</h2>
+          <p class="modal-subtitle" id="auth-login-greeting">Continue your cosmic journey</p>
+          <button class="btn btn-primary" id="auth-continue-btn">🌟 Continue · 继续</button>
+          <p class="auth-toggle-text">
+            <a href="#" id="auth-toggle-register">New here? Register · 新用户？注册</a>
+          </p>
+          <button class="btn btn-danger" id="auth-logout-btn" style="margin-top:0.8rem;">Logout · 退出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Premium Modal ===== -->
+    <div id="premium-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card premium-card">
+        <button class="modal-close" id="premium-close">&times;</button>
+        <div style="text-align:center;">
+          <div style="font-size:3rem;margin-bottom:0.5rem;">🌟</div>
+          <h2 class="modal-title">Unlock Unlimited AI · 解锁无限解读</h2>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
+            Get unlimited AI readings, priority responses, and exclusive cosmic insights.
+          </p>
+          <div class="premium-price">
+            <span class="premium-price-amount">¥19.9</span>
+            <span class="premium-price-label">One-time · 永久解锁</span>
+          </div>
+          <div class="wechat-pay-box">
+            <div class="wechat-pay-icon">💳</div>
+            <div class="wechat-pay-text">WeChat Pay · 微信支付</div>
+            <div class="wechat-pay-qr">
+              <div class="qr-placeholder">
+                <span>[ QR ]</span>
+              </div>
+            </div>
+            <div class="wechat-pay-note">Scan to pay · 扫码支付 ¥19.9</div>
+          </div>
+          <div class="premium-divider"><span>OR · 或者</span></div>
+          <form id="premium-form">
+            <div class="form-group">
+              <label class="form-label">Unlock Code / 解锁码</label>
+              <input class="form-input" id="premium-code" type="text" placeholder="SW-XXXXXXXX" maxlength="12" style="text-align:center;letter-spacing:0.15em;font-family:monospace;">
+            </div>
+            <button type="submit" class="btn btn-purple">🔓 Unlock · 解锁</button>
+          </form>
+          <p id="premium-error" class="premium-error" style="display:none;"></p>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== Footer ===== -->
     <footer style="text-align:center;padding:2rem 0 1rem;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border-subtle);margin-top:2rem;">
       <p>✦ StarWeaver · 星织者 ✦</p>
@@ -493,6 +579,7 @@
   <script src="js/ai.js?v=4"></script>
   <script src="js/numerology.js"></script>
   <script src="js/luckyguide.js"></script>
+  <script src="js/user.js"></script>
   <script src="js/app.js?v=4"></script>
 
 </body>

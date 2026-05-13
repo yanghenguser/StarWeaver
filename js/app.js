@@ -31,6 +31,7 @@ const App = (() => {
     initCosmicWeather();
     initLuckyGuide();
     initLanguageToggle();
+    initUserSystem();
     showRandomQuote();
     populateZodiacSigns();
     initZodiacDetailOverlay();
@@ -57,6 +58,9 @@ const App = (() => {
     initMoonPhase();
     initCosmicWeather();
     updateLuckyGuide();
+    if (typeof User !== 'undefined') User.setLanguage(lang);
+    updateUserUI();
+    updateUsageUI();
   }
 
   function updateBottomNavLabels() {
@@ -543,6 +547,8 @@ const App = (() => {
       return;
     }
 
+    if (!checkAIAccess()) return;
+
     const btn = document.getElementById('btn-ai-reading');
     const output = document.getElementById('ai-reading-output');
     if (btn) btn.disabled = true;
@@ -554,6 +560,8 @@ const App = (() => {
         output.innerHTML = '';
         AstroAI.typewriteText(output, reading, 25);
       }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
+      updateUsageUI();
     } catch (err) {
       if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
     } finally {
@@ -639,10 +647,12 @@ const App = (() => {
       return;
     }
 
+    if (!checkAIAccess()) return;
+
     const sign = parseInt(document.getElementById('horoscope-sign').value);
     const output = document.getElementById('horoscope-ai-output');
     const btn = document.getElementById('btn-ai-horoscope');
-    
+
     if (btn) btn.disabled = true;
     if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Reading the cosmic tides...', '正在读取宇宙潮汐...')}</div>`;
 
@@ -652,6 +662,8 @@ const App = (() => {
         output.innerHTML = '';
         AstroAI.typewriteText(output, horoscope, 20);
       }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
+      updateUsageUI();
     } catch (err) {
       if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
     } finally {
@@ -682,13 +694,16 @@ const App = (() => {
         
         // AI reading if key available
         if (typeof AstroAI !== "undefined" && AstroAI.hasApiKey()) {
-          try {
+          if (!checkAIAccess()) { /* silently skip AI reading */ }
+          else try {
             const aiReading = await AstroAI.getCompatibilityReading(name1, sign1, name2, sign2, score, lang);
             const el = document.getElementById('compat-ai-reading');
             if (el) {
               el.innerHTML = '';
               AstroAI.typewriteText(el, aiReading, 25);
             }
+            if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
+            updateUsageUI();
           } catch (err) {
             // Silent fallback
           }
@@ -715,7 +730,9 @@ const App = (() => {
         const question = input.value.trim();
         
         if (!question || typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) return;
-        
+
+        if (!checkAIAccess()) return;
+
         // Add user message
         const userMsg = document.createElement('div');
         userMsg.className = 'user-message';
@@ -723,14 +740,14 @@ const App = (() => {
         messages.appendChild(userMsg);
         input.value = '';
         messages.scrollTop = messages.scrollHeight;
-        
+
         // AI thinking indicator
         const aiThinking = document.createElement('div');
         aiThinking.className = 'ai-message';
         aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div>${t('Consulting the cosmic wisdom...', '正在查询宇宙智慧...')}</div>`;
         messages.appendChild(aiThinking);
         messages.scrollTop = messages.scrollHeight;
-        
+
         try {
           const answer = await AstroAI.askQuestion(question, lang);
           aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div class="typing-cursor"></div>`;
@@ -738,6 +755,8 @@ const App = (() => {
           AstroAI.typewriteText(textDiv, answer, 20, () => {
             messages.scrollTop = messages.scrollHeight;
           });
+          if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
+          updateUsageUI();
         } catch (err) {
           aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div style="color:#ef4444;">${t('The cosmic connection faltered', '宇宙连接中断')}: ${err.message}</div>`;
         }
@@ -831,6 +850,8 @@ const App = (() => {
     // Store for AI
     _tarotDrawnCards = drawn;
 
+    if (!checkAIAccess()) return;
+
     // Get AI reading
     try {
       const reading = await AstroAI.getTarotReading(spreadInfo, drawn.map((c, i) => ({
@@ -844,6 +865,8 @@ const App = (() => {
         readingOutput.innerHTML = '';
         AstroAI.typewriteText(readingOutput, reading, 25);
       }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
+      updateUsageUI();
     } catch (err) {
       if (readingOutput) {
         readingOutput.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
@@ -1410,6 +1433,312 @@ const App = (() => {
     } finally {
       if (btn) btn.disabled = false;
     }
+  }
+
+  // ===== User System =====
+  function initUserSystem() {
+    if (typeof User === 'undefined') return;
+
+    // Update UI based on login state
+    updateUserUI();
+    updateUsageUI();
+
+    // User button click
+    const userBtn = document.getElementById('user-btn');
+    if (userBtn) {
+      userBtn.addEventListener('click', () => {
+        if (User.isLoggedIn()) {
+          showProfileModal();
+        } else {
+          showAuthModal();
+        }
+      });
+    }
+
+    // Auth modal close
+    const authClose = document.getElementById('auth-close');
+    if (authClose) authClose.addEventListener('click', hideAuthModal);
+
+    // Auth modal overlay click to close
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) {
+      authModal.addEventListener('click', (e) => {
+        if (e.target === authModal) hideAuthModal();
+      });
+    }
+
+    // Toggle register/login
+    const toggleLink = document.getElementById('auth-toggle-link');
+    if (toggleLink) {
+      toggleLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showLoginView();
+      });
+    }
+
+    const toggleRegister = document.getElementById('auth-toggle-register');
+    if (toggleRegister) {
+      toggleRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        showRegisterView();
+      });
+    }
+
+    // Auth form submit
+    const authForm = document.getElementById('auth-form');
+    if (authForm) {
+      authForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleRegister();
+      });
+    }
+
+    // Continue button (login view)
+    const continueBtn = document.getElementById('auth-continue-btn');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        hideAuthModal();
+        updateUserUI();
+        updateUsageUI();
+      });
+    }
+
+    // Logout button (login view)
+    const logoutBtn = document.getElementById('auth-logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        User.logout();
+        hideAuthModal();
+        updateUserUI();
+        updateUsageUI();
+      });
+    }
+
+    // Premium modal
+    const premiumClose = document.getElementById('premium-close');
+    if (premiumClose) premiumClose.addEventListener('click', hidePremiumModal);
+
+    const premiumModal = document.getElementById('premium-modal');
+    if (premiumModal) {
+      premiumModal.addEventListener('click', (e) => {
+        if (e.target === premiumModal) hidePremiumModal();
+      });
+    }
+
+    // Premium form submit
+    const premiumForm = document.getElementById('premium-form');
+    if (premiumForm) {
+      premiumForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handlePremiumUnlock();
+      });
+    }
+
+    // Populate auth birth date selects
+    populateAuthDateSelects();
+  }
+
+  function populateAuthDateSelects() {
+    const now = new Date();
+
+    const yearSelect = document.getElementById('auth-year');
+    if (yearSelect) {
+      for (let i = 0; i < 100; i++) {
+        const y = now.getFullYear() - i;
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+      }
+      yearSelect.value = now.getFullYear() - 30;
+    }
+
+    const monthSelect = document.getElementById('auth-month');
+    if (monthSelect) {
+      for (let i = 1; i <= 12; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        monthSelect.appendChild(opt);
+      }
+      monthSelect.value = now.getMonth() + 1;
+    }
+
+    const daySelect = document.getElementById('auth-day');
+    if (daySelect) {
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        daySelect.appendChild(opt);
+      }
+      daySelect.value = now.getDate();
+    }
+  }
+
+  function handleRegister() {
+    if (typeof User === 'undefined') return;
+
+    const name = document.getElementById('auth-name')?.value?.trim();
+    if (!name) {
+      alert(User.t('Please enter your name', '请输入你的名字'));
+      return;
+    }
+
+    const email = document.getElementById('auth-email')?.value?.trim() || '';
+    const birthYear = document.getElementById('auth-year')?.value || '';
+    const birthMonth = document.getElementById('auth-month')?.value || '';
+    const birthDay = document.getElementById('auth-day')?.value || '';
+
+    User.register({ name, email, birthYear, birthMonth, birthDay });
+    hideAuthModal();
+    updateUserUI();
+    updateUsageUI();
+  }
+
+  function showAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    if (!modal) return;
+    // Default to register view
+    showRegisterView();
+    modal.style.display = 'flex';
+  }
+
+  function hideAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function showRegisterView() {
+    const registerView = document.getElementById('auth-register-view');
+    const loginView = document.getElementById('auth-login-view');
+    if (registerView) registerView.style.display = 'block';
+    if (loginView) loginView.style.display = 'none';
+  }
+
+  function showLoginView() {
+    const registerView = document.getElementById('auth-register-view');
+    const loginView = document.getElementById('auth-login-view');
+    const greeting = document.getElementById('auth-login-greeting');
+    if (registerView) registerView.style.display = 'none';
+    if (loginView) loginView.style.display = 'block';
+
+    const profile = User.isLoggedIn() ? User.getProfile() : null;
+    if (greeting) {
+      greeting.textContent = profile
+        ? (User.t('Welcome back, ', '欢迎回来，') + profile.name)
+        : (User.t('No saved profile found. Please register.', '未找到用户信息，请注册。'));
+    }
+  }
+
+  function showProfileModal() {
+    if (typeof User === 'undefined') return;
+    showLoginView();
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function showPremiumModal() {
+    const modal = document.getElementById('premium-modal');
+    if (!modal) return;
+    const errorEl = document.getElementById('premium-error');
+    if (errorEl) errorEl.style.display = 'none';
+    modal.style.display = 'flex';
+  }
+
+  function hidePremiumModal() {
+    const modal = document.getElementById('premium-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function handlePremiumUnlock() {
+    if (typeof User === 'undefined') return;
+
+    const codeInput = document.getElementById('premium-code');
+    const errorEl = document.getElementById('premium-error');
+    if (!codeInput || !errorEl) return;
+
+    const code = codeInput.value.trim();
+    if (!code) {
+      errorEl.textContent = User.t('Please enter an unlock code', '请输入解锁码');
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const success = User.unlockPremium(code);
+    if (success) {
+      errorEl.style.display = 'none';
+      codeInput.value = '';
+      hidePremiumModal();
+      updateUserUI();
+      updateUsageUI();
+      alert(User.t('🎉 Premium unlocked! Enjoy unlimited AI readings.', '🎉 会员已激活！享受无限 AI 解读。'));
+    } else {
+      errorEl.textContent = User.t('Invalid code. Format: SW-XXXXXXXX', '无效的解锁码，格式：SW-XXXXXXXX');
+      errorEl.style.display = 'block';
+    }
+  }
+
+  function checkAIAccess() {
+    if (typeof User === 'undefined') return true;
+    if (!User.isLoggedIn()) {
+      showAuthModal();
+      return false;
+    }
+    if (!User.canUseAI()) {
+      showPremiumModal();
+      return false;
+    }
+    return true;
+  }
+
+  function updateUserUI() {
+    if (typeof User === 'undefined') return;
+    const userBtn = document.getElementById('user-btn');
+    if (!userBtn) return;
+
+    if (User.isLoggedIn()) {
+      const profile = User.getProfile();
+      const initial = (profile && profile.name) ? profile.name.charAt(0).toUpperCase() : '?';
+      userBtn.textContent = initial;
+      userBtn.className = 'user-btn logged-in';
+      userBtn.style.display = 'flex';
+    } else {
+      userBtn.textContent = '👤';
+      userBtn.className = 'user-btn';
+      userBtn.style.display = 'flex';
+    }
+  }
+
+  function updateUsageUI() {
+    const counter = document.getElementById('usage-counter');
+    if (typeof User === 'undefined') {
+      if (counter) counter.style.display = 'none';
+      return;
+    }
+
+    if (!User.isLoggedIn() || User.isPremium()) {
+      if (counter) counter.style.display = 'none';
+      return;
+    }
+
+    const remaining = User.getRemainingFree();
+    if (!counter) return;
+
+    counter.style.display = 'flex';
+    const dot = counter.querySelector('.usage-dot') || document.createElement('span');
+    if (!dot.classList.contains('usage-dot')) {
+      dot.className = 'usage-dot';
+      counter.insertBefore(dot, counter.firstChild);
+    }
+
+    if (remaining >= 3) dot.className = 'usage-dot';
+    else if (remaining > 0) dot.className = 'usage-dot low';
+    else dot.className = 'usage-dot empty';
+
+    counter.innerHTML = '';
+    counter.appendChild(dot);
+    counter.appendChild(document.createTextNode(' ' + User.t('Free: ' + remaining + ' left today', '剩余 ' + remaining + ' 次')));
   }
 
   // ===== Public API =====

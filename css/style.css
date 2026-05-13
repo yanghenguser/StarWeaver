@@ -1709,3 +1709,381 @@ textarea.dream-input {
     font-size: 1rem;
   }
 }
+
+/* ============================================
+   User System — Auth Modal, Premium, Profile
+   ============================================ */
+
+/* ---- Modal Overlay ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: modal-fade-in 0.3s ease;
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card {
+  background: linear-gradient(160deg, rgba(16, 16, 42, 0.98), rgba(10, 10, 30, 0.98));
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 0 60px rgba(212, 175, 55, 0.15), 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: modal-card-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+@keyframes modal-card-in {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 4px 8px;
+  line-height: 1;
+  z-index: 1;
+}
+
+.modal-close:hover,
+.modal-close:active {
+  color: var(--gold);
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 0.3rem;
+  line-height: 1.4;
+}
+
+.modal-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+/* ---- Auth Toggle ---- */
+.auth-toggle-text {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+
+.auth-toggle-text a {
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.auth-toggle-text a:hover {
+  color: var(--gold);
+}
+
+/* ---- User Button (Header) ---- */
+.user-btn {
+  position: absolute;
+  top: 1rem;
+  left: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+.user-btn.logged-in {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(155, 89, 182, 0.2));
+  border-color: var(--gold);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ---- Premium Badge ---- */
+.premium-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #D4AF37, #f0d060, #D4AF37);
+  background-size: 200% 100%;
+  animation: premium-shimmer 3s ease-in-out infinite;
+  color: #1a1a2e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@keyframes premium-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.premium-badge-sm {
+  font-size: 0.6rem;
+  padding: 2px 8px;
+}
+
+/* ---- Premium Modal Specific ---- */
+.premium-card {
+  max-width: 380px;
+  text-align: center;
+}
+
+.premium-price {
+  margin: 1rem 0 0.5rem;
+}
+
+.premium-price-amount {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.premium-price-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.premium-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.2rem 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.premium-divider::before,
+.premium-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.premium-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* ---- WeChat Pay Box ---- */
+.wechat-pay-box {
+  background: rgba(10, 10, 30, 0.5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.2rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.wechat-pay-icon {
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
+}
+
+.wechat-pay-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.8rem;
+}
+
+.wechat-pay-qr {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.qr-placeholder {
+  width: 120px;
+  height: 120px;
+  background: white;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.wechat-pay-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ---- Usage Counter ---- */
+.usage-counter {
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  z-index: 100;
+  background: rgba(10, 10, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  display: none;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.usage-counter .usage-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.usage-counter .usage-dot.low {
+  background: #f97316;
+}
+
+.usage-counter .usage-dot.empty {
+  background: #ef4444;
+}
+
+/* ---- Upsell Overlay ---- */
+.upsell-overlay {
+  position: relative;
+}
+
+.upsell-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 30, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: var(--radius-sm);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.upsell-overlay .upsell-cta {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  text-align: center;
+  pointer-events: auto;
+}
+
+/* ---- Profile Avatar ---- */
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--bg-deep);
+  margin: 0 auto 0.8rem;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.profile-usage {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0;
+}
+
+/* ---- Mobile modal adjustments ---- */
+@media (max-width: 480px) {
+  .modal-card {
+    padding: 1.5rem 1.2rem;
+    max-width: 95vw;
+    border-radius: var(--radius-md);
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+  }
+
+  .user-btn {
+    top: 0.8rem;
+    left: 0.3rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .usage-counter {
+    top: 52px;
+    right: 6px;
+    font-size: 0.65rem;
+    padding: 3px 10px;
+  }
+}
+
+@media (min-width: 600px) {
+  .user-btn {
+    top: 1.5rem;
+    left: 1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.05rem;
+  }
+
+  .modal-card {
+    padding: 2rem;
+  }
+}
