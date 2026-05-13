@@ -6,6 +6,9 @@
     }
   },
   "rewrites": [
-    { "source": "/api/:match*", "destination": "/api/starweaver.js" }
+    { "source": "/api/:match*", "destination": "/api/starweaver.js" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/compatibility-h5", "destination": "/compatibility-h5.html" },
+    { "source": "/:sign(aries|taurus|gemini|cancer|leo|virgo|libra|scorpio|sagittarius|capricorn|aquarius|pisces)", "destination": "/zodiac/:sign.html" }
   ]
 }

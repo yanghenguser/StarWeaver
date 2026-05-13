@@ -538,7 +538,7 @@ const App = (() => {
   // ===== AI Chart Reading =====
   async function generateAIReading() {
     if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
-      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
       switchSection('chat');
       return;
     }
@@ -661,7 +661,7 @@ const App = (() => {
     }
 
     if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
-      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
       switchSection('chat');
       return;
     }
@@ -1046,7 +1046,7 @@ const App = (() => {
 
   async function performIChingAIReading() {
     if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
-      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
       return;
     }
     if (!_ichingLines) return;
@@ -1289,7 +1289,7 @@ const App = (() => {
     }
 
     if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
-      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
       return;
     }
 
@@ -1421,7 +1421,7 @@ const App = (() => {
 
   async function performNumerologyAI() {
     if (typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) {
-      alert(t('Please set your DeepSeek API Key first', '请先设置 DeepSeek API Key'));
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
       return;
     }
 
@@ -1717,7 +1717,7 @@ const App = (() => {
       return;
     }
 
-    const success = await User.unlockPremium(code);
+    const success = await User.redeemCode(code);
     if (success) {
       errorEl.style.display = 'none';
       codeInput.value = '';
@@ -1726,7 +1726,7 @@ const App = (() => {
       updateUsageUI();
       alert(User.t('🎉 Premium unlocked! Enjoy unlimited AI readings.', '🎉 会员已激活！享受无限 AI 解读。'));
     } else {
-      errorEl.textContent = User.t('Invalid code. Format: SW-XXXXXXXX', '无效的解锁码，格式：SW-XXXXXXXX');
+      errorEl.textContent = User.t('Invalid or expired code', '卡密无效或已失效');
       errorEl.style.display = 'block';
     }
   }

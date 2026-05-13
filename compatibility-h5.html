@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>星座配对 · Zodiac Compatibility</title>
+<style>
+:root{--bg-deep:#0a0a1a;--bg-card:rgba(16,16,42,0.85);--gold:#d4af37;--gold-light:#f0d060;--purple:#9b59b6;--purple-light:#c084fc;--text-primary:#e8e0f0;--text-secondary:#a89bb5;--text-muted:#6b5f7a;--border-subtle:rgba(212,175,55,0.15);--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans SC',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;min-height:100dvh;max-width:480px;margin:0 auto;padding:16px 16px 32px}
+/* Header */
+.hdr{text-align:center;padding:24px 0 16px}
+.hdr h1{color:var(--gold);font-size:1.4rem;letter-spacing:.05em}
+.hdr p{color:var(--text-muted);font-size:.85rem;margin-top:4px}
+/* Card */
+.card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-title{color:var(--gold);font-size:.95rem;margin-bottom:12px;font-weight:600}
+/* Person inputs */
+.person-block{margin-bottom:16px}
+.person-block:last-child{margin-bottom:0}
+.person-label{display:block;margin-bottom:8px;color:var(--text-secondary);font-size:.85rem}
+.name-in{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-subtle);border-radius:10px;padding:12px 14px;color:var(--text-primary);font-size:1rem;outline:none;transition:border-color .3s;margin-bottom:10px}
+.name-in:focus{border-color:var(--gold)}
+.name-in::placeholder{color:var(--text-muted)}
+/* Zodiac grid */
+.sign-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sign-opt{background:rgba(255,255,255,.04);border:1px solid var(--border-subtle);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .25s;color:var(--text-secondary);font-size:.75rem;user-select:none}
+.sign-opt .sym{font-size:1.4rem;display:block;margin-bottom:2px}
+.sign-opt.selected{background:rgba(212,175,55,.15);border-color:var(--gold);color:var(--gold)}
+/* Button */
+.calc-btn{width:100%;background:var(--gold);color:#000;border:none;border-radius:var(--radius);padding:14px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:opacity .3s}
+.calc-btn:disabled{opacity:.4;cursor:not-allowed}
+.calc-btn:hover:not(:disabled){opacity:.9}
+/* Result */
+.result-area{display:none;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.compat-names{text-align:center;color:var(--text-secondary);font-size:.95rem;margin-bottom:8px}
+.compat-names strong{color:var(--text-primary)}
+/* Gauge */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:12px 0}
+.gauge{width:180px;height:180px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;transition:background .5s}
+.gauge-inner{width:130px;height:130px;border-radius:50%;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+.gauge-pts{font-size:2.6rem;font-weight:700;transition:color .5s}
+.gauge-lbl{font-size:.8rem;color:var(--text-secondary);margin-top:2px}
+.gauge-desc{text-align:center;color:var(--text-secondary);font-size:.9rem;margin:12px 0;line-height:1.5}
+/* Reading */
+.reading-box{background:rgba(0,0,0,.3);border-radius:12px;padding:16px;margin-top:12px;line-height:1.7;font-size:.88rem;color:var(--text-primary);white-space:pre-wrap;max-height:400px;overflow-y:auto}
+.reading-box.loading{text-align:center;color:var(--text-muted)}
+/* Action buttons */
+.actions{display:flex;gap:10px;margin-top:14px}
+.actions button{flex:1;padding:12px 8px;border-radius:12px;border:none;font-size:.85rem;font-weight:600;cursor:pointer;transition:opacity .3s}
+.actions button:hover{opacity:.9}
+.btn-stella{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff}
+.btn-share{background:var(--bg-card);border:1px solid var(--border-subtle)!important;color:var(--gold)}
+/* Star background dots */
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.stars span{position:absolute;width:2px;height:2px;background:rgba(255,255,255,.3);border-radius:50%;animation:twinkle 3s infinite alternate}
+@keyframes twinkle{0%{opacity:.2}100%{opacity:.8}}
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:99;animation:fadeIn .3s;display:none}
+@media(max-width:380px){
+  .sign-grid{grid-template-columns:repeat(3,1fr)}
+  .gauge{width:150px;height:150px}
+  .gauge-inner{width:110px;height:110px}
+  .gauge-pts{font-size:2.2rem}
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="toast" id="toast"></div>
+
+<div class="hdr">
+  <h1>💞 星座配对</h1>
+  <p>Zodiac Love Compatibility</p>
+</div>
+
+<div class="card">
+  <div class="card-title">👤 两个人 · Two Souls</div>
+
+  <!-- Person 1 -->
+  <div class="person-block">
+    <label class="person-label">Person 1 姓名</label>
+    <input class="name-in" id="name1" type="text" placeholder="Your name" maxlength="20">
+    <label class="person-label">星座 · Sign</label>
+    <div class="sign-grid" id="sign-grid1"></div>
+  </div>
+
+  <!-- Person 2 -->
+  <div class="person-block">
+    <label class="person-label">Person 2 姓名</label>
+    <input class="name-in" id="name2" type="text" placeholder="Their name" maxlength="20">
+    <label class="person-label">星座 · Sign</label>
+    <div class="sign-grid" id="sign-grid2"></div>
+  </div>
+
+  <button class="calc-btn" id="calc-btn">💞 计算 Compatibility</button>
+</div>
+
+<div class="card result-area" id="result-area">
+  <div class="compat-names" id="compat-names"></div>
+
+  <div class="gauge-wrap">
+    <div class="gauge" id="gauge">
+      <div class="gauge-inner">
+        <div class="gauge-pts" id="gauge-pts">0%</div>
+        <div class="gauge-lbl" id="gauge-lbl">Compatibility</div>
+      </div>
+    </div>
+  </div>
+  <div class="gauge-desc" id="gauge-desc"></div>
+
+  <div class="reading-box" id="reading-box">
+    Click "Ask Stella" for an AI-powered reading
+  </div>
+
+  <div class="actions">
+    <button class="btn-stella" id="stella-btn">🌟 Ask Stella</button>
+    <button class="btn-share" id="share-btn">📤 Share</button>
+  </div>
+</div>
+
+<script>
+const API = '/api/starweaver.js';
+
+const ZODIACS = [
+  {name:'白羊',sym:'♈',dates:'3.21-4.19'},
+  {name:'金牛',sym:'♉',dates:'4.20-5.20'},
+  {name:'双子',sym:'♊',dates:'5.21-6.21'},
+  {name:'巨蟹',sym:'♋',dates:'6.22-7.22'},
+  {name:'狮子',sym:'♌',dates:'7.23-8.22'},
+  {name:'处女',sym:'♍',dates:'8.23-9.22'},
+  {name:'天秤',sym:'♎',dates:'9.23-10.23'},
+  {name:'天蝎',sym:'♏',dates:'10.24-11.22'},
+  {name:'射手',sym:'♐',dates:'11.23-12.21'},
+  {name:'摩羯',sym:'♑',dates:'12.22-1.19'},
+  {name:'水瓶',sym:'♒',dates:'1.20-2.18'},
+  {name:'双鱼',sym:'♓',dates:'2.19-3.20'}
+];
+
+let sel1 = null, sel2 = null;
+let lastResult = null;
+
+// Generate star background
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('span');
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=Math.random()*5+'s';
+    s.style.width=s.style.height=Math.random()*2+1+'px';
+    c.appendChild(s);
+  }
+})();
+
+// Render zodiac grids
+function renderGrids(){
+  ['sign-grid1','sign-grid2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.innerHTML=ZODIACS.map(z=>`<div class="sign-opt" data-name="${z.name}" onclick="selectSign(${i+1},'${z.name}')">
+      <span class="sym">${z.sym}</span>${z.name}
+    </div>`).join('');
+  });
+}
+renderGrids();
+
+function selectSign(person, name){
+  const gridId = 'sign-grid' + person;
+  const grid = document.getElementById(gridId);
+  grid.querySelectorAll('.sign-opt').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.name===name);
+  });
+  if(person===1) sel1=name; else sel2=name;
+}
+
+function $id(id){return document.getElementById(id)}
+
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+async function callApi(action, data){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
+  return r.json();
+}
+
+function gaugeColor(score){
+  if(score>=75) return '#22c55e';
+  if(score>=55) return '#d4af37';
+  if(score>=35) return '#f59e0b';
+  return '#ef4444';
+}
+
+function updateGauge(score){
+  const g=$id('gauge');
+  const pts=$id('gauge-pts');
+  const col=gaugeColor(score);
+  g.style.background=`conic-gradient(from -90deg, ${col} 0% ${score}%, rgba(255,255,255,.06) ${score}% 100%)`;
+  pts.style.color=col;
+  pts.textContent=score+'%';
+}
+
+function showToast(msg){
+  const t=$id('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',2000);
+}
+
+async function calculate(){
+  if(!sel1||!sel2){
+    showToast('请为双方选择星座 · Select both signs');
+    return;
+  }
+  const btn=$id('calc-btn');
+  btn.disabled=true;
+  btn.textContent='✨ Calculating...';
+
+  const n1=$id('name1').value.trim()||'';
+  const n2=$id('name2').value.trim()||'';
+
+  const r=await callApi('getCompatibility',{sign1:sel1,sign2:sel2,name1:n1,name2:n2});
+
+  btn.disabled=false;
+  btn.textContent='💞 计算 Compatibility';
+
+  if(!r.ok||r.score===undefined){
+    showToast('Calculation failed, try again');
+    return;
+  }
+
+  lastResult=r;
+  $id('result-area').style.display='block';
+
+  // Names
+  const dn1=n1||sel1, dn2=n2||sel2;
+  $id('compat-names').innerHTML=`<strong>${esc(dn1)}</strong> ${sel1} & <strong>${esc(dn2)}</strong> ${sel2}`;
+
+  // Gauge
+  updateGauge(r.score);
+  $id('gauge-lbl').textContent=r.reading?'✨ With AI Reading':'Compatibility';
+  $id('gauge-desc').textContent=r.description||'';
+
+  // Reading
+  const rb=$id('reading-box');
+  if(r.reading){
+    rb.textContent=r.reading;
+    rb.classList.remove('loading');
+  } else {
+    rb.textContent='Click "Ask Stella" for an AI-powered reading';
+  }
+
+  // Scroll to result
+  setTimeout(()=>$id('result-area').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+async function askStella(){
+  if(!sel1||!sel2){
+    showToast('请先选择双方星座');
+    return;
+  }
+  const btn=$id('stella-btn');
+  btn.disabled=true;
+  btn.textContent='✨ Thinking...';
+
+  const n1=$id('name1').value.trim()||'';
+  const n2=$id('name2').value.trim()||'';
+
+  const r=await callApi('getCompatibility',{sign1:sel1,sign2:sel2,name1:n1,name2:n2});
+
+  btn.disabled=false;
+  btn.textContent='🌟 Ask Stella';
+
+  if(!r.ok) return showToast('Failed to get reading');
+
+  lastResult=r;
+  $id('result-area').style.display='block';
+
+  const dn1=n1||sel1, dn2=n2||sel2;
+  $id('compat-names').innerHTML=`<strong>${esc(dn1)}</strong> ${sel1} & <strong>${esc(dn2)}</strong> ${sel2}`;
+
+  if(r.score!==undefined) updateGauge(r.score);
+  $id('gauge-lbl').textContent=r.reading?'✨ AI Reading':'Compatibility';
+  $id('gauge-desc').textContent=r.description||'';
+
+  const rb=$id('reading-box');
+  if(r.reading){
+    rb.textContent=r.reading;
+    rb.classList.remove('loading');
+  } else {
+    rb.textContent='✨ Stella is contemplating the cosmos... try again';
+  }
+  setTimeout(()=>$id('result-area').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+async function shareResult(){
+  const n1=$id('name1').value.trim()||sel1||'Person 1';
+  const n2=$id('name2').value.trim()||sel2||'Person 2';
+  const pts=lastResult?.score||'??';
+  const txt=`💞 ${n1} & ${n2}\n✨ Compatibility: ${pts}%\n🔮 Powered by StarWeaver`;
+
+  if(navigator.share){
+    try{
+      await navigator.share({title:'Zodiac Compatibility',text:txt,url:location.href});
+    }catch(e){/* user cancelled */}
+  } else {
+    try{
+      await navigator.clipboard.writeText(txt);
+      showToast('📋 Copied to clipboard');
+    }catch(e){
+      showToast('Copy: '+txt);
+    }
+  }
+}
+
+$id('calc-btn').addEventListener('click', calculate);
+$id('stella-btn').addEventListener('click', askStella);
+$id('share-btn').addEventListener('click', shareResult);
+</script>
+</body>
+</html>

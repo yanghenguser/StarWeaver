@@ -1,13 +1,13 @@
 /* ============================================
    StarWeaver - ai.js
-   DeepSeek AI Astrology Module
+// StarWeaver AI Astrology Module
    Auto-injected API Key (XOR + Base64 encrypted)
    ============================================ */
 
 const AstroAI = (() => {
   'use strict';
 
-  const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
+  const AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
   const XOR_KEY = 'StarWeaver2024';
   const ENCRYPTED_KEY = 'IB9MFGcEVEYEFgcECwE1QFFDZVxQQgZGAQMKDTBNBUM0XFY=';
 
@@ -43,12 +43,12 @@ const AstroAI = (() => {
   }
 
   // ===== Core API Call =====
-  async function callDeepSeek(messages, { temperature = 0.8, max_tokens = 2000 } = {}) {
+  async function callAI(messages, { temperature = 0.8, max_tokens = 2000, callType = 'qa' } = {}) {
     if (!apiKey) {
       throw new Error('AI not configured');
     }
 
-    const response = await fetch(DEEPSEEK_ENDPOINT, {
+    const response = await fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -69,7 +69,26 @@ const AstroAI = (() => {
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    const content = data.choices[0].message.content;
+
+    // Fire-and-forget log to backend
+    try {
+      const userMsg = messages.filter(m => m.role === 'user').pop()?.content || '';
+      const uid = (typeof User !== 'undefined' && User.getUserId) ? User.getUserId() : 'anonymous';
+      fetch('/api/starweaver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'logAICall',
+          userId: uid || 'anonymous',
+          type: callType,
+          prompt: typeof userMsg === 'string' ? userMsg.slice(0, 500) : JSON.stringify(userMsg).slice(0, 500),
+          response: content.slice(0, 2000)
+        })
+      }).catch(() => {});
+    } catch(e) {}
+
+    return content;
   }
 
   // ===== System Prompts (short) =====
@@ -316,7 +335,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
         : `Please read my natal chart.\n\nMy birth information:\n- Name: ${birthInfo.name}\n- Date of Birth: ${birthInfo.year}-${String(birthInfo.month).padStart(2, '0')}-${String(birthInfo.day).padStart(2, '0')}\n- Time of Birth: ${birthInfo.hour}:${String(birthInfo.minute || 0).padStart(2, '0')}\n- Birthplace: ${birthInfo.birthplace || 'Unknown'}\n\nMy Natal Chart Data:\n${chartDesc}\n\nPlease give me a complete, personalized astrology reading.`
       },
     ];
-    return await callDeepSeek(messages, { temperature: 0.85, max_tokens: 3000 });
+    return await callAI(messages, { temperature: 0.85, max_tokens: 3000, callType: 'natal' });
   }
 
   // ===== Daily Horoscope =====
@@ -332,7 +351,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
         : `Give me my horoscope for today.\nSign: ${sign.name} (${sign.symbol})\nDate: ${dateStr}\n\nWhat do the stars say for me today?`
       },
     ];
-    return await callDeepSeek(messages, { temperature: 0.8, max_tokens: 1000 });
+    return await callAI(messages, { temperature: 0.8, max_tokens: 1000, callType: 'horoscope' });
   }
 
   // ===== Compatibility Reading =====
@@ -346,7 +365,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
         : `Tell me about the compatibility between these two:\n\n${person1}: ${s1.name} (${s1.symbol}) — Element: ${s1.element}, Quality: ${s1.quality}\n${person2}: ${s2.name} (${s2.symbol}) — Element: ${s2.element}, Quality: ${s2.quality}\n\nCompatibility Score: ${score}%\n\nWhat is the cosmic connection between them?`
       },
     ];
-    return await callDeepSeek(messages, { temperature: 0.8, max_tokens: 1500 });
+    return await callAI(messages, { temperature: 0.8, max_tokens: 1500, callType: 'compatibility' });
   }
 
   // ===== Tarot Reading =====
@@ -362,7 +381,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
         : `Please read the tarot for me.\n\nSpread: ${spread.name} (${spread.desc})\nQuestion: ${question || 'General guidance'}\n\nCards drawn:\n${cardsDesc}\n\nPlease give me a complete, personalized tarot reading.`
       },
     ];
-    return await callDeepSeek(messages, { temperature: 0.85, max_tokens: 2500 });
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2500, callType: 'tarot' });
   }
 
   // ===== I Ching Reading =====
@@ -387,7 +406,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
       { role: 'system', content: getFullSystemPrompt('iching', lang) },
       { role: 'user', content: userContent },
     ];
-    return await callDeepSeek(messages, { temperature: 0.85, max_tokens: 2000 });
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2000, callType: 'iching' });
   }
 
   // ===== Dream Reading =====
@@ -399,7 +418,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
         : `Please interpret this dream for me:\n\n${dream}\n\nPlease give me a complete, personalized dream interpretation.`
       },
     ];
-    return await callDeepSeek(messages, { temperature: 0.85, max_tokens: 2000 });
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2000, callType: 'dream' });
   }
 
   // ===== Numerology Reading =====
@@ -415,7 +434,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
         : `Please read my numerology.\n\nName: ${name}\nBirth Date: ${birthDate}\n\n${numsDesc}\n\nPlease give me a complete, personalized numerology reading.`
       },
     ];
-    return await callDeepSeek(messages, { temperature: 0.85, max_tokens: 2000 });
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2000, callType: 'numerology' });
   }
 
   // ===== AI Q&A =====
@@ -426,7 +445,7 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
       { role: 'user', content: question },
     ];
 
-    const answer = await callDeepSeek(messages, { temperature: 0.85, max_tokens: 1500 });
+    const answer = await callAI(messages, { temperature: 0.85, max_tokens: 1500, callType: 'chat' });
     conversationHistory.push({ role: 'user', content: question });
     conversationHistory.push({ role: 'assistant', content: answer });
     return answer;

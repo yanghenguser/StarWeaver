@@ -13,7 +13,7 @@
   <!-- ===== Loading Screen ===== -->
   <div id="loading-screen">
     <div class="loading-star">✨</div>
-    <div class="loading-text" data-lang="loading">Weaving the Stars...</div>
+    <div class="loading-text" data-lang="loading">编织星辰...</div>
   </div>
 
   <!-- ===== Star Background ===== -->
@@ -37,97 +37,95 @@
 
     <!-- ===== Navigation ===== -->
     <nav class="nav-tabs">
-      <button class="nav-tab active" data-section="home" id="tab-home">🌌 Cosmic</button>
-      <button class="nav-tab" data-section="chart" id="tab-chart">🔮 My Chart</button>
-      <button class="nav-tab" data-section="horoscope" id="tab-horoscope">⭐ Horoscope</button>
-      <button class="nav-tab" data-section="compatibility" id="tab-compatibility">💞 Love Match</button>
-      <button class="nav-tab" data-section="numerology" id="tab-numerology">🔢 Numerology</button>
-      <button class="nav-tab" data-section="fortune" id="tab-fortune">🎴 Divination</button>
-      <button class="nav-tab" data-section="chat" id="tab-chat">🌙 AI Oracle</button>
+      <button class="nav-tab active" data-section="home" id="tab-home">🌌 宇宙</button>
+      <button class="nav-tab" data-section="chart" id="tab-chart">🔮 我的星盘</button>
+      <button class="nav-tab" data-section="horoscope" id="tab-horoscope">⭐ 运势</button>
+      <button class="nav-tab" data-section="compatibility" id="tab-compatibility">💞 合盘</button>
+      <button class="nav-tab" data-section="numerology" id="tab-numerology">🔢 生命灵数</button>
+      <button class="nav-tab" data-section="fortune" id="tab-fortune">🎴 占卜</button>
+      <button class="nav-tab" data-section="chat" id="tab-chat">🌙 AI 占星师</button>
     </nav>
 
     <!-- ===== Bottom Navigation (Mobile) ===== -->
     <nav class="bottom-nav" id="bottom-nav">
-      <button class="bottom-nav-item active" data-section="home" aria-label="Cosmic">
+      <button class="bottom-nav-item active" data-section="home" aria-label="宇宙">
         <span class="nav-icon">🌌</span>
-        <span class="nav-label">Cosmic</span>
+        <span class="nav-label">宇宙</span>
       </button>
-      <button class="bottom-nav-item" data-section="chart" aria-label="Chart">
+      <button class="bottom-nav-item" data-section="chart" aria-label="星盘">
         <span class="nav-icon">🔮</span>
-        <span class="nav-label">Chart</span>
+        <span class="nav-label">星盘</span>
       </button>
-      <button class="bottom-nav-item" data-section="horoscope" aria-label="Horoscope">
+      <button class="bottom-nav-item" data-section="horoscope" aria-label="运势">
         <span class="nav-icon">⭐</span>
-        <span class="nav-label">Scope</span>
+        <span class="nav-label">运势</span>
       </button>
-      <button class="bottom-nav-item" data-section="compatibility" aria-label="Match">
+      <button class="bottom-nav-item" data-section="compatibility" aria-label="合盘">
         <span class="nav-icon">💞</span>
-        <span class="nav-label">Match</span>
+        <span class="nav-label">合盘</span>
       </button>
-      <button class="bottom-nav-item" data-section="numerology" aria-label="Numerology">
+      <button class="bottom-nav-item" data-section="numerology" aria-label="灵数">
         <span class="nav-icon">🔢</span>
-        <span class="nav-label">Num.</span>
+        <span class="nav-label">灵数</span>
       </button>
-      <button class="bottom-nav-item" data-section="fortune" aria-label="Fortune">
+      <button class="bottom-nav-item" data-section="fortune" aria-label="占卜">
         <span class="nav-icon">🎴</span>
-        <span class="nav-label">Fortune</span>
+        <span class="nav-label">占卜</span>
       </button>
-      <button class="bottom-nav-item" data-section="chat" aria-label="Oracle">
+      <button class="bottom-nav-item" data-section="chat" aria-label="占星师">
         <span class="nav-icon">🌙</span>
-        <span class="nav-label">Oracle</span>
+        <span class="nav-label">占星师</span>
       </button>
     </nav>
 
     <!-- ===== Section: Home / Cosmic Weather ===== -->
     <section id="section-home" class="section active">
       <div class="home-greeting">
-        <h2>🌌 Cosmic Weather</h2>
-        <p>今日宇宙天气 · Today's Celestial Outlook</p>
+        <h2>🌌 今日宇宙天气</h2>
+        <p>Today's Celestial Outlook</p>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🌙</span> Moon Phase · 月相</div>
+        <div class="card-title"><span class="icon">🌙</span> 月相 · Moon Phase</div>
         <div id="moon-phase-display" class="moon-phase"></div>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🌈</span> Today's Sky · 今日星象</div>
+        <div class="card-title"><span class="icon">🌈</span> 今日星象 · Today's Sky</div>
         <div id="cosmic-weather" class="cosmic-weather"></div>
       </div>
 
       <div class="card" id="lucky-guide-card">
-        <div class="card-title"><span class="icon">🍀</span> Daily Lucky Guide · 每日幸运指南</div>
+        <div class="card-title"><span class="icon">🍀</span> 每日幸运指南 · Daily Lucky Guide</div>
         <div class="form-group">
-          <label class="form-label" for="lucky-sign">Your Sign / 你的星座</label>
-          <select class="form-select" id="lucky-sign">
-            <!-- populated by JS -->
-          </select>
+          <label class="form-label" for="lucky-sign">你的星座 / Your Sign</label>
+          <select class="form-select" id="lucky-sign"></select>
         </div>
         <div class="lucky-guide-results" id="lucky-guide-results" style="display:none;">
           <div class="lucky-guide-item">
-            <span class="lucky-guide-label">Lucky Numbers</span>
+            <span class="lucky-guide-label">幸运数字</span>
             <span class="lucky-guide-value" id="lucky-number">-- · -- · --</span>
           </div>
           <div class="lucky-guide-item">
-            <span class="lucky-guide-label">Lucky Color</span>
+            <span class="lucky-guide-label">幸运颜色</span>
             <span class="lucky-guide-value" id="lucky-color"><span class="color-swatch" id="lucky-color-swatch"></span> <span id="lucky-color-name">--</span></span>
           </div>
           <div class="lucky-guide-item">
-            <span class="lucky-guide-label">Lucky Direction</span>
+            <span class="lucky-guide-label">幸运方向</span>
             <span class="lucky-guide-value" id="lucky-direction">--</span>
           </div>
           <div class="lucky-guide-item">
-            <span class="lucky-guide-label">Lucky Crystal</span>
+            <span class="lucky-guide-label">幸运水晶</span>
             <span class="lucky-guide-value" id="lucky-crystal">--</span>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🎲</span> Astro Dice · 占星骰子</div>
+        <div class="card-title"><span class="icon">🎲</span> 占星骰子 · Astro Dice</div>
         <div class="dice-container">
           <button class="dice-btn" id="dice-btn">🎲</button>
-          <div class="dice-result" id="dice-result">Click to cast your cosmic dice</div>
+          <div class="dice-result" id="dice-result">点击投掷占星骰子</div>
         </div>
       </div>
     </section>
@@ -135,58 +133,50 @@
     <!-- ===== Section: Natal Chart ===== -->
     <section id="section-chart" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">📜</span> Your Birth Info · 出生信息</div>
+        <div class="card-title"><span class="icon">📜</span> 出生信息 · Your Birth Info</div>
         <form id="birth-form">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="birth-name">Name / 姓名</label>
-              <input class="form-input" id="birth-name" type="text" placeholder="Your name">
+              <label class="form-label" for="birth-name">姓名 / Name</label>
+              <input class="form-input" id="birth-name" type="text" placeholder="你的名字">
             </div>
             <div class="form-group">
-              <label class="form-label" for="birthplace">Birthplace / 出生地</label>
-              <input class="form-input" id="birthplace" type="text" placeholder="City">
+              <label class="form-label" for="birthplace">出生地 / Birthplace</label>
+              <input class="form-input" id="birthplace" type="text" placeholder="城市">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="birth-year">Year / 年</label>
-              <select class="form-select" id="birth-year">
-                <!-- years generated by JS on page load -->
-              </select>
+              <label class="form-label" for="birth-year">年 / Year</label>
+              <select class="form-select" id="birth-year"></select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="birth-month">Month / 月</label>
-              <select class="form-select" id="birth-month">
-                <!-- months generated by JS on page load -->
-              </select>
+              <label class="form-label" for="birth-month">月 / Month</label>
+              <select class="form-select" id="birth-month"></select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="birth-day">Day / 日</label>
-              <select class="form-select" id="birth-day">
-                <!-- days generated by JS on page load -->
-              </select>
+              <label class="form-label" for="birth-day">日 / Day</label>
+              <select class="form-select" id="birth-day"></select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="birth-hour">Time / 时间</label>
-              <select class="form-select" id="birth-hour">
-                <!-- hours generated by JS on page load -->
-              </select>
+              <label class="form-label" for="birth-hour">时间 / Time</label>
+              <select class="form-select" id="birth-hour"></select>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">🔮 Generate My Chart · 生成星盘</button>
+          <button type="submit" class="btn btn-primary">🔮 生成星盘 · Generate Chart</button>
         </form>
       </div>
 
       <div class="card" id="chart-card" style="display:none;">
-        <div class="card-title"><span class="icon">🌀</span> Your Natal Chart · 你的星盘</div>
+        <div class="card-title"><span class="icon">🌀</span> 你的星盘 · Your Natal Chart</div>
         <div class="chart-container" id="natal-chart-svg"></div>
         <div class="chart-controls" style="display:none;">
-          <button class="btn btn-purple" onclick="App.generateAIReading()">🤖 AI Reading · AI解读</button>
+          <button class="btn btn-purple" onclick="App.generateAIReading()">🤖 AI解读 · AI Reading</button>
         </div>
       </div>
 
       <div class="card" id="chart-reading-card" style="display:none;">
-        <div class="card-title"><span class="icon">📖</span> Chart Overview · 星盘概览</div>
+        <div class="card-title"><span class="icon">📖</span> 星盘概览 · Chart Overview</div>
         <div class="reading-output" id="chart-reading-text"></div>
         <div class="reading-output" id="ai-reading-output"></div>
         <button class="share-btn" id="share-chart-btn" style="display:none;" aria-label="Share">📤</button>
@@ -196,28 +186,26 @@
     <!-- ===== Section: Horoscope ===== -->
     <section id="section-horoscope" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">⭐</span> Daily Horoscope · 每日运势</div>
+        <div class="card-title"><span class="icon">⭐</span> 每日运势 · Daily Horoscope</div>
         <div class="form-row" style="align-items:end;gap:1rem;">
           <div class="form-group" style="flex:1;">
-            <label class="form-label">Your Sign / 你的星座</label>
-            <select class="form-select" id="horoscope-sign">
-              <!-- populated by JS -->
-            </select>
+            <label class="form-label">你的星座 / Your Sign</label>
+            <select class="form-select" id="horoscope-sign"></select>
           </div>
           <div class="form-group">
-            <button class="btn btn-purple" id="btn-ai-horoscope" onclick="App.getAIHoroscope()">🤖 AI Horoscope · AI运势</button>
+            <button class="btn btn-purple" id="btn-ai-horoscope" onclick="App.getAIHoroscope()">🤖 AI运势 · AI Horoscope</button>
           </div>
         </div>
         <div class="reading-output" id="horoscope-ai-output">
           <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;">
-            Select your sign and click AI Horoscope for a personalized reading
+            选择你的星座，点击AI运势获取个性化解读
           </div>
         </div>
         <button class="share-btn" id="share-horoscope-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">♈</span> All Signs · 十二星座</div>
+        <div class="card-title"><span class="icon">♈</span> 十二星座 · All Signs</div>
         <div class="horoscope-grid" id="zodiac-grid"></div>
       </div>
 
@@ -230,35 +218,31 @@
     <!-- ===== Section: Compatibility ===== -->
     <section id="section-compatibility" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">💞</span> Love Compatibility · 星座合盘</div>
+        <div class="card-title"><span class="icon">💞</span> 星座合盘 · Love Compatibility</div>
         <form id="compatibility-form">
           <div class="compat-inputs">
             <div>
               <div class="form-group">
-                <label class="form-label">Person 1 Name / 姓名</label>
-                <input class="form-input" id="compat-name1" type="text" placeholder="Name">
+                <label class="form-label">姓名 / Name</label>
+                <input class="form-input" id="compat-name1" type="text" placeholder="名字">
               </div>
               <div class="form-group">
-                <label class="form-label">Sign / 星座</label>
-                <select class="form-select" id="compat-sign1">
-                  <!-- populated by JS -->
-                </select>
+                <label class="form-label">星座 / Sign</label>
+                <select class="form-select" id="compat-sign1"></select>
               </div>
             </div>
             <div>
               <div class="form-group">
-                <label class="form-label">Person 2 Name / 姓名</label>
-                <input class="form-input" id="compat-name2" type="text" placeholder="Name">
+                <label class="form-label">姓名 / Name</label>
+                <input class="form-input" id="compat-name2" type="text" placeholder="名字">
               </div>
               <div class="form-group">
-                <label class="form-label">Sign / 星座</label>
-                <select class="form-select" id="compat-sign2">
-                  <!-- populated by JS -->
-                </select>
+                <label class="form-label">星座 / Sign</label>
+                <select class="form-select" id="compat-sign2"></select>
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">💞 Calculate · 测算兼容性</button>
+          <button type="submit" class="btn btn-primary">💞 测算兼容性 · Calculate</button>
         </form>
 
         <div class="compat-result" id="compat-result" style="display:none;">
@@ -273,37 +257,37 @@
     <!-- ===== Section: Numerology ===== -->
     <section id="section-numerology" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">🔢</span> Numerology · 生命灵数</div>
+        <div class="card-title"><span class="icon">🔢</span> 生命灵数 · Numerology</div>
         <form id="numerology-form">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="numerology-name">Name / 姓名</label>
-              <input class="form-input" id="numerology-name" type="text" placeholder="Your full name" value="Jane Doe">
+              <label class="form-label" for="numerology-name">姓名 / Name</label>
+              <input class="form-input" id="numerology-name" type="text" placeholder="你的全名" value="Jane Doe">
             </div>
           </div>
           <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
             <div class="form-group">
-              <label class="form-label" for="numerology-year">Year / 年</label>
+              <label class="form-label" for="numerology-year">年 / Year</label>
               <select class="form-select" id="numerology-year"></select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="numerology-month">Month / 月</label>
+              <label class="form-label" for="numerology-month">月 / Month</label>
               <select class="form-select" id="numerology-month"></select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="numerology-day">Day / 日</label>
+              <label class="form-label" for="numerology-day">日 / Day</label>
               <select class="form-select" id="numerology-day"></select>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">🔮 Calculate · 计算灵数</button>
+          <button type="submit" class="btn btn-primary">🔮 计算灵数 · Calculate</button>
         </form>
       </div>
 
       <!-- Numerology Results -->
       <div class="card" id="numerology-result-card" style="display:none;">
-        <div class="card-title"><span class="icon">✨</span> Your Numbers · 你的生命灵数</div>
+        <div class="card-title"><span class="icon">✨</span> 你的生命灵数 · Your Numbers</div>
         <div class="numerology-results" id="numerology-results"></div>
-        <button id="numerology-ai-btn" class="btn btn-purple" style="margin-top:1rem;">🤖 AI Reading · AI解读</button>
+        <button id="numerology-ai-btn" class="btn btn-purple" style="margin-top:1rem;">🤖 AI解读 · AI Reading</button>
         <div class="reading-output" id="numerology-ai-output"></div>
         <button class="share-btn" id="share-numerology-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
@@ -313,91 +297,91 @@
     <section id="section-fortune" class="section">
       <!-- Tarot -->
       <div class="card">
-        <div class="card-title"><span class="icon">🃏</span> <span data-key="tarot-title">Tarot · 塔罗占卜</span></div>
-        
+        <div class="card-title"><span class="icon">🃏</span> <span data-key="tarot-title">塔罗占卜 · Tarot</span></div>
+
         <!-- Question Input -->
         <div class="form-group">
-          <label class="form-label" for="tarot-question"><span data-key="tarot-question-label">Your Question / 你的问题</span></label>
-          <input class="form-input" id="tarot-question" type="text" 
-            placeholder="e.g. What does my career path look like? / 我的事业发展如何？">
+          <label class="form-label" for="tarot-question"><span data-key="tarot-question-label">你的问题 / Your Question</span></label>
+          <input class="form-input" id="tarot-question" type="text"
+            placeholder="我的事业发展如何？ / What does my career path look like?">
         </div>
 
         <!-- Spread Selector -->
         <div class="form-group">
-          <label class="form-label"><span data-key="tarot-spread-label">Choose a Spread / 选择牌阵</span></label>
+          <label class="form-label"><span data-key="tarot-spread-label">选择牌阵 / Choose a Spread</span></label>
           <div class="spread-selector" id="spread-selector">
             <button class="spread-btn active" data-spread="three-card">
               <span class="spread-icon">3️⃣</span>
-              <span class="spread-name">Three-Card</span>
-              <span class="spread-desc">Past · Present · Future</span>
+              <span class="spread-name">三张牌</span>
+              <span class="spread-desc">过去 · 现在 · 未来</span>
             </button>
             <button class="spread-btn" data-spread="celtic-cross">
               <span class="spread-icon">✝️</span>
-              <span class="spread-name">Celtic Cross</span>
-              <span class="spread-desc">Deep insight</span>
+              <span class="spread-name">凯尔特十字</span>
+              <span class="spread-desc">深度洞察</span>
             </button>
             <button class="spread-btn" data-spread="love">
               <span class="spread-icon">💕</span>
-              <span class="spread-name">Love</span>
-              <span class="spread-desc">Relationship insight</span>
+              <span class="spread-name">爱情</span>
+              <span class="spread-desc">关系洞察</span>
             </button>
             <button class="spread-btn" data-spread="career">
               <span class="spread-icon">💼</span>
-              <span class="spread-name">Career</span>
-              <span class="spread-desc">Work & purpose</span>
+              <span class="spread-name">事业</span>
+              <span class="spread-desc">工作与使命</span>
             </button>
             <button class="spread-btn" data-spread="daily">
               <span class="spread-icon">☀️</span>
-              <span class="spread-name">Daily</span>
-              <span class="spread-desc">One-card guidance</span>
+              <span class="spread-name">每日</span>
+              <span class="spread-desc">单张指引</span>
             </button>
           </div>
         </div>
 
         <!-- Draw Button -->
-        <button class="btn btn-primary" id="tarot-draw-btn">🃏 Draw Cards · 抽牌</button>
+        <button class="btn btn-primary" id="tarot-draw-btn">🃏 抽牌 · Draw Cards</button>
       </div>
 
       <!-- Tarot Result -->
       <div class="card" id="tarot-result" style="display:none;">
         <div class="card-title" style="justify-content:space-between;">
-          <span><span class="icon">🃏</span> <span id="tarot-spread-name">Your Reading</span></span>
+          <span><span class="icon">🃏</span> <span id="tarot-spread-name">你的占卜</span></span>
           <button class="btn btn-danger" id="tarot-redraw-btn" style="padding:6px 14px;font-size:0.8rem;">
-            🔄 Redraw · 重抽
+            🔄 重抽 · Redraw
           </button>
         </div>
-        
+
         <!-- Cards Display -->
         <div class="tarot-cards" id="tarot-cards-display"></div>
-        
+
         <!-- AI Reading -->
         <div class="reading-output" id="tarot-reading-output">
           <div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
-            Draw cards to receive your reading
+            抽牌获取解读 / Draw cards for your reading
           </div>
         </div>
         <button class="share-btn" id="share-tarot-btn" style="display:none;" aria-label="Share">📤</button>
       </div>
       <div class="card">
-        <div class="card-title"><span class="icon">☯</span> I Ching · 周易占卜</div>
+        <div class="card-title"><span class="icon">☯</span> 周易占卜 · I Ching</div>
 
         <!-- Question Input -->
         <div class="form-group">
-          <label class="form-label" for="iching-question"><span data-key="iching-question-label">Your Question / 你的问题</span></label>
+          <label class="form-label" for="iching-question"><span data-key="iching-question-label">你的问题 / Your Question</span></label>
           <input class="form-input" id="iching-question" type="text"
-            placeholder="e.g. What guidance does the universe have for me? / 宇宙对我有何指引？">
+            placeholder="宇宙对我有何指引？ / What guidance does the universe have for me?">
         </div>
 
         <!-- Cast Button -->
-        <button class="btn btn-primary" id="iching-cast-btn">☯ Cast Hexagram · 摇卦</button>
+        <button class="btn btn-primary" id="iching-cast-btn">☯ 摇卦 · Cast Hexagram</button>
       </div>
 
       <!-- IChing Result -->
       <div class="card" id="iching-result" style="display:none;">
         <div class="card-title" style="justify-content:space-between;">
-          <span><span class="icon">☯</span> I Ching · 周易</span>
+          <span><span class="icon">☯</span> 周易 · I Ching</span>
           <button class="btn btn-danger" id="iching-recast-btn" style="padding:6px 14px;font-size:0.8rem;">
-            🔄 Recast · 重摇
+            🔄 重摇 · Recast
           </button>
         </div>
 
@@ -420,12 +404,12 @@
         <div class="iching-moving-lines" id="iching-moving-lines" style="display:none;"></div>
 
         <!-- AI Reading Button -->
-        <button class="btn btn-purple" id="iching-ai-btn" style="margin-top:0.8rem;">🤖 AI Interpretation · AI解卦</button>
+        <button class="btn btn-purple" id="iching-ai-btn" style="margin-top:0.8rem;">🤖 AI解卦 · AI Interpretation</button>
 
         <!-- AI Reading Output -->
         <div class="reading-output" id="iching-reading-output" style="margin-top:0.8rem;">
           <div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
-            Cast the hexagram to receive your reading
+            摇卦获取解读 / Cast the hexagram for your reading
           </div>
         </div>
         <button class="share-btn" id="share-iching-btn" style="display:none;" aria-label="Share">📤</button>
@@ -537,31 +521,25 @@
         <button class="modal-close" id="premium-close">&times;</button>
         <div style="text-align:center;">
           <div style="font-size:3rem;margin-bottom:0.5rem;">🌟</div>
-          <h2 class="modal-title">Unlock Unlimited AI · 解锁无限解读</h2>
+          <h2 class="modal-title">解锁无限解读</h2>
           <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
-            Get unlimited AI readings, priority responses, and exclusive cosmic insights.
+            免费次数已用完，添加好友咨询获取卡密解锁
           </p>
-          <div class="premium-price">
-            <span class="premium-price-amount">¥19.9</span>
-            <span class="premium-price-label">One-time · 永久解锁</span>
-          </div>
           <div class="wechat-pay-box">
-            <div class="wechat-pay-icon">💳</div>
-            <div class="wechat-pay-text">WeChat Pay · 微信支付</div>
+            <div class="wechat-pay-icon">💬</div>
+            <div class="wechat-pay-text">添加微信好友咨询</div>
             <div class="wechat-pay-qr">
-              <div class="qr-placeholder">
-                <span>[ QR ]</span>
-              </div>
+              <img src="images/wechat-qr.jpg" alt="微信二维码" style="width:180px;height:180px;border-radius:8px;display:block;">
             </div>
-            <div class="wechat-pay-note">Scan to pay · 扫码支付 ¥19.9</div>
+            <div class="wechat-pay-note">扫码加好友 · 获取卡密</div>
           </div>
-          <div class="premium-divider"><span>OR · 或者</span></div>
+          <div class="premium-divider"><span>已有卡密？输入解锁</span></div>
           <form id="premium-form">
             <div class="form-group">
-              <label class="form-label">Unlock Code / 解锁码</label>
-              <input class="form-input" id="premium-code" type="text" placeholder="SW-XXXXXXXX" maxlength="12" style="text-align:center;letter-spacing:0.15em;font-family:monospace;">
+              <label class="form-label">卡密</label>
+              <input class="form-input" id="premium-code" type="text" placeholder="输入16位卡密" maxlength="16" style="text-align:center;letter-spacing:0.15em;font-family:monospace;">
             </div>
-            <button type="submit" class="btn btn-purple">🔓 Unlock · 解锁</button>
+            <button type="submit" class="btn btn-purple">🔓 解锁</button>
           </form>
           <p id="premium-error" class="premium-error" style="display:none;"></p>
         </div>
@@ -600,7 +578,7 @@
     <!-- ===== Footer ===== -->
     <footer style="text-align:center;padding:2rem 0 1rem;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border-subtle);margin-top:2rem;">
       <p>✦ StarWeaver · 星织者 ✦</p>
-      <p style="margin-top:0.3rem;">Powered by DeepSeek AI · 以星辰之名编织命运</p>
+      <p style="margin-top:0.3rem;">Powered by StarWeaver · 以星辰之名编织命运</p>
     </footer>
 
   </div>

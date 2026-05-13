@@ -1,7 +1,7 @@
 /* ============================================
    StarWeaver - user.js
    User System + Premium + Usage Tracking
-   API-first with localStorage fallback, IIFE pattern
+   API-first with localStorage cache, IIFE pattern
    ============================================ */
 
 const User = (() => {
@@ -11,11 +11,10 @@ const User = (() => {
     userId: 'starweaver_userId',
     token: 'starweaver_token',
     profile: 'starweaver_user',
-    usage: 'starweaver_usage',
     premium: 'starweaver_premium',
   };
 
-  const FREE_DAILY_LIMIT = 3;
+  const FREE_TOTAL_LIMIT = 3;
 
   let lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
 
@@ -39,29 +38,6 @@ const User = (() => {
 
   function isPremiumSync() {
     try { return localStorage.getItem(KEYS.premium) === 'true'; } catch (e) { return false; }
-  }
-
-  function getUsage() {
-    try {
-      const data = localStorage.getItem(KEYS.usage);
-      return data ? JSON.parse(data) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function saveUsage(usage) {
-    try {
-      localStorage.setItem(KEYS.usage, JSON.stringify(usage));
-    } catch (e) { /* silent */ }
-  }
-
-  function getTodayKey() {
-    const d = new Date();
-    return d.getFullYear() + '-'
-      + String(d.getMonth() + 1).padStart(2, '0')
-      + '-'
-      + String(d.getDate()).padStart(2, '0');
   }
 
   // ===== Profile (localStorage cache) =====
@@ -144,7 +120,7 @@ const User = (() => {
     if (isPremiumSync()) return true;
 
     const userId = getUserId();
-    // Try API for real-time check
+    // Check via API for real-time total usage
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.checkUsage(userId);
@@ -153,17 +129,14 @@ const User = (() => {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return true;
         }
-        return (result.remaining || 0) > 0;
+        return result.remaining > 0;
       } catch (e) {
-        // API unreachable — fall through to localStorage fallback
+        // API unreachable — allow access
       }
     }
 
-    // Fallback: localStorage usage counter
-    if (isPremiumSync()) return true;
-    const usage = getUsage();
-    if (!usage || usage.date !== getTodayKey()) return true;
-    return usage.count < FREE_DAILY_LIMIT;
+    // Local users or offline: no restriction
+    return true;
   }
 
   async function useAICredit() {
@@ -171,23 +144,10 @@ const User = (() => {
 
     const userId = getUserId();
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
-      try {
-        await Api.trackUsage(userId);
-        return;
-      } catch (e) {
-        // API unreachable — fall through to localStorage fallback
-      }
+      await Api.trackUsage(userId);
+      return;
     }
-
-    // Fallback: localStorage usage counter
-    const today = getTodayKey();
-    const usage = getUsage();
-    if (!usage || usage.date !== today) {
-      saveUsage({ date: today, count: 1 });
-    } else {
-      usage.count += 1;
-      saveUsage(usage);
-    }
+    // Local users: no-op (cannot track without API)
   }
 
   async function getRemainingFree() {
@@ -204,15 +164,12 @@ const User = (() => {
         }
         return result.remaining || 0;
       } catch (e) {
-        // API unreachable — fall through
+        // API unreachable
       }
     }
 
-    // Fallback: localStorage
-    if (isPremiumSync()) return Infinity;
-    const usage = getUsage();
-    if (!usage || usage.date !== getTodayKey()) return FREE_DAILY_LIMIT;
-    return Math.max(0, FREE_DAILY_LIMIT - usage.count);
+    // Local users or offline: unlimited
+    return Infinity;
   }
 
   // ===== Premium =====
@@ -265,6 +222,26 @@ const User = (() => {
     return true;
   }
 
+  async function redeemCode(code) {
+    if (!code || typeof code !== 'string') return false;
+    const trimmed = code.trim().toUpperCase();
+
+    const userId = getUserId();
+    if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
+      try {
+        const result = await Api.redeemCode(userId, trimmed);
+        if (result.premium) {
+          try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
+          return true;
+        }
+        return false;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
   // ===== History =====
   async function saveReading(type, content) {
     const userId = getUserId();
@@ -293,7 +270,6 @@ const User = (() => {
       localStorage.removeItem(KEYS.userId);
       localStorage.removeItem(KEYS.token);
       localStorage.removeItem(KEYS.profile);
-      localStorage.removeItem(KEYS.usage);
       localStorage.removeItem(KEYS.premium);
     } catch (e) { /* silent */ }
   }
@@ -328,6 +304,7 @@ const User = (() => {
     useAICredit,
     isPremium,
     unlockPremium,
+    redeemCode,
     logout,
     getRemainingFree,
     saveReading,

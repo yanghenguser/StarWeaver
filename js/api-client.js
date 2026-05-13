@@ -63,6 +63,10 @@ const Api = (() => {
     return request('unlockPremium', { userId, code });
   }
 
+  async function redeemCode(userId, code) {
+    return request('redeemCode', { userId, code });
+  }
+
   async function saveReading(userId, type, content) {
     return request('saveReading', { userId, type, content });
   }
@@ -78,6 +82,7 @@ const Api = (() => {
     checkUsage,
     trackUsage,
     unlockPremium,
+    redeemCode,
     saveReading,
     getHistory,
   };

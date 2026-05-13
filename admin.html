@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>StarWeaver Admin · 管理后台</title>
+<style>
+:root{--bg-deep:#0a0a1a;--bg-card:rgba(16,16,42,0.85);--gold:#d4af37;--gold-dark:#b8960f;--purple:#9b59b6;--text-primary:#e8e0f0;--text-secondary:#a89bb5;--text-muted:#6b5f7a;--border-subtle:rgba(212,175,55,0.15);--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans SC',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh}
+/* Login */
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.admin-logo{font-size:1.5rem;color:var(--gold);margin-bottom:2rem;letter-spacing:.1em}
+.login-input{background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-primary);padding:12px 20px;border-radius:var(--radius);width:320px;max-width:100%;font-size:1rem;outline:none;transition:border-color .3s}
+.login-input:focus{border-color:var(--gold)}
+.login-btn{background:var(--gold);color:#000;border:none;padding:12px 40px;border-radius:var(--radius);font-size:1rem;cursor:pointer;margin-top:1rem;font-weight:600;transition:opacity .3s}
+.login-btn:hover{opacity:.9}
+.login-error{color:#ff6b6b;margin-top:1rem;font-size:.9rem}
+/* Dashboard */
+.dashboard{display:none}
+.dash-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border-subtle)}
+.dash-header h1{color:var(--gold);font-size:1.2rem}
+.logout-btn{background:transparent;color:var(--text-secondary);border:1px solid var(--border-subtle);padding:8px 16px;border-radius:var(--radius);cursor:pointer;font-size:.85rem}
+.logout-btn:hover{color:#ff6b6b;border-color:#ff6b6b}
+/* Tabs */
+.tab-nav{display:flex;border-bottom:1px solid var(--border-subtle);padding:0 20px}
+.tab-btn{background:none;border:none;color:var(--text-muted);padding:14px 24px;cursor:pointer;font-size:.9rem;border-bottom:2px solid transparent;transition:all .3s}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-content{display:none;padding:20px}
+.tab-content.active{display:block}
+.tab-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tab-header h2{font-size:1rem;color:var(--text-primary)}
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border-subtle);font-size:.85rem}
+th{color:var(--gold);font-weight:600;white-space:nowrap}
+td{color:var(--text-secondary)}
+tr:hover td{background:rgba(212,175,55,.05)}
+.premium-badge{display:inline-block;background:var(--gold);color:#000;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600}
+.refresh-btn{background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--gold);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-size:.85rem;transition:all .3s}
+.refresh-btn:hover{border-color:var(--gold)}
+.loading-text{text-align:center;padding:2rem;color:var(--text-muted)}
+.empty-state{text-align:center;padding:2rem;color:var(--text-muted);font-size:.9rem}
+/* Expandable log rows */
+.expand-btn{background:none;border:1px solid var(--border-subtle);color:var(--gold);padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.75rem}
+.log-detail-row td{padding:0!important}
+.log-detail{padding:14px 18px;background:rgba(0,0,0,.3);margin:4px 8px;border-radius:8px;font-size:.8rem;line-height:1.6}
+.log-detail-label{color:var(--gold);font-weight:600;margin-top:10px}
+.log-detail-label:first-child{margin-top:0}
+.log-detail pre{white-space:pre-wrap;word-break:break-all;margin-top:4px;color:var(--text-secondary)}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border-subtle);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){
+  th,td{padding:8px 10px;font-size:.8rem}
+  .tab-btn{padding:12px 16px;font-size:.85rem}
+  .dash-header{flex-direction:column;gap:10px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+  <div class="admin-logo">✦ StarWeaver Admin ✦</div>
+  <input class="login-input" id="pw-input" type="password" placeholder="Enter admin password" autocomplete="current-password">
+  <button class="login-btn" id="login-btn">🔓 Login</button>
+  <div id="login-error" class="login-error"></div>
+</div>
+
+<div id="dashboard" class="dashboard">
+  <div class="dash-header">
+    <h1>✦ StarWeaver Admin ✦</h1>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="users" onclick="switchTab('users')">👥 Users</button>
+    <button class="tab-btn" data-tab="codes" onclick="switchTab('codes')">🔑 Codes</button>
+    <button class="tab-btn" data-tab="logs" onclick="switchTab('logs')">📋 AI Logs</button>
+  </div>
+
+  <div id="tab-users" class="tab-content active">
+    <div class="tab-header">
+      <h2>User Management</h2>
+      <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Registered</th><th>Premium</th></tr></thead>
+        <tbody id="users-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-codes" class="tab-content">
+    <div class="tab-header">
+      <h2>Premium Codes</h2>
+      <div style="display:flex;gap:8px">
+        <button class="refresh-btn" onclick="loadCodes()">🔄 Refresh</button>
+        <button class="refresh-btn" onclick="generateCode()" style="background:var(--gold);color:#000;font-weight:600">➕ Generate Code</button>
+      </div>
+    </div>
+    <div id="new-code-box" style="display:none;background:rgba(212,175,55,0.1);border:1px solid var(--gold);border-radius:var(--radius);padding:16px;margin-bottom:16px;text-align:center">
+      <div style="color:var(--gold);font-size:.8rem;margin-bottom:6px">✨ New Code Generated</div>
+      <div id="new-code-value" style="font-family:monospace;font-size:1.4rem;color:#fff;letter-spacing:.15em;font-weight:700"></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Code</th><th>Status</th><th>Used By</th><th>Used At</th></tr></thead>
+        <tbody id="codes-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-logs" class="tab-content">
+    <div class="tab-header">
+      <h2>AI Call Logs</h2>
+      <button class="refresh-btn" onclick="loadLogs()">🔄 Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User ID</th><th>Type</th><th>Prompt</th><th>Time</th><th></th></tr></thead>
+        <tbody id="logs-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api/starweaver.js';
+let adminToken = '';
+
+function $id(id){return document.getElementById(id)}
+
+async function callApi(action, extra) {
+  const r = await fetch(API, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action,...extra})
+  });
+  return r.json();
+}
+
+async function adminLogin() {
+  const pw = $id('pw-input').value;
+  if (!pw) return;
+  $id('login-error').textContent = '';
+  const r = await callApi('adminLogin', {password:pw});
+  if (r.ok && r.token) {
+    adminToken = r.token;
+    $id('login-screen').style.display = 'none';
+    $id('dashboard').style.display = 'block';
+    loadUsers();
+  } else {
+    $id('login-error').textContent = '❌ Invalid password';
+  }
+}
+
+function logout() {
+  adminToken = '';
+  $id('dashboard').style.display = 'none';
+  $id('login-screen').style.display = 'flex';
+  $id('pw-input').value = '';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  $id('tab-'+tab).classList.add('active');
+  if (tab==='users') loadUsers(); else if (tab==='codes') loadCodes(); else loadLogs();
+}
+
+async function loadUsers() {
+  const tbody = $id('users-body');
+  tbody.innerHTML = '<tr><td colspan="5" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
+  const r = await callApi('adminGetUsers', {adminToken});
+  if (!r.ok || !r.users) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load</td></tr>'; return; }
+  if (!r.users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>'; return; }
+  tbody.innerHTML = r.users.map(u => `<tr>
+    <td style="font-family:monospace;font-size:.75rem">${esc(u.userId||'-')}</td>
+    <td>${esc(u.name||'-')}</td>
+    <td>${esc(u.email||'-')}</td>
+    <td style="white-space:nowrap">${fmtDate(u.createdAt)}</td>
+    <td>${u.premium ? '<span class="premium-badge">🌟 PREMIUM</span>' : '-'}</td>
+  </tr>`).join('');
+}
+
+async function loadLogs() {
+  const tbody = $id('logs-body');
+  tbody.innerHTML = '<tr><td colspan="5" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
+  const r = await callApi('adminGetLogs', {adminToken});
+  if (!r.ok || !r.logs) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load</td></tr>'; return; }
+  if (!r.logs.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No logs found</td></tr>'; return; }
+  window._logs = r.logs;
+  tbody.innerHTML = r.logs.map((log,i) => `<tr>
+    <td style="font-family:monospace;font-size:.75rem">${esc(log.userId||'-')}</td>
+    <td>${esc(log.type||'-')}</td>
+    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((log.prompt||'').slice(0,50))}</td>
+    <td style="white-space:nowrap">${fmtDate(log.timestamp)}</td>
+    <td><button class="expand-btn" onclick="toggleLog(${i})">${window._logOpen === i ? '▲' : '▼'}</button></td>
+  </tr>
+  <tr class="log-detail-row" id="detail-${i}" style="display:${window._logOpen === i ? 'table-row' : 'none'}">
+    <td colspan="5"><div class="log-detail">
+      <div class="log-detail-label">📝 Prompt:</div><pre>${esc(log.prompt||'')}</pre>
+      <div class="log-detail-label">🤖 Response:</div><pre>${esc(log.response||'')}</pre>
+    </div></td>
+  </tr>`).join('');
+}
+async function loadCodes() {
+  const tbody = $id('codes-body');
+  tbody.innerHTML = '<tr><td colspan="4" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
+  const r = await callApi('listCodes', {adminToken});
+  if (!r.ok || !r.codes) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load</td></tr>'; return; }
+  if (!r.codes.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No codes found</td></tr>'; return; }
+  tbody.innerHTML = r.codes.map(c => `<tr>
+    <td style="font-family:monospace;font-size:.8rem;letter-spacing:.1em">${esc(c.code)}</td>
+    <td>${c.status === 'active'
+      ? '<span style="color:#2ecc71;font-weight:600">● ACTIVE</span>'
+      : '<span style="color:#e74c3c;font-weight:600">● USED</span>'}</td>
+    <td style="font-family:monospace;font-size:.75rem">${esc(c.usedBy||'-')}</td>
+    <td style="white-space:nowrap">${c.usedAt ? fmtDate(c.usedAt) : '-'}</td>
+  </tr>`).join('');
+}
+
+async function generateCode() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+  const r = await callApi('generateCode', {adminToken});
+  btn.disabled = false;
+  btn.textContent = '➕ Generate Code';
+  if (r.ok && r.code) {
+    $id('new-code-value').textContent = r.code;
+    $id('new-code-box').style.display = 'block';
+    loadCodes();
+  } else {
+    alert('Failed to generate code');
+  }
+}
+
+window._logOpen = null;
+
+function toggleLog(i) {
+  window._logOpen = window._logOpen === i ? null : i;
+  loadLogs();
+}
+
+function fmtDate(d) {
+  if (!d) return '-';
+  try{return new Date(d).toLocaleString('zh-CN')}catch(e){return d}
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+$id('login-btn').addEventListener('click', adminLogin);
+$id('pw-input').addEventListener('keydown', e => { if (e.key==='Enter') adminLogin(); });
+</script>
+</body>
+</html>
