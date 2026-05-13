@@ -548,7 +548,7 @@ const App = (() => {
       return;
     }
 
-    if (!checkAIAccess()) return;
+    if (!await checkAIAccess()) return;
 
     const btn = document.getElementById('btn-ai-reading');
     const output = document.getElementById('ai-reading-output');
@@ -561,8 +561,9 @@ const App = (() => {
         output.innerHTML = '';
         AstroAI.typewriteText(output, reading, 25);
       }
-      if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
-      updateUsageUI();
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      if (typeof User !== 'undefined') User.saveReading('natal', reading);
+      await updateUsageUI();
     } catch (err) {
       if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
     } finally {
@@ -665,7 +666,7 @@ const App = (() => {
       return;
     }
 
-    if (!checkAIAccess()) return;
+    if (!await checkAIAccess()) return;
 
     if (btn) btn.disabled = true;
     if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Reading the cosmic tides...', '正在读取宇宙潮汐...')}</div>`;
@@ -678,8 +679,9 @@ const App = (() => {
           showShareButton('share-horoscope-btn', 'horoscope', horoscope);
         });
       }
-      if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
-      updateUsageUI();
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      if (typeof User !== 'undefined') User.saveReading('horoscope', horoscope);
+      await updateUsageUI();
     } catch (err) {
       if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
     } finally {
@@ -710,7 +712,7 @@ const App = (() => {
         
         // AI reading if key available
         if (typeof AstroAI !== "undefined" && AstroAI.hasApiKey()) {
-          if (!checkAIAccess()) { /* silently skip AI reading */ }
+          if (!await checkAIAccess()) { /* silently skip AI reading */ }
           else try {
             const aiReading = await AstroAI.getCompatibilityReading(name1, sign1, name2, sign2, score, lang);
             const el = document.getElementById('compat-ai-reading');
@@ -718,8 +720,8 @@ const App = (() => {
               el.innerHTML = '';
               AstroAI.typewriteText(el, aiReading, 25);
             }
-            if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
-            updateUsageUI();
+            if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+            await updateUsageUI();
           } catch (err) {
             // Silent fallback
           }
@@ -747,7 +749,7 @@ const App = (() => {
         
         if (!question || typeof AstroAI === "undefined" || !AstroAI.hasApiKey()) return;
 
-        if (!checkAIAccess()) return;
+        if (!await checkAIAccess()) return;
 
         // Add user message
         const userMsg = document.createElement('div');
@@ -771,8 +773,8 @@ const App = (() => {
           AstroAI.typewriteText(textDiv, answer, 20, () => {
             messages.scrollTop = messages.scrollHeight;
           });
-          if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
-          updateUsageUI();
+          if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+          await updateUsageUI();
         } catch (err) {
           aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div style="color:#ef4444;">${t('The cosmic connection faltered', '宇宙连接中断')}: ${err.message}</div>`;
         }
@@ -883,8 +885,9 @@ const App = (() => {
           showShareButton('share-tarot-btn', 'tarot', reading);
         });
       }
-      if (typeof User !== 'undefined' && User.isLoggedIn()) User.useAICredit();
-      updateUsageUI();
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      if (typeof User !== 'undefined') User.saveReading('tarot', reading);
+      await updateUsageUI();
     } catch (err) {
       if (readingOutput) {
         readingOutput.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
@@ -1048,6 +1051,8 @@ const App = (() => {
     }
     if (!_ichingLines) return;
 
+    if (!await checkAIAccess()) return;
+
     const hexagram = IChing.getHexagram(_ichingLines);
     const changingHex = IChing.getChangingHexagram(_ichingLines);
     const question = document.getElementById('iching-question')?.value?.trim() || '';
@@ -1069,6 +1074,9 @@ const App = (() => {
           showShareButton('share-iching-btn', 'iching', reading);
         });
       }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      if (typeof User !== 'undefined') User.saveReading('iching', reading);
+      await updateUsageUI();
     } catch (err) {
       if (output) {
         output.innerHTML = `<div style="color:#ef4444;">
@@ -1285,6 +1293,8 @@ const App = (() => {
       return;
     }
 
+    if (!await checkAIAccess()) return;
+
     const btn = document.getElementById('dream-btn');
     if (btn) btn.disabled = true;
     if (output) {
@@ -1299,6 +1309,9 @@ const App = (() => {
         output.innerHTML = '';
         AstroAI.typewriteText(output, reading, 25);
       }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      if (typeof User !== 'undefined') User.saveReading('dream', reading);
+      await updateUsageUI();
     } catch (err) {
       if (output) {
         output.innerHTML = `<div style="color:#ef4444;">
@@ -1412,6 +1425,8 @@ const App = (() => {
       return;
     }
 
+    if (!await checkAIAccess()) return;
+
     const name = document.getElementById('numerology-name').value.trim() || t('Seeker', '求问者');
     const year = parseInt(document.getElementById('numerology-year').value);
     const month = parseInt(document.getElementById('numerology-month').value);
@@ -1446,6 +1461,9 @@ const App = (() => {
           showShareButton('share-numerology-btn', 'numerology', reading);
         });
       }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      if (typeof User !== 'undefined') User.saveReading('numerology', reading);
+      await updateUsageUI();
     } catch (err) {
       if (output) {
         output.innerHTML = `<div style="color:#ef4444;">
@@ -1558,6 +1576,21 @@ const App = (() => {
 
     // Populate auth birth date selects
     populateAuthDateSelects();
+
+    // History button
+    initHistoryButton();
+
+    // History modal close
+    const historyClose = document.getElementById('history-close');
+    if (historyClose) historyClose.addEventListener('click', closeHistory);
+    const historyCloseBtn = document.getElementById('history-close-btn');
+    if (historyCloseBtn) historyCloseBtn.addEventListener('click', closeHistory);
+    const historyModal = document.getElementById('history-modal');
+    if (historyModal) {
+      historyModal.addEventListener('click', (e) => {
+        if (e.target === historyModal) closeHistory();
+      });
+    }
   }
 
   function populateAuthDateSelects() {
@@ -1598,7 +1631,7 @@ const App = (() => {
     }
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     if (typeof User === 'undefined') return;
 
     const name = document.getElementById('auth-name')?.value?.trim();
@@ -1608,11 +1641,8 @@ const App = (() => {
     }
 
     const email = document.getElementById('auth-email')?.value?.trim() || '';
-    const birthYear = document.getElementById('auth-year')?.value || '';
-    const birthMonth = document.getElementById('auth-month')?.value || '';
-    const birthDay = document.getElementById('auth-day')?.value || '';
 
-    User.register({ name, email, birthYear, birthMonth, birthDay });
+    await User.register(name, email);
     hideAuthModal();
     updateUserUI();
     updateUsageUI();
@@ -1673,7 +1703,7 @@ const App = (() => {
     if (modal) modal.style.display = 'none';
   }
 
-  function handlePremiumUnlock() {
+  async function handlePremiumUnlock() {
     if (typeof User === 'undefined') return;
 
     const codeInput = document.getElementById('premium-code');
@@ -1687,7 +1717,7 @@ const App = (() => {
       return;
     }
 
-    const success = User.unlockPremium(code);
+    const success = await User.unlockPremium(code);
     if (success) {
       errorEl.style.display = 'none';
       codeInput.value = '';
@@ -1701,13 +1731,13 @@ const App = (() => {
     }
   }
 
-  function checkAIAccess() {
+  async function checkAIAccess() {
     if (typeof User === 'undefined') return true;
     if (!User.isLoggedIn()) {
       showAuthModal();
       return false;
     }
-    if (!User.canUseAI()) {
+    if (!await User.canUseAI()) {
       showPremiumModal();
       return false;
     }
@@ -1719,32 +1749,41 @@ const App = (() => {
     const userBtn = document.getElementById('user-btn');
     if (!userBtn) return;
 
+    const historyBtn = document.getElementById('history-btn');
+
     if (User.isLoggedIn()) {
       const profile = User.getProfile();
       const initial = (profile && profile.name) ? profile.name.charAt(0).toUpperCase() : '?';
       userBtn.textContent = initial;
       userBtn.className = 'user-btn logged-in';
       userBtn.style.display = 'flex';
+      if (historyBtn) historyBtn.style.display = 'flex';
     } else {
       userBtn.textContent = '👤';
       userBtn.className = 'user-btn';
       userBtn.style.display = 'flex';
+      if (historyBtn) historyBtn.style.display = 'none';
     }
   }
 
-  function updateUsageUI() {
+  async function updateUsageUI() {
     const counter = document.getElementById('usage-counter');
     if (typeof User === 'undefined') {
       if (counter) counter.style.display = 'none';
       return;
     }
 
-    if (!User.isLoggedIn() || User.isPremium()) {
+    if (!User.isLoggedIn()) {
       if (counter) counter.style.display = 'none';
       return;
     }
 
-    const remaining = User.getRemainingFree();
+    if (await User.isPremium()) {
+      if (counter) counter.style.display = 'none';
+      return;
+    }
+
+    const remaining = await User.getRemainingFree();
     if (!counter) return;
 
     counter.style.display = 'flex';
@@ -1761,6 +1800,77 @@ const App = (() => {
     counter.innerHTML = '';
     counter.appendChild(dot);
     counter.appendChild(document.createTextNode(' ' + User.t('Free: ' + remaining + ' left today', '剩余 ' + remaining + ' 次')));
+  }
+
+  // ===== Reading History =====
+  function initHistoryButton() {
+    const btn = document.getElementById('history-btn');
+    if (!btn) return;
+    btn.addEventListener('click', openHistory);
+  }
+
+  async function openHistory() {
+    if (typeof User === 'undefined') return;
+    const modal = document.getElementById('history-modal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:2rem;">
+      ${t('Loading history...', '正在加载历史记录...')}
+    </div>`;
+
+    const readings = await User.getHistory();
+    renderHistoryList(readings);
+  }
+
+  function closeHistory() {
+    const modal = document.getElementById('history-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function renderHistoryList(readings) {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+
+    if (!readings || readings.length === 0) {
+      list.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:2rem;">
+        ${t('No reading history yet', '暂无阅读历史')}
+      </div>`;
+      return;
+    }
+
+    const TYPE_ICONS = {
+      horoscope: '⭐', tarot: '🃏', iching: '☯',
+      numerology: '🔢', natal: '🌀', dream: '🌙',
+    };
+    const TYPE_NAMES = {
+      horoscope: { en: 'Horoscope', zh: '运势' },
+      tarot:     { en: 'Tarot', zh: '塔罗' },
+      iching:    { en: 'I Ching', zh: '周易' },
+      numerology:{ en: 'Numerology', zh: '生命灵数' },
+      natal:     { en: 'Natal Chart', zh: '星盘' },
+      dream:     { en: 'Dream', zh: '解梦' },
+    };
+
+    list.innerHTML = readings.map(r => {
+      const icon = TYPE_ICONS[r.type] || '📜';
+      const typeName = TYPE_NAMES[r.type]
+        ? (TYPE_NAMES[r.type][lang] || TYPE_NAMES[r.type].en)
+        : r.type;
+      const date = r.createdAt ? r.createdAt.substring(0, 10) : '';
+      const text = r.content || '';
+      const preview = text.length > 50 ? text.substring(0, 50) + '...' : text;
+      return `<div class="history-item">
+        <span class="history-item-icon">${icon}</span>
+        <div class="history-item-info">
+          <span class="history-item-type">${typeName}</span>
+          <span class="history-item-date">${date}</span>
+          <span class="history-item-preview">${preview}</span>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // ===== Share Card Integration =====

@@ -111,7 +111,24 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { action, ...params } = req.method === 'GET' ? req.query : req.body;
+  // Parse action from query (GET) or body (POST)
+  let action, params = {};
+  if (req.method === 'GET') {
+    action = req.query?.action;
+    params = req.query || {};
+  } else if (req.body && typeof req.body === 'object') {
+    action = req.body.action;
+    params = req.body;
+  } else {
+    return res.status(400).json({ error: 'Invalid request body. Send JSON with action field.' });
+  }
+  if (!action) {
+    return res.json({
+      ok: true, service: 'StarWeaver API', version: '1.0.0',
+      endpoints: ['register', 'login', 'checkUsage', 'trackUsage', 'unlockPremium', 'saveReading', 'getHistory'],
+      usage: 'POST JSON with {action, ...params} to this endpoint'
+    });
+  }
   const headers = corsHeaders();
   Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
 

@@ -1,0 +1,84 @@
+/* ============================================
+   StarWeaver - api-client.js
+   Backend API Client — IIFE pattern
+   ============================================ */
+
+const Api = (() => {
+  'use strict';
+
+  const BASE = 'https://starweaver-app.vercel.app/api/starweaver';
+
+  let lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
+
+  function t(en, zh) {
+    return lang === 'zh' ? zh : en;
+  }
+
+  async function request(action, data = {}) {
+    const body = JSON.stringify({ action, ...data });
+    let response;
+    try {
+      response = await fetch(BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+    } catch (e) {
+      throw new Error(t('Network error — please check your connection', '网络错误 — 请检查网络连接'));
+    }
+
+    let json;
+    try {
+      json = await response.json();
+    } catch (e) {
+      throw new Error(t('Invalid server response', '服务器响应异常'));
+    }
+
+    if (!json || json.ok !== true) {
+      throw new Error(json && json.error ? json.error : t('Request failed', '请求失败'));
+    }
+
+    return json;
+  }
+
+  // ===== Public API Methods =====
+
+  async function register(name, email) {
+    return request('register', { name, email: email || '' });
+  }
+
+  async function login(userId) {
+    return request('login', { userId });
+  }
+
+  async function checkUsage(userId) {
+    return request('checkUsage', { userId });
+  }
+
+  async function trackUsage(userId) {
+    return request('trackUsage', { userId });
+  }
+
+  async function unlockPremium(userId, code) {
+    return request('unlockPremium', { userId, code });
+  }
+
+  async function saveReading(userId, type, content) {
+    return request('saveReading', { userId, type, content });
+  }
+
+  async function getHistory(userId) {
+    return request('getHistory', { userId });
+  }
+
+  return {
+    BASE,
+    register,
+    login,
+    checkUsage,
+    trackUsage,
+    unlockPremium,
+    saveReading,
+    getHistory,
+  };
+})();

@@ -25,6 +25,7 @@
     <!-- ===== Header ===== -->
     <header class="header">
       <button id="user-btn" class="user-btn" style="display:none;" aria-label="User menu">👤</button>
+      <button id="history-btn" class="history-btn" style="display:none;" aria-label="Reading history">📖</button>
       <button class="language-toggle" aria-label="Toggle language">EN</button>
       <h1 class="header-title">✦ StarWeaver ✦</h1>
       <p class="header-subtitle" data-lang="subtitle">星 织 者 · 宇 宙 之 镜</p>
@@ -567,6 +568,20 @@
       </div>
     </div>
 
+    <!-- ===== History Modal ===== -->
+    <div id="history-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card history-card">
+        <button class="modal-close" id="history-close">&times;</button>
+        <h2 class="modal-title">📖 <span data-lang="history-title">My Reading History · 阅读历史</span></h2>
+        <div id="history-list" class="history-list">
+          <div style="text-align:center;color:var(--text-muted);padding:2rem;">
+            Loading history...
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="history-close-btn" style="margin-top:1rem;width:100%;">Close · 关闭</button>
+      </div>
+    </div>
+
     <!-- ===== Share Preview Modal ===== -->
     <div id="share-preview-modal" class="modal-overlay" style="display:none;">
       <div class="modal-card share-preview-card">
@@ -597,6 +612,7 @@
   <script src="js/ai.js?v=4"></script>
   <script src="js/numerology.js"></script>
   <script src="js/luckyguide.js"></script>
+  <script src="js/api-client.js"></script>
   <script src="js/user.js"></script>
   <script src="js/share.js"></script>
   <script src="js/horoscope-daily.js"></script>
