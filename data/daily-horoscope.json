@@ -1,1 +1,54 @@
-{"date":"2026-05-13","horoscopes":{}}
+{
+  "date": "2026-05-13",
+  "generated_at": "2026-05-13T14:46:27.374916",
+  "horoscopes": {
+    "aries": {
+      "zh": "白羊座今日运势：星辰正在为你守护...",
+      "en": "aries: The stars are watching over you..."
+    },
+    "taurus": {
+      "zh": "金牛座今日运势：星辰正在为你守护...",
+      "en": "taurus: The stars are watching over you..."
+    },
+    "gemini": {
+      "zh": "双子座今日运势：星辰正在为你守护...",
+      "en": "gemini: The stars are watching over you..."
+    },
+    "cancer": {
+      "zh": "巨蟹座今日运势：星辰正在为你守护...",
+      "en": "cancer: The stars are watching over you..."
+    },
+    "leo": {
+      "zh": "狮子座今日运势：星辰正在为你守护...",
+      "en": "leo: The stars are watching over you..."
+    },
+    "virgo": {
+      "zh": "处女座今日运势：星辰正在为你守护...",
+      "en": "virgo: The stars are watching over you..."
+    },
+    "libra": {
+      "zh": "天秤座今日运势：星辰正在为你守护...",
+      "en": "libra: The stars are watching over you..."
+    },
+    "scorpio": {
+      "zh": "天蝎座今日运势：星辰正在为你守护...",
+      "en": "scorpio: The stars are watching over you..."
+    },
+    "sagittarius": {
+      "zh": "射手座今日运势：星辰正在为你守护...",
+      "en": "sagittarius: The stars are watching over you..."
+    },
+    "capricorn": {
+      "zh": "摩羯座今日运势：星辰正在为你守护...",
+      "en": "capricorn: The stars are watching over you..."
+    },
+    "aquarius": {
+      "zh": "水瓶座今日运势：星辰正在为你守护...",
+      "en": "aquarius: The stars are watching over you..."
+    },
+    "pisces": {
+      "zh": "双鱼座今日运势：星辰正在为你守护...",
+      "en": "pisces: The stars are watching over you..."
+    }
+  }
+}
