@@ -167,41 +167,19 @@ const Astro = (() => {
 
   // ===== Zodiac Calculation =====
   function getZodiac(month, day) {
-    const dates = [
-      { sign: 0, month: 3, day: 21 },  // Aries
-      { sign: 1, month: 4, day: 20 },  // Taurus
-      { sign: 2, month: 5, day: 21 },  // Gemini
-      { sign: 3, month: 6, day: 21 },  // Cancer
-      { sign: 4, month: 7, day: 23 },  // Leo
-      { sign: 5, month: 8, day: 23 },  // Virgo
-      { sign: 6, month: 9, day: 23 },  // Libra
-      { sign: 7, month: 10, day: 23 }, // Scorpio
-      { sign: 8, month: 11, day: 22 }, // Sagittarius
-      { sign: 9, month: 12, day: 22 }, // Capricorn
-      { sign: 10, month: 1, day: 20 }, // Aquarius
-      { sign: 11, month: 2, day: 19 }, // Pisces
-    ];
-
-    for (let i = 0; i < dates.length; i++) {
-      const d = dates[i];
-      if ((month === d.month && day >= d.day) || 
-          (i < dates.length - 1 && month > d.month && month < dates[i + 1].month) ||
-          (i === dates.length - 1 && (month > d.month || (month === 1 && day >= 20) || (month === 2 && day <= 19)))) {
-        if (i === dates.length - 1 && month >= 1 && month <= 2) {
-          if ((month === 1 && day >= 20) || (month === 2 && day <= 19)) {
-            return 10; // Aquarius
-          }
-          return 11; // Pisces (or more logic needed)
-        }
-        if (i === 0 && month === 3 && day < 21) return 11; // Pisces
-        if (i === 0 && month < 3) return i === 10 ? 10 : (month === 1 ? 10 : 11);
-        return d.sign;
-      }
-    }
-    // Fallback
-    if (month === 1) return day >= 20 ? 10 : 9;
-    if (month === 2) return day >= 19 ? 11 : 10;
-    if (month === 3) return day >= 21 ? 0 : 11;
+    // Tropical zodiac boundaries based on equinoxes and solstices
+    if (month === 1) return day >= 20 ? 10 : 9;   // Aquarius (Jan 20) / Capricorn
+    if (month === 2) return day >= 19 ? 11 : 10;  // Pisces (Feb 19) / Aquarius
+    if (month === 3) return day >= 21 ? 0 : 11;   // Aries (Mar 21) / Pisces
+    if (month === 4) return day >= 20 ? 1 : 0;    // Taurus (Apr 20) / Aries
+    if (month === 5) return day >= 21 ? 2 : 1;    // Gemini (May 21) / Taurus
+    if (month === 6) return day >= 21 ? 3 : 2;    // Cancer (Jun 21) / Gemini
+    if (month === 7) return day >= 23 ? 4 : 3;    // Leo (Jul 23) / Cancer
+    if (month === 8) return day >= 23 ? 5 : 4;    // Virgo (Aug 23) / Leo
+    if (month === 9) return day >= 23 ? 6 : 5;    // Libra (Sep 23) / Virgo
+    if (month === 10) return day >= 23 ? 7 : 6;   // Scorpio (Oct 23) / Libra
+    if (month === 11) return day >= 22 ? 8 : 7;   // Sagittarius (Nov 22) / Scorpio
+    if (month === 12) return day >= 22 ? 9 : 8;   // Capricorn (Dec 22) / Sagittarius
     return 0;
   }
 
@@ -255,66 +233,112 @@ const Astro = (() => {
     };
   }
 
-  // ===== Natal Chart (simplified) =====
+  // ===== Natal Chart (astronomy-based) =====
   function generateNatalChart(year, month, day, hour, lat, lng) {
-    const zodiacIdx = getZodiac(month, day);
-    const sunSign = ZODIAC_SIGNS.en[zodiacIdx];
-    
-    // Simplified house cusps (each house = 30°, starting from the ascendant)
-    const ascendant = (zodiacIdx * 30 + (hour / 24) * 30 + (day % 30) * 1) % 360;
+    // J2000.0 reference epoch: Jan 1, 2000 12:00 TT
+    const j2000Ms = Date.UTC(2000, 0, 1, 12, 0, 0);
+    const birthMs = Date.UTC(year, month - 1, day, Math.floor(hour), (hour % 1) * 60, 0);
+    const daysSinceJ2000 = (birthMs - j2000Ms) / (1000 * 60 * 60 * 24);
+
+    // J2000.0 ecliptic longitudes (degrees)
+    const J2000_LON = {
+      Sun: 280.2, Mercury: 250.0, Venus: 335.0, Mars: 135.0,
+      Jupiter: 65.0, Saturn: 82.0, Uranus: 312.0, Neptune: 330.0,
+      Pluto: 258.0, Moon: 214.0,
+    };
+
+    // Orbital / sidereal periods (days)
+    const PERIOD = {
+      Sun: 365.25, Moon: 27.321661,
+      Mercury: 87.97, Venus: 224.7, Mars: 687.0,
+      Jupiter: 4332.6, Saturn: 10759.2, Uranus: 30688.5,
+      Neptune: 60182.3, Pluto: 90560.0,
+    };
+
+    // Calculate planet positions from orbital mechanics
+    const planetPositions = PLANETS.map((planet) => {
+      const refLon = J2000_LON[planet.name];
+      const period = PERIOD[planet.name];
+      const position = ((refLon + daysSinceJ2000 * (360 / period)) % 360 + 360) % 360;
+      return {
+        ...planet,
+        position,
+        signIndex: Math.floor(position / 30) % 12,
+        sign: ZODIAC_SIGNS.en[Math.floor(position / 30) % 12],
+        house: 0, // assigned after ascendant
+      };
+    });
+
+    // Ascendant: simplified from birth time and latitude
+    // ASC = sunPos + hour * 15°/hr + lat adjustment
+    const sunPos = planetPositions[0].position;
+    const ascendant = ((sunPos + hour * 15 + (lat || 0)) % 360 + 360) % 360;
+    const ascSignIndex = Math.floor(ascendant / 30) % 12;
+
+    // Equal houses from Ascendant
     const houses = [];
     for (let i = 0; i < 12; i++) {
       const cusp = (ascendant + i * 30) % 360;
       houses.push({
         number: i + 1,
         cusp: cusp,
-        signIndex: Math.floor(cusp / 30),
-        sign: ZODIAC_SIGNS.en[Math.floor(cusp / 30)],
+        signIndex: Math.floor(cusp / 30) % 12,
+        sign: ZODIAC_SIGNS.en[Math.floor(cusp / 30) % 12],
       });
     }
 
-    // Simplified planetary positions (based on sun sign with offsets)
-    const planetPositions = PLANETS.map((planet, i) => {
-      const basePos = (zodiacIdx * 30 + i * 27 + (hour * 0.5)) % 360;
-      return {
-        ...planet,
-        position: basePos,
-        signIndex: Math.floor(basePos / 30),
-        sign: ZODIAC_SIGNS.en[Math.floor(basePos / 30)],
-        house: Math.floor(((basePos - ascendant + 360) % 360) / 30) + 1,
-      };
+    // Assign house positions
+    planetPositions.forEach(p => {
+      p.house = Math.floor(((p.position - ascendant + 360) % 360) / 30) + 1;
     });
 
-    // Aspects
+    // Aspects between all planet pairs
+    const aspectDefs = [
+      { name: 'Conjunction', symbol: '☌', angle: 0, orb: 8 },
+      { name: 'Sextile',     symbol: '⚹', angle: 60, orb: 6 },
+      { name: 'Square',      symbol: '□', angle: 90, orb: 8 },
+      { name: 'Trine',       symbol: '△', angle: 120, orb: 8 },
+      { name: 'Opposition',  symbol: '☍', angle: 180, orb: 8 },
+    ];
     const aspects = [];
     for (let i = 0; i < planetPositions.length; i++) {
       for (let j = i + 1; j < planetPositions.length; j++) {
-        const diff = Math.abs(planetPositions[i].position - planetPositions[j].position);
-        const orb = Math.min(diff, 360 - diff);
-        let aspect = null;
-        if (orb < 8) aspect = { name: 'Conjunction', symbol: '☌', orb: orb.toFixed(1) };
-        else if (Math.abs(orb - 60) < 6) aspect = { name: 'Sextile', symbol: '⚹', orb: Math.abs(orb - 60).toFixed(1) };
-        else if (Math.abs(orb - 90) < 6) aspect = { name: 'Square', symbol: '□', orb: Math.abs(orb - 90).toFixed(1) };
-        else if (Math.abs(orb - 120) < 6) aspect = { name: 'Trine', symbol: '△', orb: Math.abs(orb - 120).toFixed(1) };
-        else if (Math.abs(orb - 180) < 6) aspect = { name: 'Opposition', symbol: '☍', orb: Math.abs(orb - 180).toFixed(1) };
-        if (aspect) {
-          aspects.push({
-            p1: planetPositions[i].name,
-            p2: planetPositions[j].name,
-            ...aspect,
-          });
+        const raw = Math.abs(planetPositions[i].position - planetPositions[j].position);
+        const angularDist = Math.min(raw, 360 - raw);
+        for (const a of aspectDefs) {
+          if (Math.abs(angularDist - a.angle) <= a.orb) {
+            aspects.push({
+              p1: planetPositions[i].name,
+              p2: planetPositions[j].name,
+              name: a.name,
+              symbol: a.symbol,
+              orb: Math.abs(angularDist - a.angle).toFixed(1),
+            });
+            break;
+          }
         }
       }
     }
 
+    // Element and quality counts
+    const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
+    const qualityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 };
+    planetPositions.forEach(p => {
+      const sign = ZODIAC_SIGNS.en[p.signIndex];
+      elementCounts[sign.element]++;
+      qualityCounts[sign.quality]++;
+    });
+
     return {
-      sunSign: sunSign,
-      ascendant: Math.floor(ascendant / 30),
-      ascendantSign: ZODIAC_SIGNS.en[Math.floor(ascendant / 30)],
-      moonSignIndex: Math.floor((zodiacIdx * 30 + 135) % 360 / 30),
+      sunSign: ZODIAC_SIGNS.en[planetPositions[0].signIndex],
+      ascendant: ascSignIndex,
+      ascendantSign: ZODIAC_SIGNS.en[ascSignIndex],
+      moonSignIndex: Math.floor(planetPositions[1].position / 30),
       houses,
       planets: planetPositions,
       aspects,
+      elementCounts,
+      qualityCounts,
     };
   }
 
