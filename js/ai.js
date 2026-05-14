@@ -6,9 +6,9 @@
 const AstroAI = (() => {
   'use strict';
 
-  // Set this to your deployed Rust backend URL
-  const AI_ENDPOINT = 'https://starweaver-ai-proxy.zeabur.app/v1/chat/completions';
-  const PROXY_API_KEY = 'sw-prod-key-2026';  // Shared with backend
+  // Cloudflare Workers URL (deploy with: wrangler deploy)
+  const AI_ENDPOINT = 'https://starweaver-ai-proxy.your-worker.workers.dev/v1/chat/completions';
+  const PROXY_API_KEY = 'sw-prod-key-2026';  // Same as PROXY_API_KEY secret
 
   let currentModel = 'deepseek-chat';
   let conversationHistory = [];
