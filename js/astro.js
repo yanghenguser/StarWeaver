@@ -228,15 +228,17 @@ const Astro = (() => {
     const lunations = diff / 29.53058867;
     const age = (lunations - Math.floor(lunations)) * 29.53058867;
     
-    let phase, illumination;
-    if (age < 1.84566) { phase = 'New Moon'; illumination = age / 29.53; }
-    else if (age < 5.53699) { phase = 'Waxing Crescent'; illumination = age / 29.53; }
-    else if (age < 9.22831) { phase = 'First Quarter'; illumination = 0.5 + (age - 5.53699) / 29.53; }
-    else if (age < 12.91963) { phase = 'Waxing Gibbous'; illumination = 0.5 + (age - 5.53699) / 29.53; }
-    else if (age < 16.61096) { phase = 'Full Moon'; illumination = 1; }
-    else if (age < 20.30228) { phase = 'Waning Gibbous'; illumination = 1 - (age - 16.61096) / 29.53; }
-    else if (age < 23.9936) { phase = 'Last Quarter'; illumination = 0.5 - (age - 20.30228) / 29.53; }
-    else { phase = 'Waning Crescent'; illumination = 0; }
+    let phase;
+    const phaseAngle = (age / 29.53) * 2 * Math.PI;
+    const illumination = (1 - Math.cos(phaseAngle)) / 2;
+    if (age < 1.84566) { phase = 'New Moon'; }
+    else if (age < 5.53699) { phase = 'Waxing Crescent'; }
+    else if (age < 9.22831) { phase = 'First Quarter'; }
+    else if (age < 12.91963) { phase = 'Waxing Gibbous'; }
+    else if (age < 16.61096) { phase = 'Full Moon'; }
+    else if (age < 20.30228) { phase = 'Waning Gibbous'; }
+    else if (age < 23.9936) { phase = 'Last Quarter'; }
+    else { phase = 'Waning Crescent'; }
 
     const phaseZh = {
       'New Moon': '新月', 'Waxing Crescent': '蛾眉月', 'First Quarter': '上弦月',

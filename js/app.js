@@ -1095,20 +1095,28 @@ const App = (() => {
 
   // ===== Astro Dice =====
   function initDice() {
-    const btn = document.getElementById('dice-btn');
-    const result = document.getElementById('dice-result');
-    if (!btn || !result) return;
+    const DICE_EMOJIS = ['🌟', '✨', '🌙', '⭐', '🔮', '💫', '🌌', '☄️', '🪐', '🌈'];
 
-    btn.addEventListener('click', () => {
-      btn.classList.add('rolling');
-      const meanings = Astro.DICE_MEANINGS[lang];
-      const meaning = meanings[Math.floor(Math.random() * meanings.length)];
-      
-      setTimeout(() => {
-        btn.classList.remove('rolling');
-        result.textContent = `🎲 ${meaning}`;
-      }, 600);
-    });
+    function rollDice(btnId, resultId) {
+      const btn = document.getElementById(btnId);
+      const result = document.getElementById(resultId);
+      if (!btn || !result) return;
+
+      btn.addEventListener('click', () => {
+        btn.classList.add('rolling');
+        const meanings = Astro.DICE_MEANINGS[lang];
+        const meaning = meanings[Math.floor(Math.random() * meanings.length)];
+        const emoji = DICE_EMOJIS[Math.floor(Math.random() * DICE_EMOJIS.length)];
+
+        setTimeout(() => {
+          btn.classList.remove('rolling');
+          result.textContent = `${emoji} ${meaning}`;
+        }, 600);
+      });
+    }
+
+    rollDice('dice-btn', 'dice-result');
+    rollDice('dice-btn-2', 'dice-result-2');
   }
 
   // ===== Moon Phase =====
@@ -1133,7 +1141,7 @@ const App = (() => {
       moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#d4af37" stroke-width="1"/>`;
     } else {
       // Crescent/gibbous
-      const isWaxing = moon.illumination < 0.5;
+      const isWaxing = parseFloat(moon.age) < 14.76;
       const litSide = isWaxing ? 'right' : 'left';
       const litColor = '#f0e6d0';
       const darkColor = '#1a1a2e';
@@ -1675,11 +1683,15 @@ const App = (() => {
     if (registerView) registerView.style.display = 'none';
     if (loginView) loginView.style.display = 'block';
 
-    const profile = User.isLoggedIn() ? User.getProfile() : null;
-    if (greeting) {
-      greeting.textContent = profile
-        ? (User.t('Welcome back, ', '欢迎回来，') + profile.name)
-        : (User.t('No saved profile found. Please register.', '未找到用户信息，请注册。'));
+    if (typeof User !== 'undefined') {
+      const profile = User.isLoggedIn() ? User.getProfile() : null;
+      if (greeting) {
+        greeting.textContent = profile
+          ? (User.t('Welcome back, ', '欢迎回来，') + profile.name)
+          : (User.t('No saved profile found. Please register.', '未找到用户信息，请注册。'));
+      }
+    } else if (greeting) {
+      greeting.textContent = 'Welcome back';
     }
   }
 
