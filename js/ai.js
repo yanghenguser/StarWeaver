@@ -6,8 +6,8 @@
 const AstroAI = (() => {
   'use strict';
 
-  // Cloudflare Workers URL (deploy with: wrangler deploy)
-  const AI_ENDPOINT = 'https://starweaver-ai-proxy.your-worker.workers.dev/v1/chat/completions';
+  // Cloudflare Workers — deployed!
+  const AI_ENDPOINT = 'https://starweaver-ai-proxy.starweaver.workers.dev/v1/chat/completions';
   const PROXY_API_KEY = 'sw-prod-key-2026';  // Same as PROXY_API_KEY secret
 
   let currentModel = 'deepseek-chat';
