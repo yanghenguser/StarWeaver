@@ -1,41 +1,20 @@
 /* ============================================
    StarWeaver - ai.js
-// StarWeaver AI Astrology Module
-   Auto-injected API Key (XOR + Base64 encrypted)
+   AI calls through server-side Rust proxy
    ============================================ */
 
 const AstroAI = (() => {
   'use strict';
 
-  const AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
-  const XOR_KEY = 'StarWeaver2024';
-  const ENCRYPTED_KEY = 'IB9MFGcEVEYEFgcECwE1QFFDZVxQQgZGAQMKDTBNBUM0XFY=';
+  // Set this to your deployed Rust backend URL
+  const AI_ENDPOINT = 'https://starweaver-ai-proxy.zeabur.app/v1/chat/completions';
+  const PROXY_API_KEY = 'sw-prod-key-2026';  // Shared with backend
 
-  let apiKey = '';
   let currentModel = 'deepseek-chat';
   let conversationHistory = [];
 
-  // ===== XOR Decrypt =====
-  function xorDecrypt(encoded, xorKey) {
-    try {
-      const decoded = atob(encoded);
-      let result = '';
-      for (let i = 0; i < decoded.length; i++) {
-        result += String.fromCharCode(decoded.charCodeAt(i) ^ xorKey.charCodeAt(i % xorKey.length));
-      }
-      return result;
-    } catch (e) {
-      return '';
-    }
-  }
-
-  // ===== Auto-init =====
-  (function init() {
-    apiKey = xorDecrypt(ENCRYPTED_KEY, XOR_KEY);
-  })();
-
   function hasApiKey() {
-    return apiKey.length > 0;
+    return true; // API key is managed server-side
   }
 
   function getModel() {
@@ -44,15 +23,11 @@ const AstroAI = (() => {
 
   // ===== Core API Call =====
   async function callAI(messages, { temperature = 0.8, max_tokens = 2000, callType = 'qa' } = {}) {
-    if (!apiKey) {
-      throw new Error('AI not configured');
-    }
-
     const response = await fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${PROXY_API_KEY}`,
       },
       body: JSON.stringify({
         model: currentModel,
