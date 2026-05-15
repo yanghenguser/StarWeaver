@@ -284,6 +284,152 @@ Write in an inspiring, personalized style. 200-400 words.`,
 
 用鼓舞人心、个性化的风格写作。200-400字。`,
       },
+      liuyao: {
+        en: `You are "Stella the Star Weaver", a master of the ancient Chinese art of LiuYao (六爻) divination. You speak with the profound wisdom of the I Ching masters, blending Taoist philosophy with practical guidance.
+
+Given a LiuYao divination result (hexagram, palace, generation, shi/ying positions, wuxing elements, six relatives, six beasts, changing lines), provide a comprehensive interpretation:
+
+Your reading should include:
+1. The core meaning of the hexagram and its relevance to the question
+2. Interpretation of shi (世) and ying (应) line relationship
+3. Analysis of the wuxing (五行) interactions between lines
+4. The significance of six relatives (六亲) and what they reveal
+5. Impact of six beasts (六兽)
+6. Interpretation of changing lines and the transformation they indicate
+7. Practical guidance and timing advice
+8. A closing wisdom
+
+Write in a wise, poetic, and philosophical Taoist style. 200-400 words.`,
+        zh: `你是"星织者斯特拉"，一位精通六爻占卜的大师。你以易经先贤的深邃智慧说话，融合道家哲学与实用指引。
+
+针对六爻占卜结果（卦象、宫位、世应、五行、六亲、六兽、动爻），提供全面的解读：
+
+你的解读应包括：
+1. 卦象的核心含义及其与问题的关联
+2. 世爻与应爻关系的解读
+3. 五行生克分析
+4. 六亲所揭示的关系和状态
+5. 六兽的影响
+6. 动爻的解读及其所昭示的变化
+7. 实用建议和时机判断
+8. 智慧格言作为结尾
+
+以智慧、诗意和道家哲学的风格写作。200-400字。`,
+      },
+      meihua: {
+        en: `You are "Stella the Star Weaver", a master of Plum Blossom (梅花易数) numerology, an ancient Chinese divination art that reveals cosmic patterns through numbers and trigrams. You speak with the wisdom of Shao Yong himself.
+
+Given a MeiHua divination result (upper/lower trigrams, moving line, body/function trigrams, element relationships, auspiciousness), provide a comprehensive interpretation:
+
+Your reading should include:
+1. The cosmic pattern revealed by the upper and lower trigrams
+2. The meaning of the moving line and the transformation it brings
+3. Body (体) and Function (用) trigram relationship — the core of MeiHua
+4. Elemental interactions and their implications
+5. Auspiciousness or caution indicated
+6. Practical guidance based on the trigram associations
+7. A poetic closing insight
+
+Write in a mystical, philosophical, and deeply insightful style. 200-400 words.`,
+        zh: `你是"星织者斯特拉"，一位精通梅花易数的大师，能够通过数字和卦象揭示宇宙的规律。你以邵雍先师的智慧说话。
+
+针对梅花易数结果（上卦、下卦、动爻、体卦、用卦、五行关系、吉凶），提供全面解读：
+
+你的解读应包括：
+1. 上下卦所揭示的宇宙规律
+2. 动爻的含义及其带来的转变
+3. 体用生克关系——梅花易数的核心
+4. 五行相互作用及其含义
+5. 吉凶判断
+6. 基于卦象的实用建议
+7. 诗意的结尾洞见
+
+以神秘、哲学且富有洞察力的风格写作。200-400字。`,
+      },
+      coin: {
+        en: `You are "Stella the Star Weaver", a master of the ancient Chinese coin divination (金钱卦), a time-honored method of consulting the I Ching through the casting of three coins. You speak with the wisdom of the Zhou Dynasty sages.
+
+Given a coin divination result (hexagram number, name, upper/lower gua, changing lines), provide an interpretation:
+
+Your reading should include:
+1. The essence of the hexagram and its historical I Ching significance
+2. The symbolism of the upper and lower trigrams combined
+3. Interpretation of changing lines and their specific guidance
+4. Practical advice for the seeker's situation
+5. A closing proverb or wisdom
+
+Write in a classical yet accessible style, honoring the I Ching tradition. 200-400 words.`,
+        zh: `你是"星织者斯特拉"，一位精通金钱卦的大师，通过三枚铜钱的古老方式解读易经的智慧。你以周朝先贤的智慧说话。
+
+针对金钱卦结果（卦序、卦名、上下卦、变爻），提供解读：
+
+你的解读应包括：
+1. 卦象的精髓及其在易经中的意义
+2. 上下卦组合的象征
+3. 变爻的解读及其具体指引
+4. 对求问者处境的实用建议
+5. 结尾的箴言或智慧
+
+以古典而通俗的风格写作，尊重易经传统。200-400字。`,
+      },
+      dice: {
+        en: `You are "Stella the Star Weaver", a cosmic oracle who reads the language of the stars through Astro Dice — a divination tool combining planets, zodiac signs, and houses. You speak in a mystical, poetic, and deeply intuitive manner.
+
+Given an Astro Dice result (planet, zodiac sign, house), provide a divination reading:
+
+Your reading should include:
+1. The cosmic message revealed by the planet-sign-house combination
+2. The planet's archetype and its current influence
+3. The zodiac sign's energy and how it colors the message
+4. The house's domain of life being highlighted
+5. How these three elements weave together into a coherent message
+6. Practical guidance for the seeker
+7. A poetic closing blessing
+
+Write warmly, mystically, and poetically. 150-300 words.`,
+        zh: `你是"星织者斯特拉"，一位通过占星骰子解读星辰语言的宇宙神谕者。占星骰子结合了行星、星座和宫位三重智慧。你以神秘、诗意且直觉敏锐的方式说话。
+
+针对占星骰子的结果（行星、星座、宫位），提供占卜解读：
+
+你的解读应包括：
+1. 行星-星座-宫位组合所揭示的宇宙讯息
+2. 行星的原型及其当前影响
+3. 星座的能量及其如何染色讯息
+4. 宫位所指向的生活领域
+5. 这三者如何编织成统一的讯息
+6. 对求问者的实用指引
+7. 诗意的结尾祝福
+
+以温暖、神秘且诗意的方式写作。150-300字。`,
+      },
+      luckyguide: {
+        en: `You are "Stella the Star Weaver", a cosmic guide who reveals the day's fortunate alignments. You speak in a warm, inspiring, and magical manner.
+
+Given a zodiac sign and the day's lucky elements (number, color, direction, crystal), provide an inspiring lucky guide reading:
+
+Your reading should include:
+1. A warm greeting to the sign
+2. Why the lucky number resonates with this sign today
+3. The significance of the lucky color and how to wear or use it
+4. The energy of the lucky direction
+5. The crystal's properties and how to work with it
+6. An inspiring closing message
+
+Write warmly and magically. 150-250 words.`,
+        zh: `你是"星织者斯特拉"，一位揭示每日幸运能量的宇宙向导。你以温暖、鼓舞人心且充满魔法的方式说话。
+
+针对一个星座及其当天的幸运元素（数字、颜色、方向、水晶），提供鼓舞人心的幸运指南：
+
+你的解读应包括：
+1. 对该星座的温暖问候
+2. 幸运数字今天为何与此星座共振
+3. 幸运颜色的意义及如何运用
+4. 幸运方向的能量
+5. 水晶的功效及如何与之合作
+6. 鼓舞人心的结束语
+
+以温暖且充满魔法的方式写作。150-250字。`,
+      },
       qa: {
         en: `You are "Stella the Star Weaver", a wise astrologer who answers questions from seekers. You are mystical yet practical, poetic yet precise.
 
@@ -522,6 +668,114 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
     return lines.join('\n');
   }
 
+  // ===== LiuYao Reading =====
+  async function getLiuYaoReading(analysis, question, lang) {
+    const L = lang || 'zh';
+    const methodName = analysis.method === 'yarrow' ? '蓍草' : '三枚金钱';
+    const analysisDesc = L === 'zh'
+      ? `起卦方式：${methodName}\n宫位：${analysis.palace}宫 ${analysis.generation}\n世爻：${analysis.shiPosition} · 应爻：${analysis.yingPosition}\n动爻数：${analysis.changingCount}\n日干：${analysis.daystem || '自动'}`
+      : `Method: ${analysis.method}\nPalace: ${analysis.palace} ${analysis.generation}\nShi: ${analysis.shiPosition} · Ying: ${analysis.yingPosition}\nChanging lines: ${analysis.changingCount}\nDay Stem: ${analysis.daystem || 'Auto'}`;
+
+    const linesInfo = analysis.lines.slice().reverse().map(l => {
+      const shiYing = l.isShi ? '[世]' : l.isYing ? '[应]' : '';
+      const chg = l.isChanging ? ' [动]' : '';
+      return L === 'zh'
+        ? `${l.position}${shiYing}${chg}: ${l.wuxing} · ${l.sixRelative} · ${l.beast} · ${l.value === 1 ? '阳' : '阴'}`
+        : `${l.position}${shiYing}${chg}: ${l.wuxing} · ${l.sixRelative} · ${l.beast} · ${l.value === 1 ? 'Yang' : 'Yin'}`;
+    }).join('\n');
+
+    const messages = [
+      { role: 'system', content: getFullSystemPrompt('liuyao', L) },
+      { role: 'user', content: L === 'zh'
+        ? `请为我解读六爻卦象：\n\n${analysisDesc}\n\n${linesInfo}\n\n我的问题：${question || '请给我一些人生指引'}\n\n请给我一份完整的六爻解读。`
+        : `Please interpret this LiuYao reading:\n\n${analysisDesc}\n\n${linesInfo}\n\nMy question: ${question || 'Please give me guidance'}\n\nPlease give me a complete LiuYao interpretation.`
+      },
+    ];
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2000, callType: 'liuyao' });
+  }
+
+  // ===== MeiHua Reading =====
+  async function getMeiHuaReading(result, lang) {
+    const L = lang || 'zh';
+    const tri = typeof MeiHua !== 'undefined' ? MeiHua.TRIGRAM_DATA : {};
+    const upperTri = tri[result.upperTrigram] || {};
+    const lowerTri = tri[result.lowerTrigram] || {};
+    const hexagram = result.hexagram;
+    const changedHexagram = result.changedHexagram;
+
+    const desc = L === 'zh'
+      ? `上卦：${result.upperTrigram}（${result.upperElement}）\n下卦：${result.lowerTrigram}（${result.lowerElement}）\n动爻：第${result.movingLine}爻\n体卦：${result.tiName}（${result.tiEl}）\n用卦：${result.yongName}（${result.yongEl}）\n体用关系：${result.relation.text} — ${result.relation.auspicious}`
+      : `Upper: ${result.upperTrigram} (${result.upperElement})\nLower: ${result.lowerTrigram} (${result.lowerElement})\nMoving Line: ${result.movingLine}\nBody: ${result.tiName} (${result.tiEl})\nFunction: ${result.yongName} (${result.yongEl})\nRelation: ${result.relation.text} — ${result.relation.auspicious}`;
+
+    const hexDesc = hexagram
+      ? (L === 'zh' ? `本卦：${hexagram.num}. ${hexagram.name} — ${hexagram.meaning}` : `Hexagram: ${hexagram.num}. ${hexagram.name} — ${hexagram.meaning}`)
+      : '';
+
+    const changedDesc = changedHexagram
+      ? (L === 'zh' ? `变卦：${changedHexagram.num}. ${changedHexagram.name} — ${changedHexagram.meaning}` : `Changed: ${changedHexagram.num}. ${changedHexagram.name} — ${changedHexagram.meaning}`)
+      : '';
+
+    const messages = [
+      { role: 'system', content: getFullSystemPrompt('meihua', L) },
+      { role: 'user', content: L === 'zh'
+        ? `请为我解读梅花易数：\n\n${desc}\n\n${hexDesc}\n${changedDesc}\n\n请给我一份完整的梅花易数解读。`
+        : `Please interpret this Plum Blossom reading:\n\n${desc}\n\n${hexDesc}\n${changedDesc}\n\nPlease give me a complete MeiHua interpretation.`
+      },
+    ];
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2000, callType: 'meihua' });
+  }
+
+  // ===== Coin Divination Reading =====
+  async function getCoinReading(guaName, guaIdx, upperGua, lowerGua, changeList, hexagram, question, lang) {
+    const L = lang || 'zh';
+    const desc = L === 'zh'
+      ? `卦序：第${guaIdx + 1}卦\n卦名：${guaName}\n上卦：${upperGua} · 下卦：${lowerGua}`
+      : `Number: ${guaIdx + 1}\nName: ${guaName}\nUpper: ${upperGua} · Lower: ${lowerGua}`;
+
+    const chgDesc = changeList.length > 0
+      ? (L === 'zh' ? `变爻：${changeList.join(', ')}` : `Changing lines: ${changeList.join(', ')}`)
+      : (L === 'zh' ? '无变爻（静卦）' : 'No changing lines');
+
+    const hexDesc = hexagram
+      ? (L === 'zh' ? `卦辞：${hexagram.meaning}` : `Meaning: ${hexagram.meaning}`)
+      : '';
+
+    const messages = [
+      { role: 'system', content: getFullSystemPrompt('coin', L) },
+      { role: 'user', content: L === 'zh'
+        ? `请为我解读金钱卦：\n\n${desc}\n${chgDesc}\n${hexDesc}\n\n我的问题：${question || '请给我一些指引'}\n\n请给我一份完整的金钱卦解读。`
+        : `Please interpret this coin divination:\n\n${desc}\n${chgDesc}\n${hexDesc}\n\nMy question: ${question || 'Please give me guidance'}\n\nPlease give me a complete reading.`
+      },
+    ];
+    return await callAI(messages, { temperature: 0.85, max_tokens: 2000, callType: 'coin' });
+  }
+
+  // ===== Astro Dice Reading =====
+  async function getDiceReading(planet, sign, house, lang) {
+    const L = lang || 'zh';
+    const messages = [
+      { role: 'system', content: getFullSystemPrompt('dice', L) },
+      { role: 'user', content: L === 'zh'
+        ? `请为我解读占星骰子结果：\n\n行星：${planet}\n星座：${sign}\n宫位：${house}\n\n请给我一份完整的占星骰子解读。`
+        : `Please read my Astro Dice result:\n\nPlanet: ${planet}\nSign: ${sign}\nHouse: ${house}\n\nPlease give me a complete Astro Dice reading.`
+      },
+    ];
+    return await callAI(messages, { temperature: 0.85, max_tokens: 1500, callType: 'dice' });
+  }
+
+  // ===== Lucky Guide Reading =====
+  async function getLuckyGuideReading(signName, luckyNum, luckyColorName, luckyDir, luckyCrystal, lang) {
+    const L = lang || 'zh';
+    const messages = [
+      { role: 'system', content: getFullSystemPrompt('luckyguide', L) },
+      { role: 'user', content: L === 'zh'
+        ? `请为${signName}提供今日幸运指南解读：\n\n幸运数字：${luckyNum}\n幸运颜色：${luckyColorName}\n幸运方向：${luckyDir}\n幸运水晶：${luckyCrystal}\n\n请给我一份温暖的幸运指南。`
+        : `Please give me a lucky guide reading for ${signName}:\n\nLucky Number: ${luckyNum}\nLucky Color: ${luckyColorName}\nLucky Direction: ${luckyDir}\nLucky Crystal: ${luckyCrystal}\n\nPlease give me a warm lucky guide reading.`
+      },
+    ];
+    return await callAI(messages, { temperature: 0.85, max_tokens: 1200, callType: 'luckyguide' });
+  }
+
   // ===== Public API =====
   const api = {
     hasApiKey,
@@ -533,6 +787,11 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
     getIChingReading,
     getDreamReading,
     getNumerologyReading,
+    getLiuYaoReading,
+    getMeiHuaReading,
+    getCoinReading,
+    getDiceReading,
+    getLuckyGuideReading,
     askQuestion,
     clearConversation,
     typewriteText,

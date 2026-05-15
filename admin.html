@@ -86,7 +86,7 @@ tr:hover td{background:rgba(212,175,55,.05)}
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Registered</th><th>Premium</th></tr></thead>
+        <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Sign</th><th>Registered</th><th>Status</th></tr></thead>
         <tbody id="users-body"></tbody>
       </table>
     </div>
@@ -95,7 +95,17 @@ tr:hover td{background:rgba(212,175,55,.05)}
   <div id="tab-codes" class="tab-content">
     <div class="tab-header">
       <h2>Premium Codes</h2>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <select id="code-type-select" style="background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px 12px;border-radius:var(--radius);font-size:.85rem;">
+          <option value="premium">🌟 Premium (无限)</option>
+          <option value="credits">🎫 Credits (次数)</option>
+        </select>
+        <span id="credits-options" style="display:none;">
+          <input id="credits-count" type="number" value="10" min="1" max="9999" style="background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px 12px;border-radius:var(--radius);width:70px;font-size:.85rem;" title="Credits per use">
+          <span style="color:var(--text-muted);font-size:.8rem;margin:0 4px;">×</span>
+          <input id="max-uses" type="number" value="1" min="1" max="9999" style="background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px 12px;border-radius:var(--radius);width:70px;font-size:.85rem;" title="Max uses (0=unlimited)">
+          <span style="color:var(--text-muted);font-size:.8rem;margin-left:4px;">uses</span>
+        </span>
         <button class="refresh-btn" onclick="loadCodes()">🔄 Refresh</button>
         <button class="refresh-btn" onclick="generateCode()" style="background:var(--gold);color:#000;font-weight:600">➕ Generate Code</button>
       </div>
@@ -103,10 +113,11 @@ tr:hover td{background:rgba(212,175,55,.05)}
     <div id="new-code-box" style="display:none;background:rgba(212,175,55,0.1);border:1px solid var(--gold);border-radius:var(--radius);padding:16px;margin-bottom:16px;text-align:center">
       <div style="color:var(--gold);font-size:.8rem;margin-bottom:6px">✨ New Code Generated</div>
       <div id="new-code-value" style="font-family:monospace;font-size:1.4rem;color:#fff;letter-spacing:.15em;font-weight:700"></div>
+      <div id="new-code-info" style="color:var(--text-muted);font-size:.8rem;margin-top:4px;"></div>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Code</th><th>Status</th><th>Used By</th><th>Used At</th></tr></thead>
+        <thead><tr><th>Code</th><th>Type</th><th>Status</th><th>Used/Total</th><th>Used By</th></tr></thead>
         <tbody id="codes-body"></tbody>
       </table>
     </div>
@@ -170,18 +181,28 @@ function switchTab(tab) {
   if (tab==='users') loadUsers(); else if (tab==='codes') loadCodes(); else loadLogs();
 }
 
+// Toggle credits options
+const codeTypeSelect = $id('code-type-select');
+const creditsOptions = $id('credits-options');
+if (codeTypeSelect && creditsOptions) {
+  codeTypeSelect.addEventListener('change', () => {
+    creditsOptions.style.display = codeTypeSelect.value === 'credits' ? 'inline' : 'none';
+  });
+}
+
 async function loadUsers() {
   const tbody = $id('users-body');
-  tbody.innerHTML = '<tr><td colspan="5" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
   const r = await callApi('adminGetUsers', {adminToken});
-  if (!r.ok || !r.users) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load</td></tr>'; return; }
-  if (!r.users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>'; return; }
+  if (!r.ok || !r.users) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Failed to load</td></tr>'; return; }
+  if (!r.users.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No users found</td></tr>'; return; }
   tbody.innerHTML = r.users.map(u => `<tr>
     <td style="font-family:monospace;font-size:.75rem">${esc(u.userId||'-')}</td>
     <td>${esc(u.name||'-')}</td>
     <td>${esc(u.email||'-')}</td>
+    <td>${u.zodiacSign ? esc(u.zodiacSign) : '-'}</td>
     <td style="white-space:nowrap">${fmtDate(u.createdAt)}</td>
-    <td>${u.premium ? '<span class="premium-badge">🌟 PREMIUM</span>' : '-'}</td>
+    <td>${u.premium ? '<span class="premium-badge">🌟 PREMIUM</span>' : (u.freeCredits ? '<span style="color:#2ecc71;font-size:.8rem;">🎫 '+u.freeCredits+'</span>' : '-')}</td>
   </tr>`).join('');
 }
 
@@ -206,31 +227,49 @@ async function loadLogs() {
     </div></td>
   </tr>`).join('');
 }
+
 async function loadCodes() {
   const tbody = $id('codes-body');
-  tbody.innerHTML = '<tr><td colspan="4" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" class="loading-text"><span class="spinner"></span>Loading...</td></tr>';
   const r = await callApi('listCodes', {adminToken});
-  if (!r.ok || !r.codes) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load</td></tr>'; return; }
-  if (!r.codes.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No codes found</td></tr>'; return; }
-  tbody.innerHTML = r.codes.map(c => `<tr>
-    <td style="font-family:monospace;font-size:.8rem;letter-spacing:.1em">${esc(c.code)}</td>
-    <td>${c.status === 'active'
-      ? '<span style="color:#2ecc71;font-weight:600">● ACTIVE</span>'
-      : '<span style="color:#e74c3c;font-weight:600">● USED</span>'}</td>
-    <td style="font-family:monospace;font-size:.75rem">${esc(c.usedBy||'-')}</td>
-    <td style="white-space:nowrap">${c.usedAt ? fmtDate(c.usedAt) : '-'}</td>
-  </tr>`).join('');
+  if (!r.ok || !r.codes) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load</td></tr>'; return; }
+  if (!r.codes.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No codes found</td></tr>'; return; }
+  tbody.innerHTML = r.codes.map(c => {
+    const typeLabel = c.type === 'credits'
+      ? '<span style="color:#3b82f6;">🎫 +' + (c.credits||'?') + '</span>'
+      : '<span style="color:#f59e0b;">🌟 Premium</span>';
+    const statusColor = c.status === 'active' ? '#2ecc71' : '#e74c3c';
+    const usageInfo = c.type === 'credits' ? (c.usageCount||0) + '/' + (c.maxUses||'?') : (c.status === 'active' ? '∞' : '1/1');
+    return `<tr>
+      <td style="font-family:monospace;font-size:.8rem;letter-spacing:.1em">${esc(c.code)}</td>
+      <td>${typeLabel}</td>
+      <td><span style="color:${statusColor};font-weight:600">● ${(c.status||'').toUpperCase()}</span></td>
+      <td>${usageInfo}</td>
+      <td style="font-family:monospace;font-size:.75rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(c.usedBy||'')}">${esc((c.usedBy||'-').split(':')[0])}</td>
+    </tr>`;
+  }).join('');
 }
 
 async function generateCode() {
   const btn = event.target;
+  const codeType = $id('code-type-select')?.value || 'premium';
+  const extra = { adminToken, codeType };
+  if (codeType === 'credits') {
+    extra.credits = parseInt($id('credits-count')?.value) || 10;
+    extra.maxUses = parseInt($id('max-uses')?.value) || 1;
+  }
   btn.disabled = true;
   btn.textContent = '⏳ Generating...';
-  const r = await callApi('generateCode', {adminToken});
+  const r = await callApi('generateCode', extra);
   btn.disabled = false;
   btn.textContent = '➕ Generate Code';
   if (r.ok && r.code) {
     $id('new-code-value').textContent = r.code;
+    const info = r.codeData;
+    let infoText = codeType === 'premium'
+      ? '🌟 Premium · Unlimited AI access'
+      : '🎫 +' + (info.credits||'?') + ' credits × ' + (info.maxUses||'?') + ' uses';
+    $id('new-code-info').textContent = infoText;
     $id('new-code-box').style.display = 'block';
     loadCodes();
   } else {

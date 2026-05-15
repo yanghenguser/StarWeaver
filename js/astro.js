@@ -133,37 +133,23 @@ const Astro = (() => {
     ],
   };
 
-  // ===== Astro Dice meanings =====
+  // ===== Astro Dice (3-dice: planet + sign + house) =====
   const DICE_MEANINGS = {
-    en: [
-      'A new opportunity is approaching — keep your eyes open.',
-      'Trust your intuition today; it will not lead you astray.',
-      'Release what no longer serves you. Make space for the new.',
-      'A conversation will change your perspective this week.',
-      'The universe is aligning in your favor. Be patient.',
-      'Look to the past for a lesson, not a dwelling place.',
-      'Your creative energy is at a peak — express yourself.',
-      'A relationship is about to deepen. Open your heart.',
-      'Financial insight is coming your way. Pay attention.',
-      'Travel or movement is in your stars. Embrace the journey.',
-      'A secret will be revealed. Handle it with wisdom.',
-      'Your inner strength is greater than you know. Trust yourself.',
-    ],
-    zh: [
-      '新的机遇正在靠近——保持警觉。',
-      '今天相信你的直觉，它不会让你走错路。',
-      '放下不再属于你的东西，为新事物腾出空间。',
-      '本周一次对话将改变你的视角。',
-      '宇宙正在为你铺路。请耐心等待。',
-      '回顾过去是为了吸取教训，而非驻留。',
-      '你的创造力正处于高峰——尽情表达吧。',
-      '一段关系即将深化。敞开心扉。',
-      '财务方面的启示即将到来。请留意。',
-      '旅行或变动出现在你的星象中。拥抱这段旅程。',
-      '一个秘密将被揭示。以智慧对待它。',
-      '你的内在力量远超你的想象。相信自己。',
-    ],
+    planety: {
+      en: ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'],
+      zh: ['太阳', '月亮', '水星', '金星', '火星', '木星', '土星', '天王星', '海王星', '冥王星']
+    },
+    sign: {
+      en: ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'],
+      zh: ['白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座', '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座']
+    },
+    house: {
+      en: ['1st Self', '2nd Money', '3rd Communication', '4th Home', '5th Romance', '6th Health', '7th Partnership', '8th Transformation', '9th Travel', '10th Career', '11th Friends', '12th Subconscious'],
+      zh: ['第1宫·自我', '第2宫·财富', '第3宫·沟通', '第4宫·家庭', '第5宫·恋爱', '第6宫·健康', '第7宫·伴侣', '第8宫·转化', '第9宫·旅行', '第10宫·事业', '第11宫·社交', '第12宫·潜意识']
+    }
   };
+
+  const PLANET_EMOJIS = { en: ['☀️','🌙','☿','♀','♂','♃','♄','♅','♆','♇'], zh: ['☀️','🌙','☿','♀','♂','♃','♄','♅','♆','♇'] };
 
   // ===== Zodiac Calculation =====
   function getZodiac(month, day) {
@@ -397,6 +383,7 @@ const Astro = (() => {
     QUOTES,
     FORTUNE_CARDS,
     DICE_MEANINGS,
+    PLANET_EMOJIS,
     HOUSES,
     getZodiacSign,
     getChineseZodiac,

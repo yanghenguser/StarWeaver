@@ -1,6 +1,6 @@
 /* ============================================
-   StarWeaver - user.js
-   User System + Premium + Usage Tracking
+   StarWeaver - user.js v2
+   User System + Email Verify + Profile Auto-fill + Credit Tracking
    API-first with localStorage cache, IIFE pattern
    ============================================ */
 
@@ -12,11 +12,14 @@ const User = (() => {
     token: 'starweaver_token',
     profile: 'starweaver_user',
     premium: 'starweaver_premium',
+    credits: 'starweaver_credits',  // Store total credits locally
   };
 
   const FREE_TOTAL_LIMIT = 3;
 
   let lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
+  let _pendingEmail = null;
+  let _pendingVerifyCode = null;
 
   // ===== Bilingual Helper =====
   function t(en, zh) {
@@ -40,6 +43,14 @@ const User = (() => {
     try { return localStorage.getItem(KEYS.premium) === 'true'; } catch (e) { return false; }
   }
 
+  function getCachedCredits() {
+    try { const v = localStorage.getItem(KEYS.credits); return v ? parseInt(v) : FREE_TOTAL_LIMIT; } catch (e) { return FREE_TOTAL_LIMIT; }
+  }
+
+  function setCachedCredits(n) {
+    try { localStorage.setItem(KEYS.credits, String(n)); } catch (e) { /* silent */ }
+  }
+
   // ===== Profile (localStorage cache) =====
   function getProfile() {
     try {
@@ -56,43 +67,108 @@ const User = (() => {
     } catch (e) { /* silent */ }
   }
 
-  // ===== Register =====
-  async function register(name, email) {
-    // Validate
-    const displayName = (name || '').trim() || t('Seeker', '求问者');
-    const emailVal = (email || '').trim();
+  // ===== Get birth info from profile for auto-fill =====
+  function getBirthInfo() {
+    const profile = getProfile();
+    if (!profile) return null;
+    return {
+      name: profile.name || '',
+      year: profile.birthYear || null,
+      month: profile.birthMonth || null,
+      day: profile.birthDay || null,
+      hour: profile.birthHour || null,
+      birthplace: profile.birthplace || '',
+      zodiacSign: profile.zodiacSign || null,
+      zodiacIndex: profile.zodiacIndex !== undefined ? profile.zodiacIndex : null,
+    };
+  }
 
-    // Try API first
-    if (typeof Api !== 'undefined') {
-      try {
-        const result = await Api.register(displayName, emailVal);
-        if (result.userId) {
-          try {
-            localStorage.setItem(KEYS.userId, result.userId);
-            if (result.token) localStorage.setItem(KEYS.token, result.token);
-            if (result.user) localStorage.setItem(KEYS.profile, JSON.stringify(result.user));
-          } catch (e) { /* silent */ }
-          return result.user || { name: displayName };
-        }
-      } catch (e) {
-        // API failed — fall through to localStorage fallback
-      }
+  // ===== Email Verification =====
+  async function sendVerifyCode(email) {
+    if (typeof Api === 'undefined') {
+      // Simulate for offline/local mode
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      _pendingEmail = email.trim().toLowerCase();
+      _pendingVerifyCode = code;
+      return { ok: true, code };
     }
+    try {
+      const result = await Api.sendVerifyCode(email);
+      if (result.ok) {
+        _pendingEmail = email.trim().toLowerCase();
+        // Code returned in dev, or sent via email in prod
+        if (result.code) _pendingVerifyCode = result.code;
+        return result;
+      }
+      return { ok: false, error: result.error || 'Failed to send code' };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
 
-    // Fallback: localStorage-only registration (backwards-compatible)
+  async function verifyEmailAndRegister(email, code, name, birthInfo) {
+    if (typeof Api === 'undefined') {
+      // Offline mode: skip verification
+      if (_pendingVerifyCode && code !== _pendingVerifyCode) return { ok: false, error: 'Incorrect code' };
+      return await doLocalRegister(name, email, birthInfo);
+    }
+    try {
+      const verifyResult = await Api.verifyEmail(email, code);
+      if (!verifyResult.ok) return { ok: false, error: verifyResult.error || 'Verification failed' };
+      return await doRegister(name, email, birthInfo);
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  // ===== Register =====
+  async function doRegister(name, email, birthInfo) {
+    try {
+      const result = await Api.register(name, email, birthInfo);
+      if (result.userId) {
+        try {
+          localStorage.setItem(KEYS.userId, result.userId);
+          if (result.token) localStorage.setItem(KEYS.token, result.token);
+          if (result.user) {
+            localStorage.setItem(KEYS.profile, JSON.stringify(result.user));
+            setCachedCredits(result.user.freeCredits || FREE_TOTAL_LIMIT);
+          }
+        } catch (e) { /* silent */ }
+        return { ok: true, user: result.user };
+      }
+      return { ok: false, error: 'Registration failed' };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async function doLocalRegister(name, email, birthInfo) {
     const profile = {
-      name: displayName,
-      email: emailVal,
+      name: (name || '').trim() || t('Seeker', '求问者'),
+      email: (email || '').trim().toLowerCase(),
+      birthYear: birthInfo?.year || null,
+      birthMonth: birthInfo?.month || null,
+      birthDay: birthInfo?.day || null,
+      birthHour: birthInfo?.hour || null,
+      birthplace: birthInfo?.birthplace || '',
+      freeCredits: FREE_TOTAL_LIMIT,
+      premium: false,
       registeredAt: new Date().toISOString(),
     };
     saveProfile(profile);
     try {
       localStorage.setItem(KEYS.userId, 'local_' + Date.now());
+      setCachedCredits(FREE_TOTAL_LIMIT);
     } catch (e) { /* silent */ }
-    return profile;
+    return { ok: true, user: profile };
   }
 
-  // ===== Login (verify existing session) =====
+  // Legacy register (kept for backwards compat)
+  async function register(name, email) {
+    return await doLocalRegister(name, email, null);
+  }
+
+  // ===== Login =====
   async function login(userId) {
     if (typeof Api === 'undefined') return null;
     if (!userId || userId.startsWith('local_')) return null;
@@ -102,11 +178,58 @@ const User = (() => {
         try { localStorage.setItem(KEYS.token, result.token); } catch (e) { /* silent */ }
       }
       if (result.user) {
-        try { localStorage.setItem(KEYS.profile, JSON.stringify(result.user)); } catch (e) { /* silent */ }
+        try {
+          localStorage.setItem(KEYS.profile, JSON.stringify(result.user));
+          setCachedCredits(result.user.freeCredits || FREE_TOTAL_LIMIT);
+          if (result.user.premium) localStorage.setItem(KEYS.premium, 'true');
+        } catch (e) { /* silent */ }
       }
       return result.user || null;
     } catch (e) {
       return null;
+    }
+  }
+
+  async function loginByEmail(email) {
+    if (typeof Api === 'undefined') return null;
+    try {
+      const result = await Api.loginByEmail(email);
+      if (result.userId) {
+        try { localStorage.setItem(KEYS.userId, result.userId); } catch (e) { /* silent */ }
+      }
+      if (result.token) {
+        try { localStorage.setItem(KEYS.token, result.token); } catch (e) { /* silent */ }
+      }
+      if (result.user) {
+        try {
+          localStorage.setItem(KEYS.profile, JSON.stringify(result.user));
+          setCachedCredits(result.user.freeCredits || FREE_TOTAL_LIMIT);
+          if (result.user.premium) localStorage.setItem(KEYS.premium, 'true');
+        } catch (e) { /* silent */ }
+      }
+      return result.user || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function updateProfile(profileData) {
+    const userId = getUserId();
+    if (!userId || userId.startsWith('local_')) {
+      // Local: just update cache
+      const existing = getProfile() || {};
+      Object.assign(existing, profileData);
+      saveProfile(existing);
+      return true;
+    }
+    try {
+      const result = await Api.updateProfile(userId, profileData);
+      if (result.user) {
+        saveProfile(result.user);
+      }
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -116,26 +239,20 @@ const User = (() => {
 
   // ===== Usage / AI Access =====
   async function canUseAI() {
-    // Fast path: premium from localStorage cache
     if (isPremiumSync()) return true;
 
     const userId = getUserId();
-    // Check via API for real-time total usage
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.checkUsage(userId);
-        // Sync premium status from server
         if (result.premium) {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return true;
         }
+        setCachedCredits(result.totalCredits || FREE_TOTAL_LIMIT);
         return result.remaining > 0;
-      } catch (e) {
-        // API unreachable — allow access
-      }
+      } catch (e) { /* API unreachable — allow offline use */ }
     }
-
-    // Local users or offline: no restriction
     return true;
   }
 
@@ -147,11 +264,9 @@ const User = (() => {
       await Api.trackUsage(userId);
       return;
     }
-    // Local users: no-op (cannot track without API)
   }
 
   async function getRemainingFree() {
-    // Fast path: premium from localStorage cache
     if (isPremiumSync()) return Infinity;
 
     const userId = getUserId();
@@ -162,22 +277,31 @@ const User = (() => {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return Infinity;
         }
+        setCachedCredits(result.totalCredits || FREE_TOTAL_LIMIT);
         return result.remaining || 0;
-      } catch (e) {
-        // API unreachable
-      }
+      } catch (e) { /* offline */ }
     }
-
-    // Local users or offline: unlimited
     return Infinity;
+  }
+
+  async function getTotalCredits() {
+    if (isPremiumSync()) return Infinity;
+
+    const userId = getUserId();
+    if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
+      try {
+        const result = await Api.checkUsage(userId);
+        if (result.premium) return Infinity;
+        return result.totalCredits || FREE_TOTAL_LIMIT;
+      } catch (e) { /* offline */ }
+    }
+    return getCachedCredits();
   }
 
   // ===== Premium =====
   async function isPremium() {
-    // Fast path: localStorage cache
     if (isPremiumSync()) return true;
 
-    // Check API to sync
     const userId = getUserId();
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
@@ -186,40 +310,13 @@ const User = (() => {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return true;
         }
-      } catch (e) {
-        // API unreachable
-      }
+      } catch (e) { /* offline */ }
     }
-
     return false;
   }
 
   async function unlockPremium(code) {
-    if (!code || typeof code !== 'string') return false;
-    const trimmed = code.trim().toUpperCase();
-
-    const userId = getUserId();
-    if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
-      try {
-        const result = await Api.unlockPremium(userId, trimmed);
-        if (result.premium) {
-          try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
-          return true;
-        }
-        return false;
-      } catch (e) {
-        // API unreachable — fall through to localStorage validation
-      }
-    }
-
-    // Fallback: old local validation
-    if (!/^SW-[A-Z0-9]{8}$/.test(trimmed)) return false;
-    try {
-      localStorage.setItem(KEYS.premium, 'true');
-    } catch (e) {
-      return false;
-    }
-    return true;
+    return await redeemCode(code);
   }
 
   async function redeemCode(code) {
@@ -230,8 +327,13 @@ const User = (() => {
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.redeemCode(userId, trimmed);
-        if (result.premium) {
-          try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
+        if (result.ok) {
+          if (result.premium || result.type === 'premium') {
+            try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
+          }
+          if (result.type === 'credits' && result.totalCredits) {
+            setCachedCredits(result.totalCredits);
+          }
           return true;
         }
         return false;
@@ -248,9 +350,7 @@ const User = (() => {
     if (!userId || userId.startsWith('local_') || typeof Api === 'undefined') return;
     try {
       await Api.saveReading(userId, type, content);
-    } catch (e) {
-      // Non-critical — silent fail
-    }
+    } catch (e) { /* silent */ }
   }
 
   async function getHistory() {
@@ -271,11 +371,11 @@ const User = (() => {
       localStorage.removeItem(KEYS.token);
       localStorage.removeItem(KEYS.profile);
       localStorage.removeItem(KEYS.premium);
+      localStorage.removeItem(KEYS.credits);
     } catch (e) { /* silent */ }
   }
 
   // ===== Session refresh on load =====
-  // Fire-and-forget: if we have a cached userId, try to refresh the session
   (function init() {
     const cachedId = getUserId();
     if (cachedId && !cachedId.startsWith('local_') && typeof Api !== 'undefined') {
@@ -284,11 +384,13 @@ const User = (() => {
           try { localStorage.setItem(KEYS.token, result.token); } catch (e) { /* silent */ }
         }
         if (result.user) {
-          try { localStorage.setItem(KEYS.profile, JSON.stringify(result.user)); } catch (e) { /* silent */ }
+          try {
+            localStorage.setItem(KEYS.profile, JSON.stringify(result.user));
+            setCachedCredits(result.user.freeCredits || FREE_TOTAL_LIMIT);
+            if (result.user.premium) localStorage.setItem(KEYS.premium, 'true');
+          } catch (e) { /* silent */ }
         }
-      }).catch(() => {
-        // API unreachable — use cached data
-      });
+      }).catch(() => { /* API unreachable — use cached data */ });
     }
   })();
 
@@ -296,17 +398,29 @@ const User = (() => {
   return {
     t,
     setLanguage,
+    // Email verification flow
+    sendVerifyCode,
+    verifyEmailAndRegister,
+    // Auth
     register,
     login,
+    loginByEmail,
     isLoggedIn,
+    logout,
+    // Profile
     getProfile,
+    updateProfile,
+    getBirthInfo,
+    // AI usage / credits
     canUseAI,
     useAICredit,
     isPremium,
+    getRemainingFree,
+    getTotalCredits,
+    // Codes
     unlockPremium,
     redeemCode,
-    logout,
-    getRemainingFree,
+    // History
     saveReading,
     getHistory,
   };

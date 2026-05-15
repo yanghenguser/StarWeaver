@@ -5,29 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StarWeaver · 星织者 — Astrology & Divination</title>
   <meta name="description" content="StarWeaver - AI-powered astrology natal chart, horoscope, and divination web app">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    (function(){var s=localStorage.getItem('starweaver-theme');document.documentElement.setAttribute('data-theme',s||'dark')})();
+  </script>
 </head>
 <body>
 
   <!-- ===== Loading Screen ===== -->
   <div id="loading-screen">
-    <div class="loading-star">✨</div>
+    <div class="loading-logo">StarWeaver</div>
+    <div class="loading-sub">星 织 者</div>
+    <div class="loading-constellation">
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+    </div>
     <div class="loading-text" data-lang="loading">编织星辰...</div>
   </div>
 
   <!-- ===== Star Background ===== -->
   <canvas id="star-canvas"></canvas>
 
+  <!-- ===== Aurora Background ===== -->
+  <div class="bg-aurora">
+    <div class="aurora-blob"></div>
+    <div class="aurora-blob"></div>
+    <div class="aurora-blob"></div>
+  </div>
+
   <!-- ===== App Container ===== -->
   <div class="app-container">
 
     <!-- ===== Header ===== -->
     <header class="header">
-      <button id="user-btn" class="user-btn" style="display:none;" aria-label="User menu">👤</button>
-      <button id="history-btn" class="history-btn" style="display:none;" aria-label="Reading history">📖</button>
+      <button id="user-btn" class="user-btn" style="display:none;" aria-label="User menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+      <span id="usage-counter" class="usage-counter" style="display:none;"></span>
+      <button id="history-btn" class="history-btn" style="display:none;" aria-label="Reading history">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="theme-icon-moon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </span>
+        <span class="theme-icon-sun">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        </span>
+      </button>
       <button class="language-toggle" aria-label="Toggle language">EN</button>
-      <h1 class="header-title">✦ StarWeaver ✦</h1>
+      <h1 class="header-title"><span class="title-accent">StarWeaver</span></h1>
       <p class="header-subtitle" data-lang="subtitle">星 织 者 · 宇 宙 之 镜</p>
       <div class="cosmic-quote">
         <div class="cosmic-quote-text" id="cosmic-quote-text"></div>
@@ -35,68 +70,98 @@
       </div>
     </header>
 
-    <!-- ===== Navigation ===== -->
+    <!-- ===== Desktop Navigation ===== -->
     <nav class="nav-tabs">
-      <button class="nav-tab active" data-section="home" id="tab-home">🌌 宇宙</button>
-      <button class="nav-tab" data-section="chart" id="tab-chart">🔮 我的星盘</button>
-      <button class="nav-tab" data-section="horoscope" id="tab-horoscope">⭐ 运势</button>
-      <button class="nav-tab" data-section="compatibility" id="tab-compatibility">💞 合盘</button>
-      <button class="nav-tab" data-section="numerology" id="tab-numerology">🔢 生命灵数</button>
-      <button class="nav-tab" data-section="fortune" id="tab-fortune">🎴 占卜</button>
-      <button class="nav-tab" data-section="chat" id="tab-chat">🌙 AI 占星师</button>
+      <button class="nav-tab active" data-section="home" id="tab-home">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        宇宙
+      </button>
+      <button class="nav-tab" data-section="chart" id="tab-chart">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        星盘
+      </button>
+      <button class="nav-tab" data-section="horoscope" id="tab-horoscope">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        运势
+      </button>
+      <button class="nav-tab" data-section="compatibility" id="tab-compatibility">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        合盘
+      </button>
+      <button class="nav-tab" data-section="numerology" id="tab-numerology">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0Z"/></svg>
+        灵数
+      </button>
+      <button class="nav-tab" data-section="fortune" id="tab-fortune">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        占卜
+      </button>
+      <button class="nav-tab" data-section="chat" id="tab-chat">
+        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI 占星师
+      </button>
     </nav>
 
     <!-- ===== Bottom Navigation (Mobile) ===== -->
     <nav class="bottom-nav" id="bottom-nav">
       <button class="bottom-nav-item active" data-section="home" aria-label="宇宙">
-        <span class="nav-icon">🌌</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span class="nav-label">宇宙</span>
       </button>
       <button class="bottom-nav-item" data-section="chart" aria-label="星盘">
-        <span class="nav-icon">🔮</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
         <span class="nav-label">星盘</span>
       </button>
       <button class="bottom-nav-item" data-section="horoscope" aria-label="运势">
-        <span class="nav-icon">⭐</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
         <span class="nav-label">运势</span>
       </button>
       <button class="bottom-nav-item" data-section="compatibility" aria-label="合盘">
-        <span class="nav-icon">💞</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
         <span class="nav-label">合盘</span>
       </button>
       <button class="bottom-nav-item" data-section="numerology" aria-label="灵数">
-        <span class="nav-icon">🔢</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0Z"/></svg>
         <span class="nav-label">灵数</span>
       </button>
       <button class="bottom-nav-item" data-section="fortune" aria-label="占卜">
-        <span class="nav-icon">🎴</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         <span class="nav-label">占卜</span>
       </button>
       <button class="bottom-nav-item" data-section="chat" aria-label="占星师">
-        <span class="nav-icon">🌙</span>
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">占星师</span>
       </button>
     </nav>
 
-    <!-- ===== Section: Home / Cosmic Weather ===== -->
+    <!-- ===== Section: Home ===== -->
     <section id="section-home" class="section active">
       <div class="home-greeting">
-        <h2>🌌 今日宇宙天气</h2>
+        <h2>今日宇宙天气</h2>
         <p>Today's Celestial Outlook</p>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🌙</span> 月相 · Moon Phase</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10Z"/><line x1="12" y1="2" x2="12" y2="12"/><line x1="12" y1="12" x2="19.07" y2="14.93"/></svg>
+          月相 · Moon Phase
+        </div>
         <div id="moon-phase-display" class="moon-phase"></div>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🌈</span> 今日星象 · Today's Sky</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          今日星象 · Today's Sky
+        </div>
         <div id="cosmic-weather" class="cosmic-weather"></div>
       </div>
 
       <div class="card" id="lucky-guide-card">
-        <div class="card-title"><span class="icon">🍀</span> 每日幸运指南 · Daily Lucky Guide</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          每日幸运指南 · Daily Lucky Guide
+        </div>
         <div class="form-group">
           <label class="form-label" for="lucky-sign">你的星座 / Your Sign</label>
           <select class="form-select" id="lucky-sign"></select>
@@ -119,13 +184,23 @@
             <span class="lucky-guide-value" id="lucky-crystal">--</span>
           </div>
         </div>
+        <button class="btn btn-purple" id="lucky-ai-btn" style="margin-top:0.8rem;width:100%;">🤖 AI 幸运解读 · AI Lucky Reading</button>
+        <div class="reading-output" id="lucky-ai-output" style="margin-top:0.8rem;"></div>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">🎲</span> 占星骰子 · Astro Dice</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          占星骰子 · Astro Dice
+        </div>
         <div class="dice-container">
-          <button class="dice-btn" id="dice-btn">🎲</button>
-          <div class="dice-result" id="dice-result">点击投掷占星骰子</div>
+          <button class="dice-btn" id="dice-btn">🎲 掷骰子</button>
+          <div class="dice-3-results" id="dice-results" style="display:none;">
+            <div class="dice-result-item"><span class="dice-label">行星</span><span class="dice-value" id="dice-planet">—</span></div>
+            <div class="dice-result-item"><span class="dice-label">星座</span><span class="dice-value" id="dice-sign">—</span></div>
+            <div class="dice-result-item"><span class="dice-label">宫位</span><span class="dice-value" id="dice-house">—</span></div>
+          </div>
+          <div class="dice-reading" id="dice-reading" style="display:none;"></div>
         </div>
       </div>
     </section>
@@ -133,7 +208,10 @@
     <!-- ===== Section: Natal Chart ===== -->
     <section id="section-chart" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">📜</span> 出生信息 · Your Birth Info</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z"/><polyline points="14 2 14 8 20 8"/></svg>
+          出生信息 · Your Birth Info
+        </div>
         <form id="birth-form">
           <div class="form-row">
             <div class="form-group">
@@ -163,53 +241,70 @@
               <select class="form-select" id="birth-hour"></select>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">🔮 生成星盘 · Generate Chart</button>
+          <button type="submit" class="btn btn-primary">生成星盘 · Generate Chart</button>
         </form>
       </div>
 
       <div class="card" id="chart-card" style="display:none;">
-        <div class="card-title"><span class="icon">🌀</span> 你的星盘 · Your Natal Chart</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          你的星盘 · Your Natal Chart
+        </div>
         <div class="chart-container" id="natal-chart-svg"></div>
         <div class="chart-controls" style="display:none;">
-          <button class="btn btn-purple" onclick="App.generateAIReading()">🤖 AI解读 · AI Reading</button>
+          <button class="btn btn-purple" id="btn-ai-reading" onclick="App.generateAIReading()">AI 解读 · AI Reading</button>
         </div>
       </div>
 
       <div class="card" id="chart-reading-card" style="display:none;">
-        <div class="card-title"><span class="icon">📖</span> 星盘概览 · Chart Overview</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+          星盘概览 · Chart Overview
+        </div>
         <div class="reading-output" id="chart-reading-text"></div>
         <div class="reading-output" id="ai-reading-output"></div>
-        <button class="share-btn" id="share-chart-btn" style="display:none;" aria-label="Share">📤</button>
+        <button class="share-btn" id="share-chart-btn" style="display:none;" aria-label="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          分享
+        </button>
       </div>
     </section>
 
     <!-- ===== Section: Horoscope ===== -->
     <section id="section-horoscope" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">⭐</span> 每日运势 · Daily Horoscope</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          每日运势 · Daily Horoscope
+        </div>
         <div class="form-row" style="align-items:end;gap:1rem;">
           <div class="form-group" style="flex:1;">
             <label class="form-label">你的星座 / Your Sign</label>
             <select class="form-select" id="horoscope-sign"></select>
           </div>
           <div class="form-group">
-            <button class="btn btn-purple" id="btn-ai-horoscope" onclick="App.getAIHoroscope()">🤖 AI运势 · AI Horoscope</button>
+            <button class="btn btn-purple" id="btn-ai-horoscope" onclick="App.getAIHoroscope()">AI 运势 · AI Horoscope</button>
           </div>
         </div>
         <div class="reading-output" id="horoscope-ai-output">
           <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;">
-            选择你的星座，点击AI运势获取个性化解读
+            选择你的星座，点击 AI 运势获取个性化解读
           </div>
         </div>
-        <button class="share-btn" id="share-horoscope-btn" style="display:none;" aria-label="Share">📤</button>
+        <button class="share-btn" id="share-horoscope-btn" style="display:none;" aria-label="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          分享
+        </button>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="icon">♈</span> 十二星座 · All Signs</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10Z"/><path d="M12 6v6l4 2"/></svg>
+          十二星座 · All Signs
+        </div>
         <div class="horoscope-grid" id="zodiac-grid"></div>
       </div>
 
-      <!-- Zodiac Detail Overlay -->
       <div class="zodiac-detail-overlay" id="zodiac-detail">
         <div class="zodiac-detail-card" id="zodiac-detail-content"></div>
       </div>
@@ -218,7 +313,10 @@
     <!-- ===== Section: Compatibility ===== -->
     <section id="section-compatibility" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">💞</span> 星座合盘 · Love Compatibility</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          星座合盘 · Love Compatibility
+        </div>
         <form id="compatibility-form">
           <div class="compat-inputs">
             <div>
@@ -242,7 +340,7 @@
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">💞 测算兼容性 · Calculate</button>
+          <button type="submit" class="btn btn-primary">测算兼容性 · Calculate</button>
         </form>
 
         <div class="compat-result" id="compat-result" style="display:none;">
@@ -257,7 +355,10 @@
     <!-- ===== Section: Numerology ===== -->
     <section id="section-numerology" class="section">
       <div class="card">
-        <div class="card-title"><span class="icon">🔢</span> 生命灵数 · Numerology</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0Z"/></svg>
+          生命灵数 · Numerology
+        </div>
         <form id="numerology-form">
           <div class="form-row">
             <div class="form-group">
@@ -279,34 +380,40 @@
               <select class="form-select" id="numerology-day"></select>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">🔮 计算灵数 · Calculate</button>
+          <button type="submit" class="btn btn-primary">计算灵数 · Calculate</button>
         </form>
       </div>
 
-      <!-- Numerology Results -->
       <div class="card" id="numerology-result-card" style="display:none;">
-        <div class="card-title"><span class="icon">✨</span> 你的生命灵数 · Your Numbers</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          你的生命灵数 · Your Numbers
+        </div>
         <div class="numerology-results" id="numerology-results"></div>
-        <button id="numerology-ai-btn" class="btn btn-purple" style="margin-top:1rem;">🤖 AI解读 · AI Reading</button>
+        <button id="numerology-ai-btn" class="btn btn-purple" style="margin-top:1rem;">AI 解读 · AI Reading</button>
         <div class="reading-output" id="numerology-ai-output"></div>
-        <button class="share-btn" id="share-numerology-btn" style="display:none;" aria-label="Share">📤</button>
+        <button class="share-btn" id="share-numerology-btn" style="display:none;" aria-label="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          分享
+        </button>
       </div>
     </section>
 
-    <!-- ===== Section: Fortune / Tarot ===== -->
+    <!-- ===== Section: Fortune ===== -->
     <section id="section-fortune" class="section">
       <!-- Tarot -->
       <div class="card">
-        <div class="card-title"><span class="icon">🃏</span> <span data-key="tarot-title">塔罗占卜 · Tarot</span></div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          <span data-key="tarot-title">塔罗占卜 · Tarot</span>
+        </div>
 
-        <!-- Question Input -->
         <div class="form-group">
           <label class="form-label" for="tarot-question"><span data-key="tarot-question-label">你的问题 / Your Question</span></label>
           <input class="form-input" id="tarot-question" type="text"
             placeholder="我的事业发展如何？ / What does my career path look like?">
         </div>
 
-        <!-- Spread Selector -->
         <div class="form-group">
           <label class="form-label"><span data-key="tarot-spread-label">选择牌阵 / Choose a Spread</span></label>
           <div class="spread-selector" id="spread-selector">
@@ -338,54 +445,60 @@
           </div>
         </div>
 
-        <!-- Draw Button -->
-        <button class="btn btn-primary" id="tarot-draw-btn">🃏 抽牌 · Draw Cards</button>
+        <button class="btn btn-primary" id="tarot-draw-btn">抽牌 · Draw Cards</button>
       </div>
 
-      <!-- Tarot Result -->
       <div class="card" id="tarot-result" style="display:none;">
         <div class="card-title" style="justify-content:space-between;">
-          <span><span class="icon">🃏</span> <span id="tarot-spread-name">你的占卜</span></span>
+          <span>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            <span id="tarot-spread-name">你的占卜</span>
+          </span>
           <button class="btn btn-danger" id="tarot-redraw-btn" style="padding:6px 14px;font-size:0.8rem;">
-            🔄 重抽 · Redraw
+            重抽 · Redraw
           </button>
         </div>
 
-        <!-- Cards Display -->
         <div class="tarot-cards" id="tarot-cards-display"></div>
 
-        <!-- AI Reading -->
         <div class="reading-output" id="tarot-reading-output">
           <div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
             抽牌获取解读 / Draw cards for your reading
           </div>
         </div>
-        <button class="share-btn" id="share-tarot-btn" style="display:none;" aria-label="Share">📤</button>
+        <button class="share-btn" id="share-tarot-btn" style="display:none;" aria-label="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          分享
+        </button>
       </div>
-      <div class="card">
-        <div class="card-title"><span class="icon">☯</span> 周易占卜 · I Ching</div>
 
-        <!-- Question Input -->
+      <!-- I Ching -->
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+          周易占卜 · I Ching
+        </div>
+
         <div class="form-group">
           <label class="form-label" for="iching-question"><span data-key="iching-question-label">你的问题 / Your Question</span></label>
           <input class="form-input" id="iching-question" type="text"
             placeholder="宇宙对我有何指引？ / What guidance does the universe have for me?">
         </div>
 
-        <!-- Cast Button -->
-        <button class="btn btn-primary" id="iching-cast-btn">☯ 摇卦 · Cast Hexagram</button>
+        <button class="btn btn-primary" id="iching-cast-btn">摇卦 · Cast Hexagram</button>
       </div>
 
-      <!-- IChing Result -->
       <div class="card" id="iching-result" style="display:none;">
         <div class="card-title" style="justify-content:space-between;">
-          <span><span class="icon">☯</span> 周易 · I Ching</span>
+          <span>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+            周易 · I Ching
+          </span>
           <button class="btn btn-danger" id="iching-recast-btn" style="padding:6px 14px;font-size:0.8rem;">
-            🔄 重摇 · Recast
+            重摇 · Recast
           </button>
         </div>
 
-        <!-- Hexagram Display -->
         <div class="iching-display" id="iching-display">
           <div class="iching-hexagram-box" id="iching-primary-box">
             <div class="iching-hexagram-label" id="iching-primary-label"></div>
@@ -400,37 +513,181 @@
           </div>
         </div>
 
-        <!-- Moving Lines Info -->
         <div class="iching-moving-lines" id="iching-moving-lines" style="display:none;"></div>
 
-        <!-- AI Reading Button -->
-        <button class="btn btn-purple" id="iching-ai-btn" style="margin-top:0.8rem;">🤖 AI解卦 · AI Interpretation</button>
+        <button class="btn btn-purple" id="iching-ai-btn" style="margin-top:0.8rem;">AI 解卦 · AI Interpretation</button>
 
-        <!-- AI Reading Output -->
         <div class="reading-output" id="iching-reading-output" style="margin-top:0.8rem;">
           <div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">
             摇卦获取解读 / Cast the hexagram for your reading
           </div>
         </div>
-        <button class="share-btn" id="share-iching-btn" style="display:none;" aria-label="Share">📤</button>
+        <button class="share-btn" id="share-iching-btn" style="display:none;" aria-label="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          分享
+        </button>
       </div>
 
-      <!-- Keep existing Astro Dice -->
+      <!-- Coin Divination -->
       <div class="card">
-        <div class="card-title"><span class="icon">🎲</span> Astro Dice · 占星骰子</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M8 8h8"/><path d="M8 16h8"/></svg>
+          金钱卦 · Coin Divination
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="coin-question">你的问题 / Your Question</label>
+          <input class="form-input" id="coin-question" type="text" placeholder="宇宙对我有何指引？">
+        </div>
+        <button class="btn btn-primary" id="coin-cast-btn">摇卦 · Cast Coins</button>
+      </div>
+
+      <div class="card" id="coin-result" style="display:none;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M8 8h8"/><path d="M8 16h8"/></svg>
+            金钱卦 · Coin Divination
+          </span>
+          <button class="btn btn-danger" id="coin-recast-btn" style="padding:6px 14px;font-size:0.8rem;">
+            重摇 · Recast
+          </button>
+        </div>
+        <div id="coin-result-content"></div>
+      </div>
+
+      <!-- LiuYao -->
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          六爻 · LiuYao
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="liuyao-question">你的问题 / Your Question</label>
+          <input class="form-input" id="liuyao-question" type="text" placeholder="我的事业运势如何？ / What about my career?">
+        </div>
+        <div class="form-row" style="grid-template-columns:1fr 1fr;">
+          <div class="form-group">
+            <label class="form-label">起卦方式 / Method</label>
+            <select class="form-select" id="liuyao-method">
+              <option value="coin">三枚金钱 / 3 Coins</option>
+              <option value="yarrow">蓍草 / Yarrow</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">日干 / Day Stem</label>
+            <select class="form-select" id="liuyao-daystem">
+              <option value="">自动 / Auto</option>
+              <option value="甲">甲</option><option value="乙">乙</option>
+              <option value="丙">丙</option><option value="丁">丁</option>
+              <option value="戊">戊</option><option value="己">己</option>
+              <option value="庚">庚</option><option value="辛">辛</option>
+              <option value="壬">壬</option><option value="癸">癸</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="liuyao-cast-btn">起卦 · Cast</button>
+      </div>
+
+      <div class="card" id="liuyao-result" style="display:none;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            六爻 · LiuYao
+          </span>
+          <button class="btn btn-danger" id="liuyao-recast-btn" style="padding:6px 14px;font-size:0.8rem;">
+            重摇 · Recast
+          </button>
+        </div>
+        <div id="liuyao-result-content"></div>
+      </div>
+
+      <!-- Plum Blossom -->
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4"/><path d="M12 19v4"/><path d="M4.22 4.22l2.83 2.83"/><path d="M16.95 16.95l2.83 2.83"/><path d="M1 12h4"/><path d="M19 12h4"/><path d="M4.22 19.78l2.83-2.83"/><path d="M16.95 7.05l2.83-2.83"/></svg>
+          梅花易数 · Plum Blossom
+        </div>
+        <div class="form-group">
+          <label class="form-label">起卦方式 / Method</label>
+          <select class="form-select" id="meihua-method">
+            <option value="date">年月日时 / Date</option>
+            <option value="number">数字 / Numbers</option>
+            <option value="character">字数 / Characters</option>
+          </select>
+        </div>
+        <div id="meihua-date-inputs">
+          <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">年 / Year</label>
+              <input class="form-input" id="meihua-year" type="number" value="2026">
+            </div>
+            <div class="form-group">
+              <label class="form-label">月 / Month</label>
+              <input class="form-input" id="meihua-month" type="number" value="5" min="1" max="12">
+            </div>
+            <div class="form-group">
+              <label class="form-label">日 / Day</label>
+              <input class="form-input" id="meihua-day" type="number" value="15" min="1" max="31">
+            </div>
+            <div class="form-group">
+              <label class="form-label">时 / Hour</label>
+              <input class="form-input" id="meihua-hour" type="number" value="12" min="0" max="23">
+            </div>
+          </div>
+        </div>
+        <div id="meihua-number-inputs" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">输入数字（空格分隔）/ Numbers (space separated)</label>
+            <input class="form-input" id="meihua-numbers" type="text" placeholder="例如: 3 8 15">
+          </div>
+        </div>
+        <div id="meihua-character-inputs" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">输入文字 / Enter Text</label>
+            <input class="form-input" id="meihua-text" type="text" placeholder="输入中文句子 / Enter a Chinese sentence">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="meihua-cast-btn">起卦 · Cast</button>
+      </div>
+
+      <div class="card" id="meihua-result" style="display:none;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4"/><path d="M12 19v4"/><path d="M4.22 4.22l2.83 2.83"/><path d="M16.95 16.95l2.83 2.83"/><path d="M1 12h4"/><path d="M19 12h4"/><path d="M4.22 19.78l2.83-2.83"/><path d="M16.95 7.05l2.83-2.83"/></svg>
+            梅花易数 · Plum Blossom
+          </span>
+          <button class="btn btn-danger" id="meihua-recast-btn" style="padding:6px 14px;font-size:0.8rem;">
+            重起 · Recast
+          </button>
+        </div>
+        <div id="meihua-result-content"></div>
+      </div>
+
+      <!-- Astro Dice (duplicate in fortune) -->
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Astro Dice · 占星骰子
+        </div>
         <div class="dice-container">
-          <button class="dice-btn" id="dice-btn-2">🔮</button>
-          <div class="dice-result" id="dice-result-2">Roll the dice for cosmic guidance</div>
+          <button class="dice-btn" id="dice-btn-2">🔮 掷骰子</button>
+          <div class="dice-3-results" id="dice-results-2" style="display:none;">
+            <div class="dice-result-item"><span class="dice-label">行星</span><span class="dice-value" id="dice-planet-2">—</span></div>
+            <div class="dice-result-item"><span class="dice-label">星座</span><span class="dice-value" id="dice-sign-2">—</span></div>
+            <div class="dice-result-item"><span class="dice-label">宫位</span><span class="dice-value" id="dice-house-2">—</span></div>
+          </div>
+          <div class="dice-reading" id="dice-reading-2" style="display:none;"></div>
         </div>
       </div>
     </section>
 
     <!-- ===== Section: AI Oracle Chat ===== -->
     <section id="section-chat" class="section">
-      <!-- Chat -->
       <div class="card">
         <div class="card-title" style="justify-content:space-between;">
-          <span><span class="icon">🌙</span> Chat with Stella · 星织者对话</span>
+          <span>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Stella · 星织者对话
+          </span>
           <button class="btn btn-danger" id="btn-clear-chat" style="padding:6px 14px;font-size:0.8rem;">
             Clear · 清空
           </button>
@@ -439,26 +696,29 @@
           <div class="ai-chat-messages" id="chat-messages">
             <div class="ai-message">
               <span class="msg-sender">✦ Stella · 星织者</span>
-              <div>Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?</div>
+              <div id="initial-greeting">Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?</div>
             </div>
           </div>
           <form id="chat-form" class="ai-chat-input-area">
-            <input class="form-input" id="chat-input" type="text" 
+            <input class="form-input" id="chat-input" type="text"
               placeholder="Ask the stars anything... / 向星辰提问...">
-            <button type="submit" class="btn btn-primary">Send ✦</button>
+            <button type="submit" class="btn btn-primary">Send</button>
           </form>
         </div>
       </div>
 
-      <!-- ===== DreamWeaver / 解梦师 ===== -->
+      <!-- DreamWeaver -->
       <div class="card">
-        <div class="card-title"><span class="icon">🌙</span> DreamWeaver · 解梦师</div>
+        <div class="card-title">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 3-1.5 5.5-3 7l-2 3h-6l-2-3c-1.5-1.5-3-4-3-7a8 8 0 0 1 8-8z"/><path d="M12 6v4"/><path d="M12 14h.01"/></svg>
+          DreamWeaver · 解梦师
+        </div>
         <div class="form-group">
           <label class="form-label" for="dream-input"><span data-key="dream-label">Describe Your Dream / 描述你的梦境</span></label>
           <textarea class="form-input dream-input" id="dream-input" rows="3"
             placeholder="描述你的梦境.../Describe your dream..."></textarea>
         </div>
-        <button class="btn btn-primary" id="dream-btn">🔮 解梦 · Interpret</button>
+        <button class="btn btn-primary" id="dream-btn">解梦 · Interpret</button>
         <div class="reading-output" id="dream-output" style="margin-top:0.8rem;">
           <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;">
             Share your dream for mystical interpretation
@@ -472,16 +732,16 @@
       <div class="modal-card">
         <button class="modal-close" id="auth-close">&times;</button>
         <div id="auth-register-view">
-          <h2 class="modal-title">✨ Join StarWeaver · 加入星织者</h2>
+          <h2 class="modal-title">Join StarWeaver · 加入星织者</h2>
           <p class="modal-subtitle">Register to unlock AI readings · 注册以使用 AI 解读</p>
           <form id="auth-form">
             <div class="form-group">
-              <label class="form-label">Name / 昵称 <span style="color:var(--gold);">*</span></label>
+              <label class="form-label">Name / 昵称 <span style="color:var(--primary);">*</span></label>
               <input class="form-input" id="auth-name" type="text" placeholder="Your name / 你的名字" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Email / 邮箱</label>
-              <input class="form-input" id="auth-email" type="email" placeholder="email@example.com">
+              <label class="form-label">Email / 邮箱 <span style="color:var(--primary);">*</span></label>
+              <input class="form-input" id="auth-email" type="email" placeholder="email@example.com" required>
             </div>
             <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
               <div class="form-group">
@@ -497,16 +757,49 @@
                 <select class="form-select" id="auth-day"></select>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" id="auth-submit-btn">✨ Start Journey · 开始旅程</button>
+            <button type="submit" class="btn btn-primary" id="auth-submit-btn">Send Code · 发送验证码</button>
           </form>
           <p class="auth-toggle-text">
             <a href="#" id="auth-toggle-link">Already registered? Log in · 已有账号？登录</a>
           </p>
         </div>
+        <div id="auth-verify-view" style="display:none;">
+          <h2 class="modal-title">Verify Email · 验证邮箱</h2>
+          <p class="modal-subtitle">Enter the 6-digit code sent to <strong id="verify-email-display"></strong></p>
+          <form id="verify-form">
+            <div class="form-group">
+              <label class="form-label">Verification Code / 验证码</label>
+              <input class="form-input verify-code-input" id="auth-verify-code" type="text" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="auth-verify-submit">Verify & Register · 验证并注册</button>
+          </form>
+          <div style="text-align:center;margin-top:0.8rem;">
+            <button class="btn btn-secondary" id="resend-code-btn" style="font-size:0.85rem;">Resend Code · 重新发送</button>
+            <button class="btn btn-secondary" id="back-register-btn" style="font-size:0.85rem;margin-left:0.5rem;">Back · 返回</button>
+          </div>
+        </div>
         <div id="auth-login-view" style="display:none;">
-          <h2 class="modal-title">✦ Welcome Back · 欢迎回来</h2>
+          <h2 class="modal-title">Welcome Back · 欢迎回来</h2>
           <p class="modal-subtitle" id="auth-login-greeting">Continue your cosmic journey</p>
-          <button class="btn btn-primary" id="auth-continue-btn">🌟 Continue · 继续</button>
+          <div class="form-group">
+            <label class="form-label">Update Profile (optional) / 更新信息（可选）</label>
+          </div>
+          <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Year / 年</label>
+              <select class="form-select" id="auth-year"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Month / 月</label>
+              <select class="form-select" id="auth-month"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Day / 日</label>
+              <select class="form-select" id="auth-day"></select>
+            </div>
+          </div>
+          <button class="btn btn-purple" id="auth-update-profile-btn" style="margin-bottom:0.5rem;">Update Profile · 更新信息</button>
+          <button class="btn btn-primary" id="auth-continue-btn">Continue · 继续</button>
           <p class="auth-toggle-text">
             <a href="#" id="auth-toggle-register">New here? Register · 新用户？注册</a>
           </p>
@@ -520,10 +813,10 @@
       <div class="modal-card premium-card">
         <button class="modal-close" id="premium-close">&times;</button>
         <div style="text-align:center;">
-          <div style="font-size:3rem;margin-bottom:0.5rem;">🌟</div>
-          <h2 class="modal-title">解锁无限解读</h2>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);margin-bottom:0.5rem;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <h2 class="modal-title">解锁更多解读</h2>
           <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
-            免费次数已用完，添加好友咨询获取卡密解锁
+            免费次数已用完。使用卡密获取更多 AI 解读次数或无限会员。
           </p>
           <div class="wechat-pay-box">
             <div class="wechat-pay-icon">💬</div>
@@ -539,7 +832,7 @@
               <label class="form-label">卡密</label>
               <input class="form-input" id="premium-code" type="text" placeholder="输入16位卡密" maxlength="16" style="text-align:center;letter-spacing:0.15em;font-family:monospace;">
             </div>
-            <button type="submit" class="btn btn-purple">🔓 解锁</button>
+            <button type="submit" class="btn btn-purple">解锁</button>
           </form>
           <p id="premium-error" class="premium-error" style="display:none;"></p>
         </div>
@@ -550,7 +843,10 @@
     <div id="history-modal" class="modal-overlay" style="display:none;">
       <div class="modal-card history-card">
         <button class="modal-close" id="history-close">&times;</button>
-        <h2 class="modal-title">📖 <span data-lang="history-title">My Reading History · 阅读历史</span></h2>
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span data-lang="history-title">My Reading History · 阅读历史</span>
+        </h2>
         <div id="history-list" class="history-list">
           <div style="text-align:center;color:var(--text-muted);padding:2rem;">
             Loading history...
@@ -564,21 +860,24 @@
     <div id="share-preview-modal" class="modal-overlay" style="display:none;">
       <div class="modal-card share-preview-card">
         <button class="modal-close" id="share-preview-close">&times;</button>
-        <h2 class="modal-title">📤 <span data-lang="share-title">Share · 分享</span></h2>
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          <span data-lang="share-title">Share · 分享</span>
+        </h2>
         <div class="share-preview-container">
           <img id="share-preview-image" src="" alt="Fortune Card">
         </div>
         <div class="share-preview-actions">
-          <button class="btn btn-primary" id="share-preview-download">💾 Download · 下载</button>
-          <button class="btn btn-purple" id="share-preview-moments">📤 朋友圈 · Moments</button>
+          <button class="btn btn-primary" id="share-preview-download">Download · 下载</button>
+          <button class="btn btn-purple" id="share-preview-moments">朋友圈 · Moments</button>
         </div>
       </div>
     </div>
 
     <!-- ===== Footer ===== -->
-    <footer style="text-align:center;padding:2rem 0 1rem;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border-subtle);margin-top:2rem;">
-      <p>✦ StarWeaver · 星织者 ✦</p>
-      <p style="margin-top:0.3rem;">Powered by StarWeaver · 以星辰之名编织命运</p>
+    <footer>
+      <p>StarWeaver · 星织者</p>
+      <p style="margin-top:0.3rem;">以星辰之名编织命运</p>
     </footer>
 
   </div>
@@ -586,6 +885,8 @@
   <!-- ===== Scripts ===== -->
   <script src="js/tarot.js"></script>
   <script src="js/iching.js"></script>
+  <script src="js/liuyao.js"></script>
+  <script src="js/meihua.js"></script>
   <script src="js/astro.js"></script>
   <script src="js/ai.js?v=4"></script>
   <script src="js/numerology.js"></script>

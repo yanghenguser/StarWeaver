@@ -43,12 +43,44 @@ const Api = (() => {
 
   // ===== Public API Methods =====
 
-  async function register(name, email) {
-    return request('register', { name, email: email || '' });
+  async function sendVerifyCode(email) {
+    return request('sendVerifyCode', { email });
+  }
+
+  async function verifyEmail(email, code) {
+    return request('verifyEmail', { email, code });
+  }
+
+  async function register(name, email, birthInfo) {
+    return request('register', {
+      name,
+      email: email || '',
+      birthYear: birthInfo?.year || null,
+      birthMonth: birthInfo?.month || null,
+      birthDay: birthInfo?.day || null,
+      birthHour: birthInfo?.hour || null,
+      birthplace: birthInfo?.birthplace || '',
+    });
   }
 
   async function login(userId) {
     return request('login', { userId });
+  }
+
+  async function loginByEmail(email) {
+    return request('login', { email });
+  }
+
+  async function updateProfile(userId, profile) {
+    return request('updateProfile', {
+      userId,
+      name: profile.name,
+      birthYear: profile.birthYear,
+      birthMonth: profile.birthMonth,
+      birthDay: profile.birthDay,
+      birthHour: profile.birthHour,
+      birthplace: profile.birthplace,
+    });
   }
 
   async function checkUsage(userId) {
@@ -77,8 +109,12 @@ const Api = (() => {
 
   return {
     BASE,
+    sendVerifyCode,
+    verifyEmail,
     register,
     login,
+    loginByEmail,
+    updateProfile,
     checkUsage,
     trackUsage,
     unlockPremium,

@@ -11,6 +11,11 @@ const App = (() => {
   let birthInfo = null;
   let chartData = null;
   let selectedZodiac = null;
+  let _pendingRegInfo = null;
+
+  // Coin divination data (gua-index 8×8 lookup + gua-list 64 names)
+  const GUA_INDEX = [[2,24,7,19,15,36,46,11],[16,51,40,54,62,55,32,34],[8,3,29,60,39,63,48,5],[45,17,47,58,31,49,28,43],[23,27,4,41,52,22,18,26],[35,21,64,38,56,30,50,14],[20,42,59,61,53,37,57,9],[12,25,6,10,33,13,44,1]];
+  const GUA_LIST = ["乾","坤","屯","蒙","需","讼","师","比","小畜","履","泰","否","同人","大有","谦","豫","随","蛊","临","观","噬嗑","贲","剥","复","无妄","大畜","颐","大过","坎","离","咸","恒","遁","大壮","晋","明夷","家人","睽","蹇","解","损","益","夬","姤","萃","升","困","井","革","鼎","震","艮","渐","归妹","丰","旅","巽","兑","涣","节","中孚","小过","既济","未济"];
 
   // ===== DOM Ready =====
   document.addEventListener('DOMContentLoaded', () => {
@@ -27,6 +32,9 @@ const App = (() => {
     initDreamWeaver();
     initNumerology();
     initDice();
+    initCoinDivination();
+    initLiuYao();
+    initMeihua();
     initMoonPhase();
     initCosmicWeather();
     initLuckyGuide();
@@ -36,6 +44,7 @@ const App = (() => {
     showRandomQuote();
     populateZodiacSigns();
     initZodiacDetailOverlay();
+    localizeInitialGreeting();
   });
 
   // ===== Language =====
@@ -62,6 +71,7 @@ const App = (() => {
     if (typeof User !== 'undefined') User.setLanguage(lang);
     updateUserUI();
     updateUsageUI();
+    localizeInitialGreeting();
   }
 
   function updateBottomNavLabels() {
@@ -730,6 +740,17 @@ const App = (() => {
     }
   }
 
+  // ===== Localize initial greeting =====
+  function localizeInitialGreeting() {
+    const el = document.getElementById('initial-greeting');
+    if (el) {
+      el.textContent = t(
+        'Greetings, seeker. I am Stella, weaver of stars and keeper of cosmic wisdom. What questions do you bring before the celestial court tonight?',
+        '你好，求问者。我是星织者斯特拉，星辰的编织者，宇宙智慧的守护者。今夜你带来了什么问题来到这星辰的殿堂？'
+      );
+    }
+  }
+
   // ===== AI Chat =====
   function initAIChat() {
     // AI is auto-connected via embedded key
@@ -868,7 +889,7 @@ const App = (() => {
     // Store for AI
     _tarotDrawnCards = drawn;
 
-    if (!checkAIAccess()) return;
+    if (!await checkAIAccess()) return;
 
     // Get AI reading
     try {
@@ -1088,35 +1109,545 @@ const App = (() => {
     }
   }
 
+  // ===== Coin Divination (金钱卦) =====
+  let _coinLines = null;
+  let _coinData = null;
+
+  function initCoinDivination() {
+    const castBtn = document.getElementById('coin-cast-btn');
+    const recastBtn = document.getElementById('coin-recast-btn');
+    if (castBtn) castBtn.onclick = performCoinDivination;
+    if (recastBtn) recastBtn.onclick = performCoinDivination;
+  }
+
+  function performCoinDivination() {
+    const guaDict1 = ["坤", "震", "坎", "兑", "艮", "离", "巽", "乾"];
+    const guaDict2 = ["地", "雷", "水", "泽", "山", "火", "风", "天"];
+    const changeYang = ["初九", "九二", "九三", "九四", "九五", "上九"];
+    const changeYin = ["初六", "六二", "六三", "六四", "六五", "上六"];
+
+    const lines = IChing.castHexagram();
+    _coinLines = lines;
+
+    const changeList = [];
+    lines.forEach((line, i) => {
+      if (line.type === 'old_yin' || line.type === 'old_yang') {
+        changeList.push(line.value ? changeYang[i] : changeYin[i]);
+      }
+    });
+
+    const upIndex = (lines[5].value ? 4 : 0) + (lines[4].value ? 2 : 0) + (lines[3].value ? 1 : 0);
+    const downIndex = (lines[2].value ? 4 : 0) + (lines[1].value ? 2 : 0) + (lines[0].value ? 1 : 0);
+    const guaIdx = GUA_INDEX[upIndex][downIndex] - 1;
+    const guaName1 = GUA_LIST[guaIdx];
+    const guaName2 = upIndex === downIndex
+      ? guaDict1[upIndex] + "为" + guaDict2[upIndex]
+      : guaDict2[upIndex] + guaDict2[downIndex] + guaName1;
+    const guaDesc = guaDict1[upIndex] + "上" + guaDict1[downIndex] + "下";
+
+    const binary = lines.map(l => l.value).join('');
+    const hexagram = IChing.getHexagramByBinary(binary);
+
+    // Store for AI
+    _coinData = {
+      guaName: guaName2,
+      guaIdx,
+      upperGua: guaDict1[upIndex],
+      lowerGua: guaDict1[downIndex],
+      upperGua2: guaDict2[upIndex],
+      lowerGua2: guaDict2[downIndex],
+      guaDesc,
+      changeList,
+      hexagram,
+    };
+
+    const resultCard = document.getElementById('coin-result');
+    const resultContent = document.getElementById('coin-result-content');
+    if (!resultCard || !resultContent) return;
+    resultCard.style.display = 'block';
+
+    resultContent.innerHTML = `
+      <div style="text-align:center;margin:1rem 0;">
+        <div style="font-size:1.5rem;font-weight:bold;color:var(--gold);">
+          ${String(guaIdx + 1).padStart(2, '0')}.${guaName2}
+        </div>
+        <div style="color:var(--text-secondary);margin:0.3rem 0;">
+          ${t('Zhou Yi', '周易')}第${guaIdx + 1}${t('hexagram', '卦')}
+        </div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">
+          ${guaName1}${t('hexagram', '卦')}(${guaName2})_${guaDesc}
+        </div>
+        ${changeList.length > 0 ? `
+        <div style="margin-top:0.5rem;color:var(--gold);font-size:0.85rem;">
+          ${t('Changing lines', '变爻')}: ${changeList.join(', ')}
+        </div>` : `
+        <div style="margin-top:0.5rem;color:var(--text-muted);font-size:0.85rem;">
+          ${t('No changing lines', '无变爻')}
+        </div>`}
+        ${hexagram ? `
+        <hr style="border-color:var(--border-subtle);margin:0.8rem 0;">
+        <div style="font-size:0.9rem;color:var(--text-secondary);text-align:left;line-height:1.6;">
+          <strong>${hexagram.meaning}</strong><br>
+          <span style="color:var(--text-muted);font-size:0.85rem;">${hexagram.meaningEn}</span>
+        </div>` : ''}
+        <button class="btn btn-purple" id="coin-ai-btn" style="margin-top:0.8rem;width:100%;">🤖 AI 解读 · AI Interpretation</button>
+        <div class="reading-output" id="coin-ai-output" style="margin-top:0.8rem;"></div>
+      </div>
+    `;
+
+    const aiBtn = document.getElementById('coin-ai-btn');
+    if (aiBtn) aiBtn.onclick = performCoinAI;
+  }
+
+  async function performCoinAI() {
+    if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) { alert(t('AI not configured', 'AI 未配置')); return; }
+    if (!_coinData) return;
+    if (!await checkAIAccess()) return;
+
+    const question = document.getElementById('coin-question')?.value?.trim() || '';
+    const output = document.getElementById('coin-ai-output');
+    const btn = document.getElementById('coin-ai-btn');
+    if (btn) btn.disabled = true;
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Interpreting...', '正在解读...')}</div>`;
+
+    try {
+      const upperGua = _coinData.upperGua2 + _coinData.upperGua;
+      const lowerGua = _coinData.lowerGua2 + _coinData.lowerGua;
+      const reading = await AstroAI.getCoinReading(_coinData.guaName, _coinData.guaIdx, upperGua, lowerGua, _coinData.changeList, _coinData.hexagram, question, lang);
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 25); }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      await updateUsageUI();
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // ===== LiuYao / 六爻 =====
+  let _liuyaoAnalysis = null;
+
+  function initLiuYao() {
+    const castBtn = document.getElementById('liuyao-cast-btn');
+    const recastBtn = document.getElementById('liuyao-recast-btn');
+    const aiBtn = document.getElementById('liuyao-ai-btn');
+    if (castBtn) castBtn.onclick = performLiuYao;
+    if (recastBtn) recastBtn.onclick = performLiuYao;
+    if (aiBtn) aiBtn.onclick = performLiuYaoAI;
+  }
+
+  function performLiuYao() {
+    const resultCard = document.getElementById('liuyao-result');
+    const resultContent = document.getElementById('liuyao-result-content');
+    if (!resultCard || !resultContent) return;
+    resultCard.style.display = 'block';
+
+    const method = document.getElementById('liuyao-method')?.value || 'coin';
+    const daystem = document.getElementById('liuyao-daystem')?.value || '';
+    const analysis = method === 'yarrow'
+      ? LiuYao.performYarrowReading(daystem)
+      : LiuYao.performReading(daystem);
+
+    if (!analysis) {
+      resultContent.innerHTML = `<div style="color:#ef4444;text-align:center;">${t('Error performing reading', '起卦失败')}</div>`;
+      return;
+    }
+
+    _liuyaoAnalysis = analysis;
+    const binary = analysis.lines.map(l => l.value).join('');
+    const hexagram = IChing.getHexagramByBinary(binary);
+
+    let html = `
+      <div style="margin:1rem 0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+          <div>
+            <span style="font-weight:bold;color:var(--gold);font-size:1.2rem;">
+              ${analysis.palace}${t('Palace', '宫')} ${analysis.generation}
+            </span>
+            ${hexagram ? `<span style="color:var(--text-secondary);margin-left:0.5rem;">${hexagram.num}. ${hexagram.name} · ${hexagram.nameEn}</span>` : ''}
+          </div>
+          <div style="font-size:0.85rem;color:var(--text-muted);">
+            ${t('Shi', '世')}${t('Line', '爻')}: ${analysis.shiPosition} · ${t('Ying', '应')}${t('Line', '爻')}: ${analysis.yingPosition}
+          </div>
+        </div>
+
+        <div class="iching-hexagram-lines" style="margin-bottom:1rem;">
+          ${renderLiuYaoLines(analysis.lines)}
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+            <thead>
+              <tr style="background:rgba(212,175,55,0.1);">
+                <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${t('Line', '爻')}</th>
+                <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${t('Wuxing', '五行')}</th>
+                <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${t('Relative', '六亲')}</th>
+                <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${t('Beast', '六兽')}</th>
+                <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${t('Status', '状态')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${analysis.lines.slice().reverse().map(line => `
+              <tr>
+                <td style="padding:4px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">
+                  ${line.isShi ? '⦿ ' : ''}${line.isYing ? '◎ ' : ''}${line.position}
+                  ${line.isChanging ? '⚡' : ''}
+                </td>
+                <td style="padding:4px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${line.wuxing}</td>
+                <td style="padding:4px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${line.sixRelative}</td>
+                <td style="padding:4px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">${line.beast}</td>
+                <td style="padding:4px 8px;text-align:center;border-bottom:1px solid var(--border-subtle);">
+                  ${line.value === 1 ? '⚊' : '⚋'}
+                  ${line.isChanging ? ' (' + t('changing', '变') + ')' : ''}
+                </td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${analysis.changingCount > 0 ? `
+        <div style="margin-top:0.8rem;font-size:0.85rem;color:var(--gold);">
+          ⚡ ${t('Moving lines', '动爻')}: ${analysis.lines.filter(l => l.isChanging).map(l => l.position).join(', ')}
+        </div>` : ''}
+
+        ${hexagram ? `
+        <hr style="border-color:var(--border-subtle);margin:0.8rem 0;">
+        <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.6;">
+          <strong>${hexagram.meaning}</strong><br>
+          <span style="color:var(--text-muted);font-size:0.85rem;">${hexagram.meaningEn}</span>
+        </div>` : ''}
+
+        <button class="btn btn-purple" id="liuyao-ai-btn" style="margin-top:0.8rem;width:100%;">🤖 AI 解读 · AI Interpretation</button>
+        <div class="reading-output" id="liuyao-ai-output" style="margin-top:0.8rem;"></div>
+      </div>
+    `;
+    resultContent.innerHTML = html;
+
+    // Re-bind AI button in the freshly injected HTML
+    const aiBtn = document.getElementById('liuyao-ai-btn');
+    if (aiBtn) aiBtn.onclick = performLiuYaoAI;
+  }
+
+  async function performLiuYaoAI() {
+    if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
+      return;
+    }
+    if (!_liuyaoAnalysis) return;
+    if (!await checkAIAccess()) return;
+
+    const question = document.getElementById('liuyao-question')?.value?.trim() || '';
+    const output = document.getElementById('liuyao-ai-output');
+    const btn = document.getElementById('liuyao-ai-btn');
+    if (btn) btn.disabled = true;
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Interpreting LiuYao...', '正在解读六爻...')}</div>`;
+
+    try {
+      const reading = await AstroAI.getLiuYaoReading(_liuyaoAnalysis, question, lang);
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 25); }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      await updateUsageUI();
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function renderLiuYaoLines(lines) {
+    const reversed = [...lines].reverse();
+    return reversed.map(l => {
+      const cls = l.value === 1 ? 'yang' : 'yin';
+      if (l.value === 1) {
+        return `<div class="iching-line ${cls} ${l.isChanging ? 'changing' : ''}">
+          <span class="iching-line-bar yang-bar"></span>
+          ${l.isChanging ? '<span class="iching-change-mark">×</span>' : ''}
+          <span class="iching-line-num">${l.position}</span>
+        </div>`;
+      } else {
+        return `<div class="iching-line ${cls} ${l.isChanging ? 'changing' : ''}">
+          <span class="iching-line-bar yin-bar">
+            <span class="yin-left"></span><span class="yin-gap"></span><span class="yin-right"></span>
+          </span>
+          ${l.isChanging ? '<span class="iching-change-mark">×</span>' : ''}
+          <span class="iching-line-num">${l.position}</span>
+        </div>`;
+      }
+    }).join('');
+  }
+
+  // ===== MeiHua / 梅花易数 =====
+  let _meihuaResult = null;
+
+  function initMeihua() {
+    const methodSelect = document.getElementById('meihua-method');
+    if (methodSelect) methodSelect.addEventListener('change', toggleMeihuaMethod);
+    const castBtn = document.getElementById('meihua-cast-btn');
+    const recastBtn = document.getElementById('meihua-recast-btn');
+    if (castBtn) castBtn.onclick = performMeihua;
+    if (recastBtn) recastBtn.onclick = performMeihua;
+  }
+
+  function toggleMeihuaMethod() {
+    const method = document.getElementById('meihua-method')?.value || 'date';
+    ['date', 'number', 'character'].forEach(m => {
+      const el = document.getElementById('meihua-' + m + '-inputs');
+      if (el) el.style.display = m === method ? 'block' : 'none';
+    });
+  }
+
+  function performMeihua() {
+    const method = document.getElementById('meihua-method')?.value || 'date';
+    let result;
+    switch (method) {
+      case 'date': {
+        const y = parseInt(document.getElementById('meihua-year')?.value) || new Date().getFullYear();
+        const m = parseInt(document.getElementById('meihua-month')?.value) || (new Date().getMonth() + 1);
+        const d = parseInt(document.getElementById('meihua-day')?.value) || new Date().getDate();
+        const h = parseInt(document.getElementById('meihua-hour')?.value) || new Date().getHours();
+        result = MeiHua.fromDate(y, m, d, h);
+        break;
+      }
+      case 'number': {
+        const text = document.getElementById('meihua-numbers')?.value || '';
+        const nums = text.trim().split(/\s+/).map(Number).filter(n => !isNaN(n) && n > 0);
+        if (nums.length === 0) {
+          document.getElementById('meihua-result-content').innerHTML =
+            `<div style="color:#ef4444;text-align:center;">${t('Please enter valid numbers', '请输入有效数字')}</div>`;
+          return;
+        }
+        result = MeiHua.fromNumbers(nums);
+        break;
+      }
+      case 'character': {
+        const text = document.getElementById('meihua-text')?.value || '';
+        if (!text.trim()) {
+          document.getElementById('meihua-result-content').innerHTML =
+            `<div style="color:#ef4444;text-align:center;">${t('Please enter text', '请输入文字')}</div>`;
+          return;
+        }
+        result = MeiHua.fromCharacters(text);
+        break;
+      }
+    }
+
+    const resultCard = document.getElementById('meihua-result');
+    const resultContent = document.getElementById('meihua-result-content');
+    if (!resultCard || !resultContent) return;
+
+    if (!result) {
+      resultCard.style.display = 'block';
+      resultContent.innerHTML = `<div style="color:#ef4444;text-align:center;">${t('Invalid parameters', '参数无效，请重新输入')}</div>`;
+      return;
+    }
+    resultCard.style.display = 'block';
+    _meihuaResult = result;
+
+    const hexagram = result.hexagram;
+    const changedHexagram = result.changedHexagram;
+    const tri = MeiHua.TRIGRAM_DATA;
+
+    const auspColor = result.relation.auspicious.includes('吉')
+      ? 'var(--gold)'
+      : result.relation.auspicious.includes('凶')
+        ? '#ef4444'
+        : 'var(--text-secondary)';
+
+    let html = `
+      <div style="text-align:center;margin:1rem 0;">
+        <div style="display:flex;justify-content:center;align-items:center;gap:2rem;margin-bottom:1rem;">
+          <div>
+            <div style="font-size:2.5rem;">${tri[result.upperTrigram]?.symbol || '?'}</div>
+            <div style="font-size:0.9rem;color:var(--text-muted);">${t('Upper', '上')} ${result.upperTrigram}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">${result.upperElement}</div>
+          </div>
+          <div style="font-size:1.5rem;color:var(--gold);">☯</div>
+          <div>
+            <div style="font-size:2.5rem;">${tri[result.lowerTrigram]?.symbol || '?'}</div>
+            <div style="font-size:0.9rem;color:var(--text-muted);">${t('Lower', '下')} ${result.lowerTrigram}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">${result.lowerElement}</div>
+          </div>
+        </div>`;
+
+    if (hexagram) {
+      html += `<div style="font-size:1.3rem;font-weight:bold;color:var(--gold);margin-bottom:0.3rem;">
+        ${hexagram.num}. ${hexagram.name} · ${hexagram.nameEn}
+      </div>`;
+    }
+
+    html += `
+      <div style="font-size:0.9rem;color:var(--text-secondary);margin:0.5rem 0;">
+        ${t('Moving line', '动爻')}: ${t('Line', '第')}${result.movingLine}${t('from bottom', '爻 (从下往上)')}
+      </div>
+      <hr style="border-color:var(--border-subtle);margin:0.8rem 0;">
+      <div style="display:flex;justify-content:center;gap:2rem;margin:0.5rem 0;">
+        <div>
+          <div style="font-size:0.85rem;color:var(--text-muted);">${t('Body trigram', '体卦')}</div>
+          <div style="font-size:1.3rem;font-weight:bold;">${result.tiName}</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);">${result.tiEl}</div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:1.5rem;color:${auspColor};">↕</div>
+        <div>
+          <div style="font-size:0.85rem;color:var(--text-muted);">${t('Function trigram', '用卦')}</div>
+          <div style="font-size:1.3rem;font-weight:bold;">${result.yongName}</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);">${result.yongEl}</div>
+        </div>
+      </div>
+      <div style="font-weight:bold;font-size:1rem;margin:0.5rem 0;color:${auspColor};">
+        ${t('Body-Function', '体用')}: ${result.relation.text} — ${result.relation.auspicious}
+      </div>`;
+
+    if (changedHexagram) {
+      html += `
+        <hr style="border-color:var(--border-subtle);margin:0.8rem 0;">
+        <div style="font-size:0.9rem;color:var(--gold);font-weight:600;">
+          → ${t('Changing to', '变卦')}: ${changedHexagram.num}. ${changedHexagram.name} · ${changedHexagram.nameEn}
+        </div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.3rem;">${changedHexagram.meaning}</div>`;
+    }
+
+    if (hexagram) {
+      html += `
+        <hr style="border-color:var(--border-subtle);margin:0.8rem 0;">
+        <div style="font-size:0.9rem;color:var(--text-secondary);text-align:left;line-height:1.6;">
+          <strong>${hexagram.meaning}</strong><br>
+          <span style="color:var(--text-muted);font-size:0.85rem;">${hexagram.meaningEn}</span>
+        </div>`;
+    }
+
+    html += `
+        <button class="btn btn-purple" id="meihua-ai-btn" style="margin-top:0.8rem;width:100%;">🤖 AI 解读 · AI Interpretation</button>
+        <div class="reading-output" id="meihua-ai-output" style="margin-top:0.8rem;"></div>
+      </div>`;
+    resultContent.innerHTML = html;
+
+    // Re-bind AI button
+    const aiBtn = document.getElementById('meihua-ai-btn');
+    if (aiBtn) aiBtn.onclick = performMeihuaAI;
+  }
+
+  async function performMeihuaAI() {
+    if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
+      alert(t('StarWeaver AI not configured', 'StarWeaver AI 未配置'));
+      return;
+    }
+    if (!_meihuaResult) return;
+    if (!await checkAIAccess()) return;
+
+    const output = document.getElementById('meihua-ai-output');
+    const btn = document.getElementById('meihua-ai-btn');
+    if (btn) btn.disabled = true;
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Interpreting MeiHua...', '正在解读梅花易数...')}</div>`;
+
+    try {
+      const reading = await AstroAI.getMeiHuaReading(_meihuaResult, lang);
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 25); }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      await updateUsageUI();
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   // ===== Check if AI is connected (for UI feedback) =====
   function checkAIConnected() {
     return typeof AstroAI !== "undefined" && AstroAI.hasApiKey();
   }
 
-  // ===== Astro Dice =====
+  // ===== Astro Dice (3-dice: planet + sign + house) =====
+  let _diceResult1 = null;
+  let _diceResult2 = null;
+
   function initDice() {
-    const DICE_EMOJIS = ['🌟', '✨', '🌙', '⭐', '🔮', '💫', '🌌', '☄️', '🪐', '🌈'];
+    function rollOne(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
 
-    function rollDice(btnId, resultId) {
+    function setupDice(btnId, prefix) {
       const btn = document.getElementById(btnId);
-      const result = document.getElementById(resultId);
-      if (!btn || !result) return;
+      const results = document.getElementById(`dice-results${prefix}`);
+      const planetEl = document.getElementById(`dice-planet${prefix}`);
+      const signEl = document.getElementById(`dice-sign${prefix}`);
+      const houseEl = document.getElementById(`dice-house${prefix}`);
+      const readingEl = document.getElementById(`dice-reading${prefix}`);
+      if (!btn) return;
 
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         btn.classList.add('rolling');
-        const meanings = Astro.DICE_MEANINGS[lang];
-        const meaning = meanings[Math.floor(Math.random() * meanings.length)];
-        const emoji = DICE_EMOJIS[Math.floor(Math.random() * DICE_EMOJIS.length)];
+        btn.textContent = '🎲 掷骰中...';
+        btn.disabled = true;
+
+        const pData = Astro.DICE_MEANINGS.planety[lang] || Astro.DICE_MEANINGS.planety.en;
+        const sData = Astro.DICE_MEANINGS.sign[lang] || Astro.DICE_MEANINGS.sign.en;
+        const hData = Astro.DICE_MEANINGS.house[lang] || Astro.DICE_MEANINGS.house.en;
+
+        const planet = rollOne(pData);
+        const sign = rollOne(sData);
+        const house = rollOne(hData);
+
+        // Store for AI
+        if (prefix === '') _diceResult1 = { planet, sign, house };
+        else _diceResult2 = { planet, sign, house };
 
         setTimeout(() => {
           btn.classList.remove('rolling');
-          result.textContent = `${emoji} ${meaning}`;
-        }, 600);
+          btn.textContent = '🎲 再掷一次';
+          btn.disabled = false;
+
+          planetEl.textContent = planet;
+          signEl.textContent = sign;
+          houseEl.textContent = house;
+          results.style.display = 'flex';
+
+          // Simple interpretation + AI button
+          const interpretations = {
+            en: `The ${planet} in ${sign} of the ${house} suggests cosmic alignment in this area of your life.`,
+            zh: `${planet}落${sign}的${house}，宇宙在提醒你关注这个领域的能量流转。`
+          };
+          const simpleText = interpretations[lang] || interpretations.zh;
+
+          readingEl.innerHTML = `
+            <div style="margin-bottom:0.5rem;">${simpleText}</div>
+            <button class="btn btn-purple dice-ai-btn" data-prefix="${prefix}" style="padding:8px 16px;font-size:0.8rem;">🤖 AI 解读</button>
+            <div class="dice-ai-output" id="dice-ai-output${prefix}" style="margin-top:0.5rem;"></div>
+          `;
+          readingEl.style.display = 'block';
+
+          // Bind AI button
+          const aiBtn = readingEl.querySelector('.dice-ai-btn');
+          if (aiBtn) {
+            aiBtn.addEventListener('click', () => performDiceAI(prefix));
+          }
+        }, 800);
       });
     }
 
-    rollDice('dice-btn', 'dice-result');
-    rollDice('dice-btn-2', 'dice-result-2');
+    setupDice('dice-btn', '');
+    setupDice('dice-btn-2', '-2');
+  }
+
+  async function performDiceAI(prefix) {
+    if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
+      alert(t('AI not configured', 'AI 未配置'));
+      return;
+    }
+    const result = prefix === '' ? _diceResult1 : _diceResult2;
+    if (!result) return;
+    if (!await checkAIAccess()) return;
+
+    const output = document.getElementById(`dice-ai-output${prefix}`);
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Reading the dice...', '正在解读骰子...')}</div>`;
+
+    try {
+      const reading = await AstroAI.getDiceReading(result.planet, result.sign, result.house, lang);
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 20); }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      await updateUsageUI();
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    }
   }
 
   // ===== Moon Phase =====
@@ -1127,40 +1658,67 @@ const App = (() => {
     const moon = Astro.getMoonPhase(new Date());
     const phase = lang === 'zh' ? moon.phaseZh : moon.phase;
     const illumin = (moon.illumination * 100).toFixed(0);
+    const moonAge = parseFloat(moon.age);
 
     // SVG Moon
-    const svgSize = 120;
-    const r = 50;
+    const svgSize = 140;
+    const r = 55;
     const cx = svgSize / 2;
     const cy = svgSize / 2;
-    
+    const litColor = '#f0e6d0';
+    const darkColor = '#1a1a3e';
+    const glowColor = 'rgba(212,175,55,0.12)';
+    const isWaxing = moonAge < 14.76;
+    const i = Math.max(0, Math.min(1, moon.illumination));
+
+    // Build moon SVG: always start with lit circle, then overlay shadow crescent
     let moonSvg;
-    if (moon.illumination < 0.05 || moon.illumination > 0.95) {
-      // New or Full Moon
-      const fill = moon.illumination < 0.05 ? '#1a1a2e' : '#f0e6d0';
-      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#d4af37" stroke-width="1"/>`;
-    } else {
-      // Crescent/gibbous
-      const isWaxing = parseFloat(moon.age) < 14.76;
-      const litSide = isWaxing ? 'right' : 'left';
-      const litColor = '#f0e6d0';
-      const darkColor = '#1a1a2e';
-      
+    const litWidth = i * 2 * r;
+    const shadowWidth = 2 * r - litWidth;
+
+    if (shadowWidth < 1) {
+      // Full moon — just the lit circle
+      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${litColor}" stroke="#d4af37" stroke-width="1.5"/>`;
+    } else if (litWidth < 1) {
+      // New moon — dark circle with visible gold ring and faint glow
       moonSvg = `
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${darkColor}" stroke="#d4af37" stroke-width="1"/>
-        <path d="M ${cx} ${cy - r} A ${r * (1 - moon.illumination)} ${r} 0 0 ${litSide === 'right' ? 1 : 0} ${cx} ${cy + r} A ${r * 0.1} ${r} 0 0 ${litSide === 'right' ? 0 : 1} ${cx} ${cy - r} Z" fill="${litColor}" opacity="0.9"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${darkColor}" stroke="#d4af37" stroke-width="1.5" opacity="0.85"/>
+        <circle cx="${cx}" cy="${cy}" r="3" fill="#d4af37" opacity="0.3"/>
       `;
+    } else {
+      // Crescent or gibbous: draw lit circle, then shadow crescent on unlit side
+      const termX = isWaxing ? (cx - r + litWidth) : (cx + r - litWidth);
+      const dx = termX - cx;
+      const arcR = Math.max(1, Math.abs(dx));
+
+      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${litColor}" stroke="#d4af37" stroke-width="1.5"/>`;
+
+      if (isWaxing) {
+        // Shadow on the left, lit on the right
+        moonSvg += `
+          <path d="M ${cx} ${cy - r}
+            A ${arcR} ${r} 0 0 0 ${cx} ${cy + r}
+            A ${r} ${r} 0 0 1 ${cx} ${cy - r} Z"
+            fill="${darkColor}"/>`;
+      } else {
+        // Shadow on the right, lit on the left
+        moonSvg += `
+          <path d="M ${cx} ${cy - r}
+            A ${arcR} ${r} 0 0 1 ${cx} ${cy + r}
+            A ${r} ${r} 0 0 0 ${cx} ${cy - r} Z"
+            fill="${darkColor}"/>`;
+      }
     }
 
     const moonSvgFull = `
       <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}">
         <defs>
           <radialGradient id="moon-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="rgba(212,175,55,0.15)"/>
+            <stop offset="0%" stop-color="${glowColor}"/>
             <stop offset="100%" stop-color="rgba(212,175,55,0)"/>
           </radialGradient>
         </defs>
-        <circle cx="${cx}" cy="${cy}" r="${r + 15}" fill="url(#moon-glow)"/>
+        <circle cx="${cx}" cy="${cy}" r="${r + 18}" fill="url(#moon-glow)"/>
         ${moonSvg}
       </svg>
     `;
@@ -1205,11 +1763,12 @@ const App = (() => {
     const select = document.getElementById('lucky-sign');
     if (!select) return;
 
-    // Populate from already-created options (populateZodiacSigns handles it)
-    // Bind change event to update display
     select.addEventListener('change', updateLuckyGuide);
 
-    // Also update when language changes: re-trigger display
+    // AI lucky guide button
+    const aiBtn = document.getElementById('lucky-ai-btn');
+    if (aiBtn) aiBtn.addEventListener('click', performLuckyAI);
+
     updateLuckyGuide();
   }
 
@@ -1223,28 +1782,23 @@ const App = (() => {
 
     results.style.display = 'grid';
 
-    // Number
     const numEl = document.getElementById('lucky-number');
     if (numEl) numEl.textContent = LuckyGuide.getLuckyNumber(signIndex);
 
-    // Color
     const color = LuckyGuide.getLuckyColor(signIndex, lang);
     const swatch = document.getElementById('lucky-color-swatch');
     const colorName = document.getElementById('lucky-color-name');
     if (swatch) swatch.style.background = color.hex;
     if (colorName) colorName.textContent = color.name;
 
-    // Direction
     const dir = LuckyGuide.getLuckyDirection(signIndex);
     const dirEl = document.getElementById('lucky-direction');
-    if (dirEl) dirEl.textContent = dir.emoji + ' ' + dir[lang] || dir.en;
+    if (dirEl) dirEl.textContent = dir.emoji + ' ' + (dir[lang] || dir.en);
 
-    // Crystal
     const crystal = LuckyGuide.getLuckyCrystal(signIndex);
     const crystalEl = document.getElementById('lucky-crystal');
     if (crystalEl) crystalEl.textContent = crystal[lang] || crystal.en;
 
-    // Update labels
     const labels = results.querySelectorAll('.lucky-guide-label');
     const labelTexts = [
       t('Lucky Number', '幸运数字'),
@@ -1255,6 +1809,40 @@ const App = (() => {
     labels.forEach((el, i) => {
       if (labelTexts[i]) el.textContent = labelTexts[i];
     });
+  }
+
+  async function performLuckyAI() {
+    if (typeof AstroAI === 'undefined' || !AstroAI.hasApiKey()) {
+      alert(t('AI not configured', 'AI 未配置'));
+      return;
+    }
+    if (!await checkAIAccess()) return;
+
+    const select = document.getElementById('lucky-sign');
+    const signIndex = parseInt(select?.value);
+    if (isNaN(signIndex)) return;
+
+    const sign = Astro.ZODIAC_SIGNS[lang][signIndex];
+    const luckyNum = LuckyGuide.getLuckyNumber(signIndex);
+    const color = LuckyGuide.getLuckyColor(signIndex, lang);
+    const dir = LuckyGuide.getLuckyDirection(signIndex);
+    const crystal = LuckyGuide.getLuckyCrystal(signIndex);
+
+    const output = document.getElementById('lucky-ai-output');
+    const btn = document.getElementById('lucky-ai-btn');
+    if (btn) btn.disabled = true;
+    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Channeling lucky energy...', '正在感应幸运能量...')}</div>`;
+
+    try {
+      const reading = await AstroAI.getLuckyGuideReading(sign.name, luckyNum, color.name, dir[lang] || dir.en, crystal[lang] || crystal.en, lang);
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 20); }
+      if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
+      await updateUsageUI();
+    } catch (err) {
+      if (output) output.innerHTML = `<div style="color:#ef4444;">${t('Error', '错误')}: ${err.message}</div>`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   // ===== Language Toggle =====
@@ -1491,6 +2079,9 @@ const App = (() => {
     updateUserUI();
     updateUsageUI();
 
+    // Auto-fill from profile if logged in
+    autoFillFromProfile();
+
     // User button click
     const userBtn = document.getElementById('user-btn');
     if (userBtn) {
@@ -1532,12 +2123,37 @@ const App = (() => {
       });
     }
 
-    // Auth form submit
+    // Auth form submit (step 1: send verification code)
     const authForm = document.getElementById('auth-form');
     if (authForm) {
       authForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        handleRegister();
+        handleRegisterStep1();
+      });
+    }
+
+    // Verify code form submit (step 2)
+    const verifyForm = document.getElementById('verify-form');
+    if (verifyForm) {
+      verifyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleRegisterStep2();
+      });
+    }
+
+    // Resend code button
+    const resendBtn = document.getElementById('resend-code-btn');
+    if (resendBtn) {
+      resendBtn.addEventListener('click', () => {
+        handleRegisterStep1();
+      });
+    }
+
+    // Back to register button
+    const backRegisterBtn = document.getElementById('back-register-btn');
+    if (backRegisterBtn) {
+      backRegisterBtn.addEventListener('click', () => {
+        showRegisterView();
       });
     }
 
@@ -1548,6 +2164,7 @@ const App = (() => {
         hideAuthModal();
         updateUserUI();
         updateUsageUI();
+        autoFillFromProfile();
       });
     }
 
@@ -1599,6 +2216,9 @@ const App = (() => {
         if (e.target === historyModal) closeHistory();
       });
     }
+
+    // Profile update form
+    initProfileUpdateForm();
   }
 
   function populateAuthDateSelects() {
@@ -1639,7 +2259,76 @@ const App = (() => {
     }
   }
 
-  async function handleRegister() {
+  // ===== Auto-fill from profile =====
+  function autoFillFromProfile() {
+    if (typeof User === 'undefined' || !User.isLoggedIn()) return;
+    const info = User.getBirthInfo();
+    if (!info) return;
+
+    // Auto-fill birth form
+    if (info.name) {
+      const nameEl = document.getElementById('birth-name');
+      if (nameEl && !nameEl.value) nameEl.value = info.name;
+    }
+    if (info.year) {
+      const yEl = document.getElementById('birth-year');
+      if (yEl) yEl.value = info.year;
+    }
+    if (info.month) {
+      const mEl = document.getElementById('birth-month');
+      if (mEl) mEl.value = info.month;
+    }
+    if (info.day) {
+      const dEl = document.getElementById('birth-day');
+      if (dEl) dEl.value = info.day;
+    }
+    if (info.hour !== null && info.hour !== undefined) {
+      const hEl = document.getElementById('birth-hour');
+      if (hEl) hEl.value = info.hour;
+    }
+    if (info.birthplace) {
+      const bpEl = document.getElementById('birthplace');
+      if (bpEl && !bpEl.value) bpEl.value = info.birthplace;
+    }
+
+    // Auto-fill numerology
+    if (info.name) {
+      const nEl = document.getElementById('numerology-name');
+      if (nEl) nEl.value = info.name;
+    }
+    if (info.year) {
+      const nyEl = document.getElementById('numerology-year');
+      if (nyEl) nyEl.value = info.year;
+    }
+    if (info.month) {
+      const nmEl = document.getElementById('numerology-month');
+      if (nmEl) nmEl.value = info.month;
+    }
+    if (info.day) {
+      const ndEl = document.getElementById('numerology-day');
+      if (ndEl) ndEl.value = info.day;
+    }
+
+    // Auto-fill horoscope sign
+    if (info.zodiacIndex !== null && info.zodiacIndex !== undefined) {
+      const hsEl = document.getElementById('horoscope-sign');
+      if (hsEl) hsEl.value = info.zodiacIndex;
+      const lsEl = document.getElementById('lucky-sign');
+      if (lsEl) {
+        lsEl.value = info.zodiacIndex;
+        updateLuckyGuide();
+      }
+    }
+
+    // Auto-fill compatibility sign1
+    if (info.zodiacIndex !== null && info.zodiacIndex !== undefined) {
+      const cs1El = document.getElementById('compat-sign1');
+      if (cs1El) cs1El.value = info.zodiacIndex;
+    }
+  }
+
+  // ===== Step 1: Send verification code =====
+  async function handleRegisterStep1() {
     if (typeof User === 'undefined') return;
 
     const name = document.getElementById('auth-name')?.value?.trim();
@@ -1648,12 +2337,119 @@ const App = (() => {
       return;
     }
 
-    const email = document.getElementById('auth-email')?.value?.trim() || '';
+    const email = document.getElementById('auth-email')?.value?.trim();
+    if (!email || !email.includes('@')) {
+      alert(User.t('Please enter a valid email', '请输入有效的邮箱'));
+      return;
+    }
 
-    await User.register(name, email);
-    hideAuthModal();
-    updateUserUI();
-    updateUsageUI();
+    const year = parseInt(document.getElementById('auth-year')?.value) || null;
+    const month = parseInt(document.getElementById('auth-month')?.value) || null;
+    const day = parseInt(document.getElementById('auth-day')?.value) || null;
+
+    // Store birth info temporarily
+    _pendingRegInfo = { name, email, year, month, day };
+
+    const submitBtn = document.getElementById('auth-submit-btn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = User.t('Sending...', '发送中...'); }
+
+    const result = await User.sendVerifyCode(email);
+
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = User.t('Verify & Register', '验证并注册'); }
+
+    if (result.ok) {
+      // Switch to verification view
+      const registerView = document.getElementById('auth-register-view');
+      const verifyView = document.getElementById('auth-verify-view');
+      if (registerView) registerView.style.display = 'none';
+      if (verifyView) {
+        verifyView.style.display = 'block';
+        const verifyEmail = document.getElementById('verify-email-display');
+        if (verifyEmail) verifyEmail.textContent = email;
+      }
+      // Focus code input
+      setTimeout(() => {
+        const codeInput = document.getElementById('auth-verify-code');
+        if (codeInput) codeInput.focus();
+      }, 300);
+    } else {
+      alert(result.error || User.t('Failed to send verification code', '发送验证码失败'));
+    }
+  }
+
+  // ===== Step 2: Verify code and register =====
+  async function handleRegisterStep2() {
+    if (typeof User === 'undefined') return;
+
+    const code = document.getElementById('auth-verify-code')?.value?.trim();
+    if (!code) {
+      alert(User.t('Please enter verification code', '请输入验证码'));
+      return;
+    }
+
+    if (!_pendingRegInfo) {
+      alert(User.t('Please fill in registration info first', '请先填写注册信息'));
+      showRegisterView();
+      return;
+    }
+
+    const submitBtn = document.getElementById('auth-verify-submit');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = User.t('Verifying...', '验证中...'); }
+
+    const result = await User.verifyEmailAndRegister(
+      _pendingRegInfo.email,
+      code,
+      _pendingRegInfo.name,
+      { year: _pendingRegInfo.year, month: _pendingRegInfo.month, day: _pendingRegInfo.day }
+    );
+
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = User.t('Verify & Register', '验证并注册'); }
+
+    if (result.ok) {
+      _pendingRegInfo = null;
+      // Reset verify view
+      const verifyView = document.getElementById('auth-verify-view');
+      const registerView = document.getElementById('auth-register-view');
+      if (verifyView) verifyView.style.display = 'none';
+      if (registerView) registerView.style.display = 'block';
+      const codeInput = document.getElementById('auth-verify-code');
+      if (codeInput) codeInput.value = '';
+
+      hideAuthModal();
+      updateUserUI();
+      updateUsageUI();
+      autoFillFromProfile();
+
+      const userId = User.getProfile()?.userId || '';
+      alert(User.t('🎉 Welcome to StarWeaver! Your ID: ' + userId, '🎉 欢迎加入星织者！你的唯一ID: ' + userId));
+    } else {
+      alert(result.error || User.t('Verification failed', '验证失败'));
+    }
+  }
+
+  // ===== Init profile update form (in login view) =====
+  function initProfileUpdateForm() {
+    const updateBtn = document.getElementById('auth-update-profile-btn');
+    if (!updateBtn) return;
+    updateBtn.addEventListener('click', async () => {
+      if (typeof User === 'undefined' || !User.isLoggedIn()) return;
+
+      const name = document.getElementById('auth-name')?.value?.trim();
+      const year = parseInt(document.getElementById('auth-year')?.value) || null;
+      const month = parseInt(document.getElementById('auth-month')?.value) || null;
+      const day = parseInt(document.getElementById('auth-day')?.value) || null;
+
+      await User.updateProfile({
+        name, birthYear: year, birthMonth: month, birthDay: day,
+      });
+      autoFillFromProfile();
+      alert(User.t('Profile updated!', '个人信息已更新！'));
+    });
+  }
+
+  async function handleRegister() {
+    // Legacy: now redirects to step 1
+    handleRegisterStep1();
   }
 
   function showAuthModal() {
@@ -1736,9 +2532,17 @@ const App = (() => {
       hidePremiumModal();
       updateUserUI();
       updateUsageUI();
-      alert(User.t('🎉 Premium unlocked! Enjoy unlimited AI readings.', '🎉 会员已激活！享受无限 AI 解读。'));
+
+      // Check what type of code was redeemed
+      const isPremium = await User.isPremium();
+      if (isPremium) {
+        alert(User.t('🎉 Premium unlocked! Enjoy unlimited AI readings.', '🎉 会员已激活！享受无限 AI 解读。'));
+      } else {
+        const total = await User.getTotalCredits();
+        alert(User.t('🎉 Credits added! You now have ' + total + ' AI readings.', '🎉 次数已添加！你现在有 ' + total + ' 次 AI 解读。'));
+      }
     } else {
-      errorEl.textContent = User.t('Invalid or expired code', '卡密无效或已失效');
+      errorEl.textContent = User.t('Invalid or used code', '卡密无效或已被使用');
       errorEl.style.display = 'block';
     }
   }
@@ -1790,28 +2594,29 @@ const App = (() => {
       return;
     }
 
-    if (await User.isPremium()) {
-      if (counter) counter.style.display = 'none';
+    const isPremium = await User.isPremium();
+    if (isPremium) {
+      if (counter) {
+        counter.style.display = 'flex';
+        counter.innerHTML = '<span class="usage-dot premium"></span> ' + User.t('PREMIUM · 无限', 'PREMIUM · 无限');
+      }
       return;
     }
 
     const remaining = await User.getRemainingFree();
+    const total = await User.getTotalCredits();
     if (!counter) return;
 
     counter.style.display = 'flex';
-    const dot = counter.querySelector('.usage-dot') || document.createElement('span');
-    if (!dot.classList.contains('usage-dot')) {
-      dot.className = 'usage-dot';
-      counter.insertBefore(dot, counter.firstChild);
-    }
+    let dotClass = 'usage-dot';
+    if (remaining <= 0) dotClass = 'usage-dot empty';
+    else if (remaining <= 2) dotClass = 'usage-dot low';
 
-    if (remaining >= 3) dot.className = 'usage-dot';
-    else if (remaining > 0) dot.className = 'usage-dot low';
-    else dot.className = 'usage-dot empty';
+    const text = Number.isFinite(total)
+      ? User.t('AI: ' + remaining + '/' + total + ' left', '剩余 ' + remaining + '/' + total + ' 次')
+      : User.t('AI: ' + remaining + ' left', '剩余 ' + remaining + ' 次');
 
-    counter.innerHTML = '';
-    counter.appendChild(dot);
-    counter.appendChild(document.createTextNode(' ' + User.t('Free: ' + remaining + ' left today', '剩余 ' + remaining + ' 次')));
+    counter.innerHTML = '<span class="' + dotClass + '"></span> ' + text;
   }
 
   // ===== Reading History =====

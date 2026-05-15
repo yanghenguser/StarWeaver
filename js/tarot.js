@@ -1,6 +1,7 @@
 /* ============================================
    StarWeaver - tarot.js
    78-card Tarot Deck + Spreads Module
+   Includes card reversal logic from Tarot-Web
    ============================================ */
 
 const Tarot = (() => {
@@ -175,6 +176,13 @@ const Tarot = (() => {
     },
   };
 
+  // ===== Configurable reversal probability =====
+  let reversalProbability = 0.3; // default: 30%
+
+  function setReversalProbability(p) {
+    reversalProbability = Math.max(0, Math.min(1, p));
+  }
+
   // ===== Draw Cards =====
   function drawCards(spreadKey, count) {
     const numCards = count || SPREADS[spreadKey].positions.length;
@@ -189,7 +197,7 @@ const Tarot = (() => {
 
     for (let i = 0; i < numCards; i++) {
       const card = deck[i];
-      const reversed = Math.random() < 0.3; // 30% chance reversed
+      const reversed = Math.random() < reversalProbability;
       drawn.push({
         ...card,
         reversed,
@@ -202,6 +210,40 @@ const Tarot = (() => {
     return drawn;
   }
 
+  // ===== Step-by-step draw (for animated dealing) =====
+  // Returns a shuffled copy of the deck for manual card-by-card dealing
+  function getShuffledDeck() {
+    const deck = [...ALL_CARDS];
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+  }
+
+  // Flip one card (with optional reversal)
+  function flipCard(card, reversed) {
+    return {
+      ...card,
+      reversed,
+      meaning: reversed
+        ? { en: card.meaningRev, zh: card.meaningRevZh }
+        : { en: card.meaningUp, zh: card.meaningUpZh },
+    };
+  }
+
+  // ===== Card HTML rendering helper (Tarot-Web style reversal) =====
+  // Returns a CSS class string for the card element
+  function getCardClass(reversed) {
+    return reversed ? 'tarot-card reversed' : 'tarot-card';
+  }
+
+  // Generates inline style for card reversal (rotate 180deg when reversed)
+  function getCardReversalStyle(reversed) {
+    return reversed ? 'transform: rotate(180deg);' : '';
+  }
+
+  // ===== Spread info =====
   function getSpreadPositions(spreadKey, lang) {
     const spread = SPREADS[spreadKey];
     return spread.positions.map(p => ({
@@ -215,6 +257,25 @@ const Tarot = (() => {
     return lang === 'zh' ? s.zh : s.en;
   }
 
+  // ===== Coin Divination helpers (from divination-main) =====
+  // Toss 3 coins and return result as [bool, bool, bool] (true=heads/front)
+  function tossThreeCoins() {
+    return [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5];
+  }
+
+  // Interpret 3-coin toss result
+  // Returns { frontCount, yang, isChanging, sum }
+  function interpretCoins(coinResults) {
+    const frontCount = coinResults.filter(Boolean).length;
+    const sum = coinResults.reduce((acc, v) => acc + (v ? 3 : 2), 0);
+    return {
+      frontCount,
+      yang: frontCount >= 2,
+      isChanging: frontCount === 0 || frontCount === 3,
+      sum,
+    };
+  }
+
   // ===== Public API =====
   return {
     ALL_CARDS,
@@ -223,5 +284,12 @@ const Tarot = (() => {
     drawCards,
     getSpreadPositions,
     getSpreadInfo,
+    setReversalProbability,
+    getShuffledDeck,
+    flipCard,
+    getCardClass,
+    getCardReversalStyle,
+    tossThreeCoins,
+    interpretCoins,
   };
 })();
