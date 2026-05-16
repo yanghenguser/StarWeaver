@@ -2372,15 +2372,18 @@ const App = (() => {
   async function handleRegisterStep1() {
     if (typeof User === 'undefined') return;
 
+    const errorEl = document.getElementById('auth-register-error');
+    if (errorEl) errorEl.style.display = 'none';
+
     const name = document.getElementById('auth-name')?.value?.trim();
     if (!name) {
-      alert(User.t('Please enter your name', '请输入你的名字'));
+      if (errorEl) { errorEl.textContent = User.t('Please enter your name', '请输入你的名字'); errorEl.style.display = 'block'; }
       return;
     }
 
     const email = document.getElementById('auth-email')?.value?.trim();
     if (!email || !email.includes('@')) {
-      alert(User.t('Please enter a valid email', '请输入有效的邮箱'));
+      if (errorEl) { errorEl.textContent = User.t('Please enter a valid email', '请输入有效的邮箱'); errorEl.style.display = 'block'; }
       return;
     }
 
@@ -2396,9 +2399,12 @@ const App = (() => {
 
     const result = await User.sendVerifyCode(email);
 
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = User.t('Verify & Register', '验证并注册'); }
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = User.t('Send Code', '发送验证码'); }
 
     if (result.ok) {
+      // Clear any previous error
+      if (errorEl) errorEl.style.display = 'none';
+
       // Switch to verification view
       const registerView = document.getElementById('auth-register-view');
       const verifyView = document.getElementById('auth-verify-view');
@@ -2409,10 +2415,14 @@ const App = (() => {
         const verifyEmail = document.getElementById('verify-email-display');
         if (verifyEmail) verifyEmail.textContent = email;
       }
-      // If email not sent (no Resend), show code to user
+      // Show code to user (either from API fallback or if email not configured)
       if (result.code) {
         if (codeHint) {
-          codeHint.innerHTML = '<span style="color:#d4af37;">📋 ' + User.t('Code: ', '验证码：') + '<strong>' + result.code + '</strong></span> ' + User.t('(email not configured, using code from screen)', '（邮件未配置，请使用此验证码）');
+          if (result.fallback) {
+            codeHint.innerHTML = '<span style="color:#f97316;">⚠️ ' + User.t('API unavailable, using offline code', 'API不可用，使用离线验证码') + '</span><br><span style="color:#d4af37;">📋 ' + User.t('Code: ', '验证码：') + '<strong>' + result.code + '</strong></span>';
+          } else {
+            codeHint.innerHTML = '<span style="color:#d4af37;">📋 ' + User.t('Code: ', '验证码：') + '<strong>' + result.code + '</strong></span> ' + User.t('(displayed on screen)', '（显示在屏幕上）');
+          }
           codeHint.style.display = 'block';
         }
         // Auto-fill code input
@@ -2420,7 +2430,7 @@ const App = (() => {
         if (codeInput) codeInput.value = result.code;
       } else {
         if (codeHint) {
-          codeHint.innerHTML = User.t('Check your email for the 6-digit code', '请查看邮箱中的6位验证码');
+          codeHint.innerHTML = '<span style="color:#22c55e;">✉️ ' + User.t('Verification code sent to your email', '验证码已发送至你的邮箱') + '</span><br><small>' + User.t('Check your inbox (and spam folder)', '请检查收件箱（以及垃圾邮件箱）') + '</small>';
           codeHint.style.display = 'block';
         }
       }
@@ -2430,7 +2440,12 @@ const App = (() => {
         if (codeInput) codeInput.focus();
       }, 300);
     } else {
-      alert(result.error || User.t('Failed to send verification code', '发送验证码失败'));
+      // Show error inline in the register form
+      const errorEl = document.getElementById('auth-register-error');
+      if (errorEl) {
+        errorEl.textContent = result.error || User.t('Failed to send verification code', '发送验证码失败');
+        errorEl.style.display = 'block';
+      }
     }
   }
 
@@ -2438,14 +2453,18 @@ const App = (() => {
   async function handleRegisterStep2() {
     if (typeof User === 'undefined') return;
 
+    const codeHint = document.getElementById('verify-code-hint');
+
     const code = document.getElementById('auth-verify-code')?.value?.trim();
     if (!code) {
-      alert(User.t('Please enter verification code', '请输入验证码'));
+      if (codeHint) {
+        codeHint.innerHTML = '<span style="color:#ef4444;">' + User.t('Please enter verification code', '请输入验证码') + '</span>';
+        codeHint.style.display = 'block';
+      }
       return;
     }
 
     if (!_pendingRegInfo) {
-      alert(User.t('Please fill in registration info first', '请先填写注册信息'));
       showRegisterView();
       return;
     }
@@ -2471,6 +2490,7 @@ const App = (() => {
       if (registerView) registerView.style.display = 'block';
       const codeInput = document.getElementById('auth-verify-code');
       if (codeInput) codeInput.value = '';
+      if (codeHint) codeHint.style.display = 'none';
 
       hideAuthModal();
       updateUserUI();
@@ -2478,9 +2498,13 @@ const App = (() => {
       autoFillFromProfile();
 
       const userId = User.getProfile()?.userId || '';
-      alert(User.t('🎉 Welcome to StarWeaver! Your ID: ' + userId, '🎉 欢迎加入星织者！你的唯一ID: ' + userId));
+      const msg = User.t('🎉 Welcome to StarWeaver! Your ID: ' + userId, '🎉 欢迎加入星织者！你的唯一ID: ' + userId);
+      alert(msg);
     } else {
-      alert(result.error || User.t('Verification failed', '验证失败'));
+      if (codeHint) {
+        codeHint.innerHTML = '<span style="color:#ef4444;">❌ ' + (result.error || User.t('Verification failed', '验证失败')) + '</span>';
+        codeHint.style.display = 'block';
+      }
     }
   }
 

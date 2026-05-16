@@ -6,7 +6,7 @@
 const Api = (() => {
   'use strict';
 
-  const BASE = 'https://starweaver-app.vercel.app/api/starweaver';
+  const BASE = 'https://starweaver.top/api/starweaver';
 
   let lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
 
@@ -14,7 +14,7 @@ const Api = (() => {
     return lang === 'zh' ? zh : en;
   }
 
-  async function request(action, data = {}) {
+  async function request(action, data = {}, options = {}) {
     const body = JSON.stringify({ action, ...data });
     let response;
     try {
@@ -22,8 +22,10 @@ const Api = (() => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
+        signal: options.signal || undefined,
       });
     } catch (e) {
+      if (e.name === 'AbortError') throw new Error('Request timed out');
       throw new Error(t('Network error — please check your connection', '网络错误 — 请检查网络连接'));
     }
 
@@ -43,8 +45,8 @@ const Api = (() => {
 
   // ===== Public API Methods =====
 
-  async function sendVerifyCode(email) {
-    return request('sendVerifyCode', { email });
+  async function sendVerifyCode(email, options = {}) {
+    return request('sendVerifyCode', { email }, options);
   }
 
   async function verifyEmail(email, code) {
