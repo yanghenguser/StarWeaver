@@ -168,9 +168,10 @@ export default async function handler(req, res) {
           ['EXPIRE', rateKey, '600']
         ]);
         // Try sending email via Resend if configured
+        let emailSent = false;
         if (process.env.RESEND_API_KEY && process.env.EMAIL_FROM) {
           try {
-            await fetch('https://api.resend.com/emails', {
+            const emailRes = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
               body: JSON.stringify({
@@ -185,10 +186,12 @@ export default async function handler(req, res) {
                 </div>`
               })
             });
-          } catch (e) { /* Email service unavailable — code still valid in Redis */ }
+            if (emailRes.ok) emailSent = true;
+            else console.warn('Resend email failed:', await emailRes.text());
+          } catch (e) { console.warn('Email service unavailable:', e.message); }
         }
-        // In non-production, return code to client for dev convenience
-        return res.json({ ok: true, message: 'Verification code sent', code: process.env.VERCEL ? undefined : code });
+        // Return code if email not sent (no Resend configured or send failed)
+        return res.json({ ok: true, message: emailSent ? 'Verification code sent to email' : 'Verification code generated (check Resend config)', code: emailSent ? undefined : code, emailSent });
       }
 
       // ===== Verify Email Code =====

@@ -403,6 +403,10 @@ const App = (() => {
       document.getElementById('chart-card').style.display = 'block';
       document.getElementById('chart-reading-card').style.display = 'block';
       document.querySelector('.chart-controls').style.display = 'flex';
+
+      // Hide previous AI reading when generating new chart
+      const aiOutput = document.getElementById('ai-reading-output');
+      if (aiOutput) { aiOutput.style.display = 'none'; aiOutput.innerHTML = ''; }
       
       // Switch to chart section
       switchSection('chart');
@@ -563,7 +567,10 @@ const App = (() => {
     const btn = document.getElementById('btn-ai-reading');
     const output = document.getElementById('ai-reading-output');
     if (btn) btn.disabled = true;
-    if (output) output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Consulting the stars...', '正在咨询星辰...')}</div>`;
+    if (output) {
+      output.style.display = 'block';
+      output.innerHTML = `<div style="text-align:center;color:var(--text-muted);">${t('Consulting the stars...', '正在咨询星辰...')}</div>`;
+    }
 
     try {
       const reading = await AstroAI.getNatalReading(birthInfo, chartData, lang);
@@ -1660,53 +1667,71 @@ const App = (() => {
     const illumin = (moon.illumination * 100).toFixed(0);
     const moonAge = parseFloat(moon.age);
 
-    // SVG Moon
-    const svgSize = 140;
-    const r = 55;
+    // SVG Moon — improved realistic rendering
+    const svgSize = 160;
+    const r = 62;
     const cx = svgSize / 2;
     const cy = svgSize / 2;
-    const litColor = '#f0e6d0';
-    const darkColor = '#1a1a3e';
-    const glowColor = 'rgba(212,175,55,0.12)';
+    const litColor = '#f5ecd7';
+    const darkFill = 'rgba(20, 18, 40, 0.75)';
+    const glowColor = 'rgba(212,175,55,0.15)';
     const isWaxing = moonAge < 14.76;
     const i = Math.max(0, Math.min(1, moon.illumination));
 
-    // Build moon SVG: always start with lit circle, then overlay shadow crescent
+    // Crater positions (static set for natural look)
+    const craters = [
+      { x: 20, y: 22, r: 4, a: 0.3 }, { x: 35, y: 8, r: 3, a: 0.25 },
+      { x: 50, y: 20, r: 5, a: 0.2 }, { x: 15, y: 42, r: 6, a: 0.15 },
+      { x: 38, y: 38, r: 3.5, a: 0.22 }, { x: 22, y: 58, r: 4.5, a: 0.18 },
+      { x: 48, y: 52, r: 3, a: 0.25 }, { x: 8, y: 28, r: 2.5, a: 0.28 },
+      { x: 55, y: 35, r: 2, a: 0.3 }, { x: 30, y: 50, r: 7, a: 0.1 },
+    ];
+
+    // Generate crater SVG elements
+    function cratersSvg(offsetX, clipSide) {
+      let svg = '';
+      craters.forEach(c => {
+        const cx2 = c.x + offsetX;
+        // Only draw craters visible in this region
+        if (clipSide === 'left' && cx2 > cx) return;
+        if (clipSide === 'right' && cx2 < cx) return;
+        svg += `<circle cx="${cx2}" cy="${c.y}" r="${c.r}" fill="rgba(180,170,150,${c.a})" stroke="rgba(160,150,130,${c.a * 0.6})" stroke-width="0.4"/>`;
+      });
+      return svg;
+    }
+
+    // Build moon SVG
     let moonSvg;
     const litWidth = i * 2 * r;
-    const shadowWidth = 2 * r - litWidth;
 
-    if (shadowWidth < 1) {
-      // Full moon — just the lit circle
-      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${litColor}" stroke="#d4af37" stroke-width="1.5"/>`;
-    } else if (litWidth < 1) {
-      // New moon — dark circle with visible gold ring and faint glow
+    if (i >= 0.98) {
+      // Full moon — lit circle with craters
+      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${litColor}" stroke="#d4af37" stroke-width="1.2"/>`;
+      moonSvg += cratersSvg(0, 'none');
+    } else if (i <= 0.02) {
+      // New moon — very faint outline
       moonSvg = `
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${darkColor}" stroke="#d4af37" stroke-width="1.5" opacity="0.85"/>
-        <circle cx="${cx}" cy="${cy}" r="3" fill="#d4af37" opacity="0.3"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${darkFill}" stroke="#d4af37" stroke-width="1.2" opacity="0.7"/>
+        <circle cx="${cx}" cy="${cy}" r="3" fill="#d4af37" opacity="0.25"/>
       `;
     } else {
-      // Crescent or gibbous: draw lit circle, then shadow crescent on unlit side
+      // Crescent or gibbous with realistic terminator
       const termX = isWaxing ? (cx - r + litWidth) : (cx + r - litWidth);
       const dx = termX - cx;
-      const arcR = Math.max(1, Math.abs(dx));
+      const arcR = Math.max(1.5, Math.abs(dx));
 
-      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${litColor}" stroke="#d4af37" stroke-width="1.5"/>`;
+      // Lit base circle
+      moonSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${litColor}" stroke="#d4af37" stroke-width="1.2"/>`;
 
+      // Shadow overlay on unlit side
       if (isWaxing) {
-        // Shadow on the left, lit on the right
-        moonSvg += `
-          <path d="M ${cx} ${cy - r}
-            A ${arcR} ${r} 0 0 0 ${cx} ${cy + r}
-            A ${r} ${r} 0 0 1 ${cx} ${cy - r} Z"
-            fill="${darkColor}"/>`;
+        // Waxing — lit on right, shadow on left. Craters only on lit (right) side
+        moonSvg += `<path d="M ${cx} ${cy - r} A ${arcR} ${r} 0 0 0 ${cx} ${cy + r} A ${r} ${r} 0 0 1 ${cx} ${cy - r} Z" fill="${darkFill}"/>`;
+        moonSvg += cratersSvg(0, 'right');
       } else {
-        // Shadow on the right, lit on the left
-        moonSvg += `
-          <path d="M ${cx} ${cy - r}
-            A ${arcR} ${r} 0 0 1 ${cx} ${cy + r}
-            A ${r} ${r} 0 0 0 ${cx} ${cy - r} Z"
-            fill="${darkColor}"/>`;
+        // Waning — lit on left, shadow on right. Craters only on lit (left) side
+        moonSvg += `<path d="M ${cx} ${cy - r} A ${arcR} ${r} 0 0 1 ${cx} ${cy + r} A ${r} ${r} 0 0 0 ${cx} ${cy - r} Z" fill="${darkFill}"/>`;
+        moonSvg += cratersSvg(0, 'left');
       }
     }
 
@@ -1715,18 +1740,30 @@ const App = (() => {
         <defs>
           <radialGradient id="moon-glow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stop-color="${glowColor}"/>
+            <stop offset="70%" stop-color="rgba(212,175,55,0.04)"/>
             <stop offset="100%" stop-color="rgba(212,175,55,0)"/>
           </radialGradient>
+          <radialGradient id="moon-surface" cx="45%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="rgba(255,245,230,0.15)"/>
+            <stop offset="60%" stop-color="rgba(200,190,170,0.04)"/>
+            <stop offset="100%" stop-color="rgba(180,170,150,0.08)"/>
+          </radialGradient>
         </defs>
-        <circle cx="${cx}" cy="${cy}" r="${r + 18}" fill="url(#moon-glow)"/>
+        <circle cx="${cx}" cy="${cy}" r="${r + 20}" fill="url(#moon-glow)"/>
         ${moonSvg}
+        <!-- Surface shading -->
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#moon-surface)" pointer-events="none"/>
       </svg>
     `;
 
     container.innerHTML = `
       <div class="moon-svg">${moonSvgFull}</div>
       <div class="moon-name">${phase}</div>
-      <div class="moon-date">${t('Illumination', '照明度')}: ${illumin}% | ${t('Age', '月龄')}: ${moon.age}${t('days', '天')}</div>
+      <div class="moon-info">
+        <span class="moon-info-item">${t('Illumination', '照明度')}: ${illumin}%</span>
+        <span class="moon-info-sep">|</span>
+        <span class="moon-info-item">${t('Age', '月龄')}: ${moon.age}${t('days', '天')}</span>
+      </div>
     `;
   }
 
@@ -2223,40 +2260,44 @@ const App = (() => {
 
   function populateAuthDateSelects() {
     const now = new Date();
+    const defaultYear = now.getFullYear() - 30;
 
-    const yearSelect = document.getElementById('auth-year');
-    if (yearSelect) {
-      for (let i = 0; i < 100; i++) {
-        const y = now.getFullYear() - i;
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = y;
-        yearSelect.appendChild(opt);
+    // Populate both register (auth-year) and login (auth-login-year) select sets
+    ['', '-login'].forEach(suffix => {
+      const yearSelect = document.getElementById('auth' + suffix + '-year');
+      if (yearSelect) {
+        for (let i = 0; i < 100; i++) {
+          const y = now.getFullYear() - i;
+          const opt = document.createElement('option');
+          opt.value = y;
+          opt.textContent = y;
+          yearSelect.appendChild(opt);
+        }
+        yearSelect.value = defaultYear;
       }
-      yearSelect.value = now.getFullYear() - 30;
-    }
 
-    const monthSelect = document.getElementById('auth-month');
-    if (monthSelect) {
-      for (let i = 1; i <= 12; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = i;
-        monthSelect.appendChild(opt);
+      const monthSelect = document.getElementById('auth' + suffix + '-month');
+      if (monthSelect) {
+        for (let i = 1; i <= 12; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = i;
+          monthSelect.appendChild(opt);
+        }
+        monthSelect.value = now.getMonth() + 1;
       }
-      monthSelect.value = now.getMonth() + 1;
-    }
 
-    const daySelect = document.getElementById('auth-day');
-    if (daySelect) {
-      for (let i = 1; i <= 31; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = i;
-        daySelect.appendChild(opt);
+      const daySelect = document.getElementById('auth' + suffix + '-day');
+      if (daySelect) {
+        for (let i = 1; i <= 31; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = i;
+          daySelect.appendChild(opt);
+        }
+        daySelect.value = now.getDate();
       }
-      daySelect.value = now.getDate();
-    }
+    });
   }
 
   // ===== Auto-fill from profile =====
@@ -2361,11 +2402,27 @@ const App = (() => {
       // Switch to verification view
       const registerView = document.getElementById('auth-register-view');
       const verifyView = document.getElementById('auth-verify-view');
+      const codeHint = document.getElementById('verify-code-hint');
       if (registerView) registerView.style.display = 'none';
       if (verifyView) {
         verifyView.style.display = 'block';
         const verifyEmail = document.getElementById('verify-email-display');
         if (verifyEmail) verifyEmail.textContent = email;
+      }
+      // If email not sent (no Resend), show code to user
+      if (result.code) {
+        if (codeHint) {
+          codeHint.innerHTML = '<span style="color:#d4af37;">📋 ' + User.t('Code: ', '验证码：') + '<strong>' + result.code + '</strong></span> ' + User.t('(email not configured, using code from screen)', '（邮件未配置，请使用此验证码）');
+          codeHint.style.display = 'block';
+        }
+        // Auto-fill code input
+        const codeInput = document.getElementById('auth-verify-code');
+        if (codeInput) codeInput.value = result.code;
+      } else {
+        if (codeHint) {
+          codeHint.innerHTML = User.t('Check your email for the 6-digit code', '请查看邮箱中的6位验证码');
+          codeHint.style.display = 'block';
+        }
       }
       // Focus code input
       setTimeout(() => {
@@ -2434,13 +2491,14 @@ const App = (() => {
     updateBtn.addEventListener('click', async () => {
       if (typeof User === 'undefined' || !User.isLoggedIn()) return;
 
-      const name = document.getElementById('auth-name')?.value?.trim();
-      const year = parseInt(document.getElementById('auth-year')?.value) || null;
-      const month = parseInt(document.getElementById('auth-month')?.value) || null;
-      const day = parseInt(document.getElementById('auth-day')?.value) || null;
+      // Login view uses auth-login-year/month/day
+      const year = parseInt(document.getElementById('auth-login-year')?.value) || null;
+      const month = parseInt(document.getElementById('auth-login-month')?.value) || null;
+      const day = parseInt(document.getElementById('auth-login-day')?.value) || null;
 
       await User.updateProfile({
-        name, birthYear: year, birthMonth: month, birthDay: day,
+        name: User.getProfile()?.name,
+        birthYear: year, birthMonth: month, birthDay: day,
       });
       autoFillFromProfile();
       alert(User.t('Profile updated!', '个人信息已更新！'));
