@@ -36,8 +36,9 @@ const Api = (() => {
       throw new Error(t('Invalid server response', '服务器响应异常'));
     }
 
-    if (!json || json.ok !== true) {
-      throw new Error(json && json.error ? json.error : t('Request failed', '请求失败'));
+    if (!json || !json.ok) {
+      // Return error response so callers can handle specific error codes (e.g. EMAIL_NOT_FOUND, NAME_MISMATCH)
+      return { ok: false, error: (json && json.error) ? json.error : 'Request failed', message: json && json.message };
     }
 
     return json;
@@ -69,8 +70,8 @@ const Api = (() => {
     return request('login', { userId });
   }
 
-  async function loginByEmail(email) {
-    return request('login', { email });
+  async function loginByEmail(email, name) {
+    return request('login', { email, name: name || undefined });
   }
 
   async function updateProfile(userId, profile) {

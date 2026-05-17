@@ -781,10 +781,90 @@ h1, h2, h3, h4, h5, h6 {
   padding: 1rem;
   margin-top: 0.7rem;
   min-height: 60px;
-  line-height: 1.7;
+  line-height: 1.8;
   color: var(--text-secondary);
   font-size: 0.88rem;
-  white-space: pre-wrap;
+}
+
+.reading-output p {
+  margin-bottom: 0.6rem;
+}
+
+.reading-output h1, .reading-output h2, .reading-output h3, .reading-output h4 {
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  margin: 0.8rem 0 0.4rem;
+}
+
+.reading-output h1 { font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+.reading-output h2 { font-size: 1.15rem; }
+.reading-output h3 { font-size: 1.05rem; color: var(--gold); }
+.reading-output h4 { font-size: 0.95rem; color: var(--primary); }
+
+.reading-output strong { color: var(--text-primary); }
+.reading-output em { color: var(--gold); }
+
+.reading-output ul, .reading-output ol {
+  padding-left: 1.2rem;
+  margin: 0.4rem 0;
+}
+
+.reading-output li {
+  margin-bottom: 0.2rem;
+  line-height: 1.6;
+}
+
+.reading-output li::marker { color: var(--primary); }
+
+.reading-output code {
+  background: var(--primary-subtle);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--primary);
+}
+
+.reading-output pre {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  overflow-x: auto;
+  margin: 0.6rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.reading-output pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-secondary);
+}
+
+.reading-output a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.reading-output hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.8rem 0;
+}
+
+.reading-output del {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.reading-output blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 0.8rem;
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .reading-output.loading {
@@ -936,6 +1016,171 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   gap: 0.7rem;
   margin-top: 0.7rem;
+}
+
+/* Chart Reading — refined layout */
+.chart-reading-title {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.chart-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.chart-pillar {
+  text-align: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.4rem;
+}
+
+.chart-pillar-icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.2rem;
+  line-height: 1.2;
+}
+
+.chart-pillar-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.15rem;
+}
+
+.chart-pillar-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.1rem;
+}
+
+.chart-pillar-desc {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+.chart-section {
+  margin-bottom: 1rem;
+}
+
+.chart-section-title {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-section-title svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.chart-planets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.chart-planet-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+}
+
+.chart-planet-symbol {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.chart-planet-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 48px;
+}
+
+.chart-planet-sign {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.chart-planet-house {
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chart-aspects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+}
+
+.chart-aspect-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.chart-aspect-icon {
+  font-size: 1rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.chart-aspect-planets {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+.chart-aspect-name {
+  font-weight: 600;
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+.chart-aspect-orb {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.chart-meta {
+  text-align: center;
+  padding: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.chart-meta strong {
+  color: var(--gold);
 }
 
 /* ===== 22. Compatibility ===== */
@@ -2257,6 +2502,12 @@ footer {
   }
   .bottom-nav-item .nav-icon { width: 18px; height: 18px; }
   .bottom-nav-item .nav-label { font-size: 0.52rem; }
+
+  .chart-planets-grid { grid-template-columns: 1fr 1fr; }
+  .chart-aspects-grid { grid-template-columns: 1fr; }
+  .chart-planet-item { font-size: 0.72rem; padding: 0.35rem 0.5rem; }
+  .chart-pillar-icon { font-size: 1.3rem; }
+  .chart-pillar-value { font-size: 0.7rem; }
 }
 
 /* ===== 40. Very Small Screens (≤ 375px) ===== */

@@ -246,16 +246,27 @@ export default async function handler(req, res) {
 
       // ===== Login =====
       case 'login': {
-        const { userId, email } = params;
+        const { userId, email, name } = params;
         let uid = userId;
         if (!uid && email) {
-          uid = await upstashFetch('GET', `email:${email.trim().toLowerCase()}`);
-          if (!uid) return res.status(404).json({ error: 'Email not registered' });
+          const emailKey = email.trim().toLowerCase();
+          uid = await upstashFetch('GET', `email:${emailKey}`);
+          if (!uid) return res.status(404).json({ error: 'EMAIL_NOT_FOUND' });
         }
         if (!uid) return res.status(400).json({ error: 'userId or email required' });
         const userJson = await upstashFetch('GET', `user:${uid}`);
         if (!userJson) return res.status(404).json({ error: 'User not found' });
         const user = JSON.parse(userJson);
+
+        // If name provided, verify it matches
+        if (name && typeof name === 'string' && name.trim()) {
+          const storedName = (user.name || '').trim().toLowerCase();
+          const inputName = name.trim().toLowerCase();
+          if (storedName !== inputName) {
+            return res.status(401).json({ error: 'NAME_MISMATCH', message: 'Name does not match our records' });
+          }
+        }
+
         const token = generateToken(uid);
         return res.json({ ok: true, userId: uid, token, user });
       }

@@ -576,63 +576,109 @@ IMPORTANT: Always respond in English. Use English throughout your entire respons
     conversationHistory = [];
   }
 
-  // ===== Simple Markdown Renderer =====
+  // ===== Markdown Renderer =====
   function renderMarkdown(text) {
+    if (!text) return '';
+
+    // Preserve code blocks
     const codeBlocks = [];
-    let processed = text.replace(/```[\s\S]*?```/g, m => {
-      const code = m.replace(/```\w*\n?|```/g, '').trim();
-      codeBlocks.push(code);
-      return `\x00CODEBLOCK${codeBlocks.length - 1}\x00`;
+    let processed = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+      codeBlocks.push({ lang, code: code.trim() });
+      return `\x00CODE${codeBlocks.length - 1}\x00`;
     });
 
-    let html = processed
+    // Escape HTML
+    processed = processed
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
+      .replace(/>/g, '&gt;');
+
+    // Headings
+    processed = processed
+      .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
       .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+    // Bold, italic, strikethrough
+    processed = processed
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`(.+?)`/g, '<code>$1</code>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-      .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
-      .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
-      .replace(/((?:<li>.*<\/li>\s*)+)/g, '<ul>$1</ul>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>');
+      .replace(/~~(.+?)~~/g, '<del>$1</del>');
 
-    html = html.replace(/\x00CODEBLOCK(\d+)\x00/g, (_, i) => {
-      const code = codeBlocks[parseInt(i)]
+    // Inline code
+    processed = processed.replace(/`(.+?)`/g, '<code>$1</code>');
+
+    // Links
+    processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // Unordered lists
+    processed = processed.replace(/^[\t ]*[-*+] (.+)$/gm, '<li>$1</li>');
+    // Ordered lists
+    processed = processed.replace(/^[\t ]*\d+\. (.+)$/gm, '<li>$1</li>');
+
+    // Wrap consecutive <li> in <ul>
+    processed = processed.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+    // Horizontal rules
+    processed = processed.replace(/^[-*_]{3,}$/gm, '<hr>');
+
+    // Paragraphs — double newline
+    processed = processed.replace(/\n\n+/g, '</p><p>');
+    // Single newline → line break
+    processed = processed.replace(/\n/g, '<br>');
+
+    // Restore code blocks
+    processed = processed.replace(/\x00CODE(\d+)\x00/g, (_, i) => {
+      const { lang, code } = codeBlocks[parseInt(i)];
+      const escaped = code
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
-      return '<pre><code>' + code + '</code></pre>';
+      const langAttr = lang ? ` class="language-${lang}"` : '';
+      return `<pre><code${langAttr}>${escaped}</code></pre>`;
     });
 
-    return '<p>' + html + '</p>';
+    return '<p>' + processed + '</p>';
   }
 
-  // ===== Typewriter Effect =====
-  function typewriteText(element, text, speed = 30, callback) {
-    let index = 0;
-    element.textContent = '';
+  // ===== Typewriter Effect with Real-time Markdown =====
+  function typewriteText(element, text, speed = 15, callback) {
+    // Split text into lines for progressive rendering
+    const lines = text.split('\n');
+    let lineIndex = 0;
+    let accumulated = '';
+    element.innerHTML = '';
     element.classList.add('typing-cursor');
 
-    function type() {
-      if (index < text.length) {
-        element.textContent += text.charAt(index);
-        index++;
-        const char = text.charAt(index - 1);
-        const delay = '，。！？；：.!?;:\n'.includes(char) ? speed * 4 : speed;
-        setTimeout(type, delay);
-      } else {
+    function typeLine() {
+      if (lineIndex >= lines.length) {
         element.classList.remove('typing-cursor');
+        // Final render with full markdown
         element.innerHTML = renderMarkdown(text);
         if (callback) callback();
+        return;
       }
+
+      accumulated += (accumulated ? '\n' : '') + lines[lineIndex];
+      lineIndex++;
+
+      // Render current accumulated text as markdown
+      element.innerHTML = renderMarkdown(accumulated) + '<span class="typing-cursor"></span>';
+
+      // Variable delay: longer for headings, shorter for empty lines
+      const line = lines[lineIndex - 1] || '';
+      let delay = speed;
+      if (line.match(/^#{1,3}\s/)) delay = speed * 3;        // Headings
+      else if (line.match(/^[-*]\s/)) delay = speed * 1.5;   // List items
+      else if (line.trim() === '') delay = speed * 0.5;      // Empty lines
+      else delay = speed * 2.5;                                // Normal text
+
+      setTimeout(typeLine, delay);
     }
-    type();
+
+    typeLine();
   }
 
   // ===== Chart Description Helper =====

@@ -153,6 +153,7 @@ const User = (() => {
   async function doRegister(name, email, birthInfo) {
     try {
       const result = await Api.register(name, email, birthInfo);
+      if (!result.ok) return { ok: false, error: result.error || 'Registration failed' };
       if (result.userId) {
         try {
           localStorage.setItem(KEYS.userId, result.userId);
@@ -202,6 +203,7 @@ const User = (() => {
     if (!userId || userId.startsWith('local_')) return null;
     try {
       const result = await Api.login(userId);
+      if (!result.ok) return null;
       if (result.token) {
         try { localStorage.setItem(KEYS.token, result.token); } catch (e) { /* silent */ }
       }
@@ -218,10 +220,24 @@ const User = (() => {
     }
   }
 
-  async function loginByEmail(email) {
-    if (typeof Api === 'undefined') return null;
+  async function loginByEmail(email, name) {
+    if (typeof Api === 'undefined') {
+      // Local mode: check cached profile
+      const profile = getProfile();
+      if (profile && profile.email === email.trim().toLowerCase()) {
+        if (name && name.trim().toLowerCase() !== (profile.name || '').trim().toLowerCase()) {
+          return { ok: false, error: 'NAME_MISMATCH' };
+        }
+        try { localStorage.setItem(KEYS.userId, 'local_' + Date.now()); } catch (e) { /* silent */ }
+        return { ok: true, user: profile };
+      }
+      return { ok: false, error: 'EMAIL_NOT_FOUND' };
+    }
     try {
-      const result = await Api.loginByEmail(email);
+      const result = await Api.loginByEmail(email, name);
+      if (!result.ok) {
+        return { ok: false, error: result.error || 'Login failed' };
+      }
       if (result.userId) {
         try { localStorage.setItem(KEYS.userId, result.userId); } catch (e) { /* silent */ }
       }
@@ -235,9 +251,9 @@ const User = (() => {
           if (result.user.premium) localStorage.setItem(KEYS.premium, 'true');
         } catch (e) { /* silent */ }
       }
-      return result.user || null;
+      return { ok: true, user: result.user };
     } catch (e) {
-      return null;
+      return { ok: false, error: e.message };
     }
   }
 
@@ -252,7 +268,7 @@ const User = (() => {
     }
     try {
       const result = await Api.updateProfile(userId, profileData);
-      if (result.user) {
+      if (result.ok && result.user) {
         saveProfile(result.user);
       }
       return true;
@@ -273,6 +289,7 @@ const User = (() => {
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.checkUsage(userId);
+        if (!result.ok) return true; // API error — allow usage
         if (result.premium) {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return true;
@@ -301,6 +318,7 @@ const User = (() => {
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.checkUsage(userId);
+        if (!result.ok) return Infinity;
         if (result.premium) {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return Infinity;
@@ -319,6 +337,7 @@ const User = (() => {
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.checkUsage(userId);
+        if (!result.ok) return getCachedCredits();
         if (result.premium) return Infinity;
         return result.totalCredits || FREE_TOTAL_LIMIT;
       } catch (e) { /* offline */ }
@@ -334,6 +353,7 @@ const User = (() => {
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.checkUsage(userId);
+        if (!result.ok) return false;
         if (result.premium) {
           try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           return true;
@@ -355,7 +375,7 @@ const User = (() => {
     if (userId && typeof Api !== 'undefined' && !userId.startsWith('local_')) {
       try {
         const result = await Api.redeemCode(userId, trimmed);
-        if (result.ok) {
+        if (result && result.ok) {
           if (result.premium || result.type === 'premium') {
             try { localStorage.setItem(KEYS.premium, 'true'); } catch (e) { /* silent */ }
           }

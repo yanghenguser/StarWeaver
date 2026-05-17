@@ -788,29 +788,22 @@
         <div id="auth-login-view" style="display:none;">
           <h2 class="modal-title">Welcome Back · 欢迎回来</h2>
           <p class="modal-subtitle" id="auth-login-greeting">Continue your cosmic journey</p>
-          <div class="form-group">
-            <label class="form-label">Update Profile (optional) / 更新信息（可选）</label>
-          </div>
-          <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+          <div id="auth-login-error" class="auth-error-msg" style="display:none;"></div>
+          <form id="auth-login-form">
             <div class="form-group">
-              <label class="form-label">Year / 年</label>
-              <select class="form-select" id="auth-login-year"></select>
+              <label class="form-label">Name / 用户名</label>
+              <input class="form-input" id="auth-login-name" type="text" placeholder="Your name / 你的名字" autocomplete="name">
             </div>
             <div class="form-group">
-              <label class="form-label">Month / 月</label>
-              <select class="form-select" id="auth-login-month"></select>
+              <label class="form-label">Email / 邮箱</label>
+              <input class="form-input" id="auth-login-email" type="email" placeholder="email@example.com" autocomplete="email">
             </div>
-            <div class="form-group">
-              <label class="form-label">Day / 日</label>
-              <select class="form-select" id="auth-login-day"></select>
-            </div>
-          </div>
-          <button class="btn btn-purple" id="auth-update-profile-btn" style="margin-bottom:0.5rem;">Update Profile · 更新信息</button>
-          <button class="btn btn-primary" id="auth-continue-btn">Continue · 继续</button>
+            <button type="submit" class="btn btn-primary" id="auth-login-submit-btn">Login · 登录</button>
+          </form>
           <p class="auth-toggle-text">
             <a href="#" id="auth-toggle-register">New here? Register · 新用户？注册</a>
           </p>
-          <button class="btn btn-danger" id="auth-logout-btn" style="margin-top:0.8rem;">Logout · 退出</button>
+          <button class="btn btn-danger" id="auth-logout-btn" style="margin-top:0.8rem;width:100%;">Logout · 退出</button>
         </div>
       </div>
     </div>

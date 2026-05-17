@@ -523,29 +523,90 @@ const App = (() => {
     const s = Astro.ZODIAC_SIGNS[lang];
     const result = document.getElementById('chart-reading-text');
     if (!result) return;
-    
-    result.innerHTML = `
-      <div style="text-align:center;margin-bottom:1rem;font-size:1.2rem;color:var(--gold);">
-        ${t('Your Cosmic Blueprint', '你的宇宙蓝图')}
+
+    // Planet colors
+    const planetColors = {
+      Sun: '#f5a623', Moon: '#d4af37', Mercury: '#a0d2db', Venus: '#e57399',
+      Mars: '#ef5350', Jupiter: '#ce93d8', Saturn: '#8d6e63',
+      Uranus: '#4fc3f7', Neptune: '#7986cb', Pluto: '#7986cb', NorthNode: '#aaa', Lilith: '#e57399'
+    };
+    const planetSymbols = {
+      Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+      Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇', NorthNode: '☊', Lilith: '⚸'
+    };
+
+    // Aspect icons
+    const aspectIcons = { Conjunction: '☌', Sextile: '⚹', Square: '□', Trine: '△', Opposition: '☍' };
+    const aspectColors = { Conjunction: '#f5d442', Sextile: '#22c55e', Square: '#ef5350', Trine: '#4fc3f7', Opposition: '#f97316' };
+
+    // Build the three pillars display
+    const pillars = [
+      { icon: data.sunSign.symbol, label: t('Sun Sign', '太阳'), value: data.sunSign.name, desc: t('Core Identity', '核心人格'), colorIndex: 0 },
+      { icon: data.ascendantSign.symbol, label: t('Ascendant', '上升'), value: data.ascendantSign.name, desc: t('Outer Mask', '外在面貌'), colorIndex: 1 },
+      { icon: s[data.moonSignIndex].symbol, label: t('Moon Sign', '月亮'), value: s[data.moonSignIndex].name, desc: t('Emotional Self', '情感内在'), colorIndex: 2 },
+    ];
+
+    const pillarHTML = pillars.map(p => `
+      <div class="chart-pillar">
+        <div class="chart-pillar-icon">${p.icon}</div>
+        <div class="chart-pillar-label">${p.label}</div>
+        <div class="chart-pillar-value">${p.value}</div>
+        <div class="chart-pillar-desc">${p.desc}</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
-        <div><strong>${t('Sun Sign', '太阳星座')}:</strong> ${data.sunSign.symbol} ${data.sunSign.name}</div>
-        <div><strong>${t('Ascendant', '上升星座')}:</strong> ${data.ascendantSign.symbol} ${data.ascendantSign.name}</div>
-        <div><strong>${t('Moon Sign', '月亮星座')}:</strong> ${s[data.moonSignIndex].symbol} ${s[data.moonSignIndex].name}</div>
-        <div><strong>${t('Chinese Zodiac', '生肖')}:</strong> ${Astro.getChineseZodiac(birthInfo.year)[lang]}</div>
-      </div>
-      <hr style="border-color:var(--border-subtle);margin:1rem 0;">
-      <div style="font-size:0.9rem;color:var(--text-secondary);">
-        <strong>${t('Planets', '行星位置')}:</strong><br>
-        ${data.planets.map(p => `${p.symbol} ${p.name}: ${p.sign.name} (${t('House', '宫位')} ${p.house})`).join('<br>')}
-      </div>
-      ${data.aspects.length > 0 ? `
-        <hr style="border-color:var(--border-subtle);margin:1rem 0;">
-        <div style="font-size:0.85rem;color:var(--text-secondary);">
-          <strong>${t('Aspects', '相位')}:</strong><br>
-          ${data.aspects.slice(0, 8).map(a => `${a.p1} ${a.symbol} ${a.p2} (${a.name}, ${a.orb}°)`).join('<br>')}
+    `).join('');
+
+    // Planets grid
+    const planetHTML = data.planets.map(p => {
+      const sym = planetSymbols[p.name] || p.symbol;
+      const color = planetColors[p.name] || '#aaa';
+      return `
+        <div class="chart-planet-item">
+          <span class="chart-planet-symbol" style="color:${color}">${sym}</span>
+          <span class="chart-planet-name">${p.name}</span>
+          <span class="chart-planet-sign">${p.sign.symbol} ${p.sign.name}</span>
+          <span class="chart-planet-house">${t('宫', 'H')}${p.house}</span>
         </div>
-      ` : ''}
+      `;
+    }).join('');
+
+    // Aspects
+    const aspectHTML = data.aspects.length > 0 ? data.aspects.slice(0, 8).map(a => {
+      const icon = aspectIcons[a.name] || '';
+      const color = aspectColors[a.name] || '#aaa';
+      return `
+        <div class="chart-aspect-item">
+          <span class="chart-aspect-icon" style="color:${color}">${icon}</span>
+          <span class="chart-aspect-planets">${a.p1} - ${a.p2}</span>
+          <span class="chart-aspect-name" style="color:${color}">${a.name}</span>
+          <span class="chart-aspect-orb">${a.orb}°</span>
+        </div>
+      `;
+    }).join('') : `<div style="text-align:center;color:var(--text-muted);padding:0.5rem;">No major aspects</div>`;
+
+    result.innerHTML = `
+      <div class="chart-reading-title">${t('Your Cosmic Blueprint', '你的宇宙蓝图')}</div>
+
+      <div class="chart-pillars">${pillarHTML}</div>
+
+      <div class="chart-section">
+        <div class="chart-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          ${t('Planetary Positions', '行星位置')}
+        </div>
+        <div class="chart-planets-grid">${planetHTML}</div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><polyline points="6 6 18 18"/></svg>
+          ${t('Aspects', '重要相位')}
+        </div>
+        <div class="chart-aspects-grid">${aspectHTML}</div>
+      </div>
+
+      <div class="chart-meta">
+        <span>🀄 ${t('Chinese Zodiac', '生肖')}: <strong>${Astro.getChineseZodiac(birthInfo.year)[lang]}</strong></span>
+      </div>
     `;
   }
 
@@ -576,7 +637,7 @@ const App = (() => {
       const reading = await AstroAI.getNatalReading(birthInfo, chartData, lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, reading, 25);
+        AstroAI.typewriteText(output, reading, 10);
       }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       if (typeof User !== 'undefined') User.saveReading('natal', reading);
@@ -692,7 +753,7 @@ const App = (() => {
       const horoscope = await AstroAI.getHoroscope(sign, new Date(), lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, horoscope, 20, () => {
+        AstroAI.typewriteText(output, horoscope, 8, () => {
           showShareButton('share-horoscope-btn', 'horoscope', horoscope);
         });
       }
@@ -735,7 +796,7 @@ const App = (() => {
             const el = document.getElementById('compat-ai-reading');
             if (el) {
               el.innerHTML = '';
-              AstroAI.typewriteText(el, aiReading, 25);
+              AstroAI.typewriteText(el, aiReading, 10);
             }
             if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
             await updateUsageUI();
@@ -798,7 +859,7 @@ const App = (() => {
           const answer = await AstroAI.askQuestion(question, lang);
           aiThinking.innerHTML = `<span class="msg-sender">✦ ${t('Stella', '星织者')}</span><div class="typing-cursor"></div>`;
           const textDiv = aiThinking.querySelector('div');
-          AstroAI.typewriteText(textDiv, answer, 20, () => {
+          AstroAI.typewriteText(textDiv, answer, 8, () => {
             messages.scrollTop = messages.scrollHeight;
           });
           if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
@@ -909,7 +970,7 @@ const App = (() => {
 
       if (readingOutput) {
         readingOutput.innerHTML = '';
-        AstroAI.typewriteText(readingOutput, reading, 25, () => {
+        AstroAI.typewriteText(readingOutput, reading, 10, () => {
           showShareButton('share-tarot-btn', 'tarot', reading);
         });
       }
@@ -1098,7 +1159,7 @@ const App = (() => {
       const reading = await AstroAI.getIChingReading(hexagram, changingHex, question, lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, reading, 25, () => {
+        AstroAI.typewriteText(output, reading, 10, () => {
           showShareButton('share-iching-btn', 'iching', reading);
         });
       }
@@ -1221,7 +1282,7 @@ const App = (() => {
       const upperGua = _coinData.upperGua2 + _coinData.upperGua;
       const lowerGua = _coinData.lowerGua2 + _coinData.lowerGua;
       const reading = await AstroAI.getCoinReading(_coinData.guaName, _coinData.guaIdx, upperGua, lowerGua, _coinData.changeList, _coinData.hexagram, question, lang);
-      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 25); }
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 10); }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       await updateUsageUI();
     } catch (err) {
@@ -1351,7 +1412,7 @@ const App = (() => {
 
     try {
       const reading = await AstroAI.getLiuYaoReading(_liuyaoAnalysis, question, lang);
-      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 25); }
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 10); }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       await updateUsageUI();
     } catch (err) {
@@ -1548,7 +1609,7 @@ const App = (() => {
 
     try {
       const reading = await AstroAI.getMeiHuaReading(_meihuaResult, lang);
-      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 25); }
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 10); }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       await updateUsageUI();
     } catch (err) {
@@ -1649,7 +1710,7 @@ const App = (() => {
 
     try {
       const reading = await AstroAI.getDiceReading(result.planet, result.sign, result.house, lang);
-      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 20); }
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 8); }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       await updateUsageUI();
     } catch (err) {
@@ -1872,7 +1933,7 @@ const App = (() => {
 
     try {
       const reading = await AstroAI.getLuckyGuideReading(sign.name, luckyNum, color.name, dir[lang] || dir.en, crystal[lang] || crystal.en, lang);
-      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 20); }
+      if (output) { output.innerHTML = ''; AstroAI.typewriteText(output, reading, 8); }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       await updateUsageUI();
     } catch (err) {
@@ -1940,7 +2001,7 @@ const App = (() => {
       const reading = await AstroAI.getDreamReading(dream, lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, reading, 25);
+        AstroAI.typewriteText(output, reading, 10);
       }
       if (typeof User !== 'undefined' && User.isLoggedIn()) await User.useAICredit();
       if (typeof User !== 'undefined') User.saveReading('dream', reading);
@@ -2090,7 +2151,7 @@ const App = (() => {
       const reading = await AstroAI.getNumerologyReading(summary, name, birthDateStr, lang);
       if (output) {
         output.innerHTML = '';
-        AstroAI.typewriteText(output, reading, 25, () => {
+        AstroAI.typewriteText(output, reading, 10, () => {
           showShareButton('share-numerology-btn', 'numerology', reading);
         });
       }
@@ -2194,14 +2255,12 @@ const App = (() => {
       });
     }
 
-    // Continue button (login view)
-    const continueBtn = document.getElementById('auth-continue-btn');
-    if (continueBtn) {
-      continueBtn.addEventListener('click', () => {
-        hideAuthModal();
-        updateUserUI();
-        updateUsageUI();
-        autoFillFromProfile();
+    // Login form submit
+    const loginForm = document.getElementById('auth-login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleLogin();
       });
     }
 
@@ -2254,50 +2313,47 @@ const App = (() => {
       });
     }
 
-    // Profile update form
-    initProfileUpdateForm();
+    // Profile update — removed, now login uses name+email only
   }
 
   function populateAuthDateSelects() {
     const now = new Date();
     const defaultYear = now.getFullYear() - 30;
 
-    // Populate both register (auth-year) and login (auth-login-year) select sets
-    ['', '-login'].forEach(suffix => {
-      const yearSelect = document.getElementById('auth' + suffix + '-year');
-      if (yearSelect) {
-        for (let i = 0; i < 100; i++) {
-          const y = now.getFullYear() - i;
-          const opt = document.createElement('option');
-          opt.value = y;
-          opt.textContent = y;
-          yearSelect.appendChild(opt);
-        }
-        yearSelect.value = defaultYear;
+    // Populate register form date selects
+    const yearSelect = document.getElementById('auth-year');
+    if (yearSelect) {
+      for (let i = 0; i < 100; i++) {
+        const y = now.getFullYear() - i;
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
       }
+      yearSelect.value = defaultYear;
+    }
 
-      const monthSelect = document.getElementById('auth' + suffix + '-month');
-      if (monthSelect) {
-        for (let i = 1; i <= 12; i++) {
-          const opt = document.createElement('option');
-          opt.value = i;
-          opt.textContent = i;
-          monthSelect.appendChild(opt);
-        }
-        monthSelect.value = now.getMonth() + 1;
+    const monthSelect = document.getElementById('auth-month');
+    if (monthSelect) {
+      for (let i = 1; i <= 12; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        monthSelect.appendChild(opt);
       }
+      monthSelect.value = now.getMonth() + 1;
+    }
 
-      const daySelect = document.getElementById('auth' + suffix + '-day');
-      if (daySelect) {
-        for (let i = 1; i <= 31; i++) {
-          const opt = document.createElement('option');
-          opt.value = i;
-          opt.textContent = i;
-          daySelect.appendChild(opt);
-        }
-        daySelect.value = now.getDate();
+    const daySelect = document.getElementById('auth-day');
+    if (daySelect) {
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        daySelect.appendChild(opt);
       }
-    });
+      daySelect.value = now.getDate();
+    }
   }
 
   // ===== Auto-fill from profile =====
@@ -2508,25 +2564,68 @@ const App = (() => {
     }
   }
 
-  // ===== Init profile update form (in login view) =====
-  function initProfileUpdateForm() {
-    const updateBtn = document.getElementById('auth-update-profile-btn');
-    if (!updateBtn) return;
-    updateBtn.addEventListener('click', async () => {
-      if (typeof User === 'undefined' || !User.isLoggedIn()) return;
+  // ===== Handle Login =====
+  async function handleLogin() {
+    if (typeof User === 'undefined') return;
 
-      // Login view uses auth-login-year/month/day
-      const year = parseInt(document.getElementById('auth-login-year')?.value) || null;
-      const month = parseInt(document.getElementById('auth-login-month')?.value) || null;
-      const day = parseInt(document.getElementById('auth-login-day')?.value) || null;
+    const errorEl = document.getElementById('auth-login-error');
+    if (errorEl) errorEl.style.display = 'none';
 
-      await User.updateProfile({
-        name: User.getProfile()?.name,
-        birthYear: year, birthMonth: month, birthDay: day,
-      });
+    const name = document.getElementById('auth-login-name')?.value?.trim();
+    const email = document.getElementById('auth-login-email')?.value?.trim();
+
+    if (!name) {
+      if (errorEl) { errorEl.textContent = User.t('Please enter your name', '请输入用户名'); errorEl.style.display = 'block'; }
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      if (errorEl) { errorEl.textContent = User.t('Please enter a valid email', '请输入有效的邮箱'); errorEl.style.display = 'block'; }
+      return;
+    }
+
+    const submitBtn = document.getElementById('auth-login-submit-btn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = User.t('Logging in...', '登录中...'); }
+
+    const result = await User.loginByEmail(email, name);
+
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = User.t('Login', '登录'); }
+
+    if (result.ok) {
+      hideAuthModal();
+      updateUserUI();
+      updateUsageUI();
       autoFillFromProfile();
-      alert(User.t('Profile updated!', '个人信息已更新！'));
-    });
+      alert(User.t('Welcome back!', '欢迎回来！'));
+    } else if (result.error === 'NAME_MISMATCH' || (result.error && result.error.toLowerCase().includes('name'))) {
+      if (errorEl) {
+        errorEl.textContent = User.t('Name does not match this email. Please check.', '用户名与该邮箱不匹配，请检查后重试');
+        errorEl.style.display = 'block';
+      }
+    } else if (result.error === 'EMAIL_NOT_FOUND' || (result.error && result.error.toLowerCase().includes('not registered'))) {
+      // Email not registered — pre-fill registration form and switch to register
+      if (errorEl) errorEl.style.display = 'none';
+      const regName = document.getElementById('auth-name');
+      const regEmail = document.getElementById('auth-email');
+      if (regName) regName.value = name;
+      if (regEmail) regEmail.value = email;
+      showRegisterView();
+      if (errorEl) {
+        // Show hint in register view
+        const regError = document.getElementById('auth-register-error');
+        if (regError) {
+          regError.textContent = User.t('Email not registered yet. Please complete registration.', '该邮箱尚未注册，请完成注册');
+          regError.style.display = 'block';
+          regError.style.background = 'rgba(34,197,94,0.08)';
+          regError.style.border = '1px solid rgba(34,197,94,0.2)';
+          regError.style.color = '#22c55e';
+        }
+      }
+    } else {
+      if (errorEl) {
+        errorEl.textContent = result.error || User.t('Login failed, please try again', '登录失败，请重试');
+        errorEl.style.display = 'block';
+      }
+    }
   }
 
   async function handleRegister() {
@@ -2550,26 +2649,46 @@ const App = (() => {
   function showRegisterView() {
     const registerView = document.getElementById('auth-register-view');
     const loginView = document.getElementById('auth-login-view');
+    const verifyView = document.getElementById('auth-verify-view');
     if (registerView) registerView.style.display = 'block';
     if (loginView) loginView.style.display = 'none';
+    if (verifyView) verifyView.style.display = 'none';
+    // Reset error styling
+    const regError = document.getElementById('auth-register-error');
+    if (regError) {
+      regError.style.display = 'none';
+      regError.style.background = '';
+      regError.style.border = '';
+      regError.style.color = '';
+    }
   }
 
   function showLoginView() {
     const registerView = document.getElementById('auth-register-view');
     const loginView = document.getElementById('auth-login-view');
-    const greeting = document.getElementById('auth-login-greeting');
+    const verifyView = document.getElementById('auth-verify-view');
     if (registerView) registerView.style.display = 'none';
+    if (verifyView) verifyView.style.display = 'none';
     if (loginView) loginView.style.display = 'block';
 
+    // Clear login form
+    const nameInput = document.getElementById('auth-login-name');
+    const emailInput = document.getElementById('auth-login-email');
+    const loginError = document.getElementById('auth-login-error');
+    const logoutBtn = document.getElementById('auth-logout-btn');
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+    if (loginError) { loginError.style.display = 'none'; loginError.textContent = ''; }
+
+    const isLogged = typeof User !== 'undefined' && User.isLoggedIn();
+    if (logoutBtn) logoutBtn.style.display = isLogged ? 'block' : 'none';
+
     if (typeof User !== 'undefined') {
-      const profile = User.isLoggedIn() ? User.getProfile() : null;
-      if (greeting) {
-        greeting.textContent = profile
-          ? (User.t('Welcome back, ', '欢迎回来，') + profile.name)
-          : (User.t('No saved profile found. Please register.', '未找到用户信息，请注册。'));
+      const profile = isLogged ? User.getProfile() : null;
+      if (profile) {
+        if (nameInput) nameInput.value = profile.name || '';
+        if (emailInput) emailInput.value = profile.email || '';
       }
-    } else if (greeting) {
-      greeting.textContent = 'Welcome back';
     }
   }
 
